@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>매장 상세 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/detail.css">
+</head>
+<body>
+  <!-- S28 매장 상세 · B-10 -->
+  <section class="d-hero store-hero" id="d-hero">
+    <div class="d-hero-bg" id="d-bg"></div>
+    <div class="d-hero-shade"></div>
+    <div class="d-hero-inner">
+      <div class="d-hero-text" id="d-text">
+        <div class="sk" style="height:52px;width:min(440px,80vw);margin-bottom:14px"></div>
+        <div class="sk" style="height:18px;width:min(320px,60vw)"></div>
+      </div>
+    </div>
+  </section>
+
+  <main class="d-body" id="d-body" hidden>
+    <div class="d-cols">
+      <section class="d-sec" aria-labelledby="themes-h">
+        <div class="d-sec-head">
+          <h2 id="themes-h">이 매장의 테마</h2>
+          <span class="muted small" id="themes-count"></span>
+        </div>
+        <div class="grid" id="themes"></div>
+      </section>
+
+      <aside class="d-sec d-info" aria-labelledby="info-h">
+        <h2 id="info-h">매장 정보</h2>
+        <dl id="store-info"></dl>
+        <div class="map-box" id="map-box" hidden></div>
+      </aside>
+    </div>
+  </main>
+
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/store/store.js"></script>
+</body>
+</html>
