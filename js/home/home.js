@@ -44,7 +44,8 @@
 
     let themes;
     try {
-      themes = await api.get("/api/themes", { sort: "rate" });
+      // 이번 주 인기순으로 한 번 받아서 줄마다 나눠 그림 (TOP 5·배너는 이 순서 그대로)
+      themes = await api.get("/api/themes", { sort: "popular" });
     } catch (e) {
       heroBox.hidden = true;
       main.textContent = "";
@@ -69,9 +70,8 @@
 
   function renderRows(themes, genres) {
     const rows = [];
-    const rated = themes.filter(function (t) { return t.avgRating !== null; });
-
-    if (rated.length) rows.push({ title: "오늘의 Escaplix TOP 5", note: "평균 별점 기준", list: rated.slice(0, 5), rank: true });
+    // 이번 주 인기 TOP 5: 최근 7일 새 파티×3 + 새 찜×2 + 새 후기×1 (B-1 sort=popular, 같으면 평점순)
+    rows.push({ title: "이번 주 인기 TOP 5", note: "최근 7일 파티·찜·후기 기준", list: themes.slice(0, 5), rank: true });
 
     if (isUser) {
       const wished = themes.filter(function (t) { return t.wished; });
@@ -126,7 +126,8 @@
     art.append(UI.poster(t));
     const cap = el("div", "rank-cap");
     cap.append(el("b", null, t.title));
-    cap.append(el("span", null, "★ " + UI.rating(t.avgRating) + " · " + t.storeName));
+    const r = UI.rating(t.avgRating);
+    cap.append(el("span", null, (r ? "★ " + r : "새 테마") + " · " + t.storeName));
     art.append(cap);
     a.append(no, art);
     return a;
@@ -149,7 +150,7 @@
       });
     } else {
       picks = themes.slice(0, 5).map(function (t) {
-        return Object.assign({}, t, { reason: "평점 높은 인기 테마" });
+        return Object.assign({}, t, { reason: "최근 7일 파티·찜·후기가 많은 테마" });
       });
     }
 
@@ -170,7 +171,7 @@
 
       const box = el("div", "hero-content");
       box.append(el("div", "hero-kicker",
-        personal ? me.nickname + " 님을 위한 추천" : (i === 0 ? "지금 가장 인기 있는 테마" : "인기 테마 " + (i + 1) + "위")));
+        personal ? me.nickname + " 님을 위한 추천" : (i === 0 ? "이번 주 가장 인기 있는 테마" : "이번 주 인기 " + (i + 1) + "위")));
       box.append(el("h1", "hero-title", t.title));
 
       const meta = el("div", "hero-meta");
@@ -213,15 +214,18 @@
       const dot = el("button");
       dot.type = "button";
       dot.setAttribute("aria-label", (i + 1) + "번째 보기");
-      dot.addEventListener("click", function () { go_(i); restart(); });
       dotsBox.append(dot);
     });
 
-    // 넘기기
+    // 넘기기: 7초마다 다음 추천으로. 지금 점이 7초 동안 차오르는 막대로 남은 시간을 보여 준다
+    //   멈추는 경우: ❚❚ 버튼을 눌렀을 때, 키보드(Tab)로 배너 안 버튼에 들어왔을 때
+    //   마우스를 올려도 멈추지 않는다 (배너가 화면 대부분이라 멈추면 안 넘어가는 것처럼 보임)
+    const SLIDE_MS = 7000;
     const slides = track.children;
     const dots = dotsBox.querySelectorAll("button");
     const pause = UI.$("hero-pause");
-    let idx = 0, timer = null, paused = false;
+    let idx = 0, timer = null, paused = false, keyboardFocus = false;
+    heroBox.style.setProperty("--slide-ms", SLIDE_MS + "ms");
 
     function go_(n) {
       idx = (n + picks.length) % picks.length;
@@ -232,41 +236,56 @@
         s.querySelectorAll("a, button").forEach(function (x) { x.tabIndex = on ? 0 : -1; });
       });
       dots.forEach(function (d, k) {
-        d.classList.toggle("on", k === idx);
+        d.classList.remove("on");
         if (k === idx) d.setAttribute("aria-current", "true"); else d.removeAttribute("aria-current");
       });
+      void dotsBox.offsetWidth;          // 막대 애니메이션을 처음부터 다시
+      dots[idx].classList.add("on");
     }
-    function start() { if (!paused && !timer && picks.length > 1) timer = setInterval(function () { go_(idx + 1); }, 7000); }
-    function stop() { clearInterval(timer); timer = null; }
-    function restart() { stop(); start(); }
+    function running() { return !paused && !keyboardFocus && picks.length > 1; }
+    function schedule() {
+      clearTimeout(timer);
+      heroBox.classList.toggle("autoplay", running());
+      if (running()) timer = setTimeout(function () { go_(idx + 1); schedule(); }, SLIDE_MS);
+    }
+    function jump(n) { go_(n); schedule(); }
 
-    heroBox.querySelector(".hero-arrow.prev").addEventListener("click", function () { go_(idx - 1); restart(); });
-    heroBox.querySelector(".hero-arrow.next").addEventListener("click", function () { go_(idx + 1); restart(); });
+    dots.forEach(function (d, k) {
+      d.addEventListener("click", function () { jump(k); });
+    });
+    heroBox.querySelector(".hero-arrow.prev").addEventListener("click", function () { jump(idx - 1); });
+    heroBox.querySelector(".hero-arrow.next").addEventListener("click", function () { jump(idx + 1); });
     function paintPause() {
       pause.textContent = paused ? "▶" : "❚❚";
       pause.setAttribute("aria-label", paused ? "자동 넘김 켜기" : "자동 넘김 멈추기");
     }
-    pause.addEventListener("click", function () { paused = !paused; paintPause(); paused ? stop() : start(); });
-    heroBox.addEventListener("mouseenter", stop);
-    heroBox.addEventListener("mouseleave", start);
-    heroBox.addEventListener("focusin", stop);
-    heroBox.addEventListener("focusout", start);
+    pause.addEventListener("click", function () { paused = !paused; paintPause(); jump(idx); });
+
+    // 키보드로 들어왔을 때만 멈춤 (마우스 클릭으로 생긴 포커스는 무시)
+    heroBox.addEventListener("focusin", function (e) {
+      if (e.target === pause || !e.target.matches(":focus-visible")) return;
+      keyboardFocus = true; schedule();
+    });
+    heroBox.addEventListener("focusout", function (e) {
+      if (heroBox.contains(e.relatedTarget)) return;
+      if (keyboardFocus) { keyboardFocus = false; schedule(); }
+    });
+
+    // 휴대폰: 옆으로 밀어서 넘기기
     let x0 = null;
-    heroBox.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; stop(); }, { passive: true });
+    heroBox.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
     heroBox.addEventListener("touchend", function (e) {
       if (x0 === null) return;
       const dx = e.changedTouches[0].clientX - x0;
-      if (Math.abs(dx) > 40) go_(idx + (dx < 0 ? 1 : -1));
       x0 = null;
-      start();
+      if (Math.abs(dx) > 40) jump(idx + (dx < 0 ? 1 : -1));
     });
-    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) paused = true;
     if (picks.length < 2) heroBox.classList.add("single");
 
     paintPause();
     heroBox.classList.remove("loading");
     go_(0);
-    start();
+    schedule();
   }
 
   // 비회원 배너는 B-1에 설명이 없어서 B-2로 한 줄 채워 넣는다 (실패하면 빈 칸 그대로)
@@ -360,7 +379,7 @@
       }
     }).catch(function () { /* 장르 없이 */ });
 
-    const sort = select("sort", [["rate", "평점순"], ["new", "최신순"]], F.sort);
+    const sort = select("sort", [["rate", "평점순"], ["popular", "이번 주 인기순"], ["new", "최신순"]], F.sort);
     form.append(field("정렬", sort));
 
     const reset = el("a", "btn btn-line small fb-reset", "조건 지우기");

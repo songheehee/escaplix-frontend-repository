@@ -60,8 +60,15 @@
 .hero-arrow:hover { background: rgba(0,0,0,.5); }
 .hero-ctrl { position: absolute; right: var(--gutter); bottom: 22%; z-index: 3; display: flex; align-items: center; gap: 12px; }
 .hero-dots { display: flex; gap: 6px; }
-.hero-dots button { width: 10px; height: 4px; padding: 0; border: 0; border-radius: 2px; background: rgba(255,255,255,.35); cursor: pointer; transition: width .3s, background .3s; }
-.hero-dots button.on { width: 28px; background: #fff; }
+.hero-dots button { position: relative; overflow: hidden; width: 10px; height: 4px; padding: 0; border: 0; border-radius: 2px; background: rgba(255,255,255,.35); cursor: pointer; transition: width .3s, background .3s; }
+.hero-dots button.on { width: 36px; background: #fff; }
+/* 자동 넘김 중: 지금 점이 비었다가 7초(--slide-ms) 동안 하얗게 차오름 */
+.hero.autoplay .hero-dots button.on { background: rgba(255,255,255,.35); }
+.hero.autoplay .hero-dots button.on::after {
+  content: ""; position: absolute; inset: 0; background: #fff; transform-origin: left;
+  animation: hero-progress var(--slide-ms, 7000ms) linear forwards;
+}
+@keyframes hero-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .hero-pause { width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,.5); background: rgba(0,0,0,.3); color: #fff; font-size: 10px; cursor: pointer; }
 .hero.single .hero-arrow, .hero.single .hero-ctrl, .hero.loading .hero-arrow, .hero.loading .hero-ctrl { display: none; }
 
