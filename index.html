@@ -1,11 +1,34 @@
 <!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Escaplix</title>
-    </head>
-    <body>
-        <h1>메인 페이지입니다</h1>
-    </body>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escaplix · 방탈출 테마 둘러보기</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+  <!-- S08 메인 · B-1 테마 목록, D-9 맞춤 추천 -->
+  <section class="hero loading" id="hero" aria-roledescription="carousel" aria-label="추천 테마">
+    <div class="hero-track" id="hero-track">
+      <div class="hero-slide on"><div class="hero-content"><div class="sk" style="height:46px;width:min(420px,70vw)"></div></div></div>
+    </div>
+    <button class="hero-arrow prev" type="button" aria-label="이전 추천">‹</button>
+    <button class="hero-arrow next" type="button" aria-label="다음 추천">›</button>
+    <div class="hero-ctrl">
+      <div class="hero-dots" id="hero-dots"></div>
+      <button class="hero-pause" id="hero-pause" type="button" aria-label="자동 넘김 멈추기">❚❚</button>
+    </div>
+  </section>
+
+  <main class="rows" id="rows"></main>
+
+
+  <script src="js/common/routes.js"></script>
+  <script src="js/common/api.js"></script>
+  <script src="js/common/ui.js"></script>
+  <script src="js/common/header.js"></script>
+  <script src="js/common/footer.js"></script>
+  <script src="js/home/home.js"></script>
+</body>
 </html>
