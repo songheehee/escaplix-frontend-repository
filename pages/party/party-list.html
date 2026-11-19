@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>파티 모집 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/party.css">
+</head>
+<body>
+  <!-- S04 파티 목록 · A-12 목록, A-16 참여, B-7 장르, B-2 테마 이름(테마로 들어왔을 때) -->
+  <main class="page">
+    <div class="pl-head">
+      <div>
+        <h1 class="page-title">같이 갈 사람 구해요</h1>
+        <p class="muted pl-sub">모집 중인 파티만 보여요. 가까운 일정부터.</p>
+      </div>
+      <a class="btn btn-accent" id="create-btn" href="#">＋ 파티 만들기</a>
+    </div>
+
+    <div class="pl-filters">
+      <label class="pl-search">
+        <span class="sr-only">테마 이름 검색</span>
+        <input type="search" id="keyword" placeholder="테마 이름 검색 (예: 인형)" autocomplete="off">
+      </label>
+      <div class="pl-genre">
+        <button class="btn btn-line small" id="genre-btn" type="button" aria-expanded="false" aria-controls="genre-panel">장르: 전체 ▾</button>
+        <div class="pl-panel" id="genre-panel" hidden>
+          <div class="pl-panel-head">
+            <strong>보고 싶은 장르 (여러 개)</strong>
+            <button class="btn btn-line small" id="genre-reset" type="button">선택 해제</button>
+          </div>
+          <div class="pchips" id="genre-chips"></div>
+          <p class="muted pl-panel-note">아무것도 안 고르면 모든 장르, 여러 개 고르면 그중 하나라도 맞는 파티</p>
+        </div>
+      </div>
+      <span class="pl-theme" id="theme-filter" hidden>
+        <span id="theme-filter-name"></span>
+        <button class="pl-theme-x" id="theme-filter-clear" type="button" aria-label="테마 조건 지우기">✕</button>
+      </span>
+      <span class="muted pl-count" id="count" aria-live="polite"></span>
+    </div>
+
+    <div class="party-grid" id="grid"></div>
+  </main>
+
+  <!-- 참여 확인 팝업 -->
+  <dialog class="pdialog" id="join-dialog" aria-labelledby="jd-q">
+    <h2 id="jd-q">이 파티에 참여할까요?</h2>
+    <div class="jd-box">
+      <strong id="jd-title"></strong>
+      <div class="muted" id="jd-place"></div>
+      <div id="jd-when"></div>
+      <div class="pb-intro" id="jd-intro"></div>
+    </div>
+    <p class="muted jd-note">참여하면 파티 방(채팅)으로 이동해요. 나중에 방에서 나갈 수 있어요.</p>
+    <div class="jd-btns">
+      <button class="btn btn-line" id="jd-no" type="button">아니요</button>
+      <button class="btn btn-accent" id="jd-yes" type="button">예, 참여할게요</button>
+    </div>
+  </dialog>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/party/party-list.js"></script>
+</body>
+</html>
