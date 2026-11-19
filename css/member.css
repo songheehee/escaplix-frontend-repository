@@ -60,3 +60,22 @@
 .choose-ttl { font-size: 18px; }
 .choose-desc { font-size: 14px; color: var(--ink2); line-height: 1.55; flex: 1; }
 .choose-go { margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--accent-ink); }
+
+/* 위쪽 "← 돌아가기" (가입 화면) */
+.back-link { display: inline-block; margin-bottom: 14px; font-size: 13px; color: var(--muted); text-decoration: none; }
+.back-link:hover { color: var(--ink); }
+
+/* 장르 칩 (여러 개 고르기) */
+fieldset.field { border: 0; padding: 0; margin: 0 0 18px; min-width: 0; }
+fieldset.field legend { padding: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; cursor: pointer; }
+.chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.chip span {
+  display: inline-block; padding: 7px 14px; border-radius: 99px; font-size: 14px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink2); transition: background .15s, border-color .15s, color .15s;
+}
+.chip:hover span { border-color: var(--ink2); }
+.chip input:checked + span { background: rgba(139, 92, 246, .22); border-color: var(--accent); color: #fff; font-weight: 700; }
+.chip input:checked + span::before { content: "✓ "; }
+.chip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(139, 92, 246, .35); }
