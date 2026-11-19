@@ -23,13 +23,14 @@ const PartyNav = (function () {
 
   /**
    * link: <a> 요소, fallback: { name, params } (기본 파티 목록)
-   * 반환: go() → 같은 곳으로 이동 (취소 버튼 등에서 사용)
+   * 반환: { go(): 같은 곳으로 이동 (취소 · 나가기 · 삭제 뒤), label: "내 채팅" 같은 화면 이름 }
    */
   function setup(link, fallback) {
     const fb = fallback || { name: "partyList" };
     const prev = from();
     const target = prev ? prev.url : Routes.url(fb.name, fb.params);
-    link.textContent = "← " + (prev ? LABELS[prev.name] : LABELS[fb.name] || "돌아가기");
+    const label = prev ? LABELS[prev.name] : LABELS[fb.name] || "돌아가기";
+    link.textContent = "← " + label;
     link.href = target;
 
     function go() {
@@ -42,7 +43,7 @@ const PartyNav = (function () {
       e.preventDefault();
       go();
     });
-    return { go: go };
+    return { go: go, label: label.replace(/으로$/, "") };
   }
 
   return { setup: setup };

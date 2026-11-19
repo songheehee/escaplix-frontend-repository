@@ -31,6 +31,8 @@
   setupKeyword();
   setupGenres();
   load();
+  // 파티 방에서 나가기·삭제 뒤 뒤로가기로 돌아오면 브라우저가 예전 화면을 그대로 보여 줄 수 있다 → 다시 불러오기
+  window.addEventListener("pageshow", function (e) { if (e.persisted) load(); });
 
   // ---------- 테마로 들어왔을 때: "○○ 파티만" 표시 + ✕ ----------
   async function setupThemeFilter() {

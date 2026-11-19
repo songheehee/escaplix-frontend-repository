@@ -24,7 +24,8 @@
   if (me.role !== "USER") { location.replace(Routes.url("partyList")); return; }
 
   const partyId = new URLSearchParams(location.search).get("id");
-  PartyNav.setup($("back-link"));   // 왔던 화면(파티 목록 · 내 채팅 …)으로, 모르면 파티 목록
+  // 왔던 화면(파티 목록 · 내 채팅 …). 돌아가기 링크 · 나가기 · 삭제 · 강퇴됐을 때 모두 여기로, 모르면 파티 목록
+  const back = PartyNav.setup($("back-link"));
   if (!partyId || !/^\d+$/.test(partyId)) { leaveRoom("없는 파티입니다."); return; }
 
   start();
@@ -56,9 +57,11 @@
     box.textContent = "";
     box.removeAttribute("aria-busy");
     const g = el("div", "room-gone");
-    g.append(UI.emptyBox(msg + " 잠시 뒤 파티 목록으로 이동해요.", "지금 이동", Routes.url("partyList")));
+    const box2 = UI.emptyBox(msg + " 잠시 뒤 " + back.label + " 화면으로 돌아가요.", "지금 이동", $("back-link").href);
+    box2.querySelector("a").addEventListener("click", function (e) { e.preventDefault(); back.go(); });
+    g.append(box2);
     box.append(g);
-    setTimeout(function () { location.replace(Routes.url("partyList")); }, 2500);
+    setTimeout(function () { back.go(); }, 2500);
   }
 
   // ---------- 파티 정보 · 참여자 ----------
@@ -151,7 +154,7 @@
       await api.del("/api/parties/" + partyId);
       gone = true;
       clearTimeout(timer);
-      location.replace(Routes.url("partyList"));
+      back.go();   // 들어오기 전 화면으로 (내 채팅에서 왔으면 내 채팅)
     } catch (e) { handleGone(e); }
   }
 
@@ -162,7 +165,7 @@
       await api.del("/api/parties/" + partyId + "/join");
       gone = true;
       clearTimeout(timer);
-      location.replace(Routes.url("partyList"));
+      back.go();   // 들어오기 전 화면으로 (내 채팅에서 왔으면 내 채팅)
     } catch (e) { handleGone(e); }
   }
 

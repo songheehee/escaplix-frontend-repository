@@ -19,8 +19,11 @@
 
   const list = $("chat-list");
   load();
+  // 파티 방에서 나가기·삭제 뒤 뒤로가기로 돌아오면 브라우저가 예전 화면을 그대로 보여 줄 수 있다 → 다시 불러오기
+  window.addEventListener("pageshow", function (e) { if (e.persisted) load(); });
 
   async function load() {
+    list.textContent = "";
     for (let i = 0; i < 3; i++) list.append(el("div", "sk chat-sk"));
     try {
       const parties = await api.get("/api/my/parties");
