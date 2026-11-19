@@ -1,0 +1,234 @@
+// 사장·관리자 화면 공용 도구 (C 담당)
+//   쓰는 화면: owner/*, admin/*
+//   불러오는 순서: routes.js → api.js → ui.js → header.js → footer.js → owner/manage.js → 화면 js
+//   규칙: 사용자가 쓴 글(매장 이름·소개·반려 사유 등)은 textContent 로만 넣는다 (명세 1-7)
+const Manage = (function () {
+  const el = UI.el;
+
+  // ---------- 들어올 수 있는 사람인지 ----------
+  // 비회원이면 로그인으로, 역할이 다르면 본문을 안내로 바꾼다. 통과하면 { memberId, nickname, role }
+  const ROLE_NAME = { USER: "손님", OWNER: "사장", ADMIN: "관리자" };
+  function guard(roles) {
+    const me = Auth.me();
+    if (!me) {
+      Auth.goLogin();
+      return null;
+    }
+    if (roles.indexOf(me.role) === -1) {
+      stop("이 화면은 " + roles.map(function (r) { return ROLE_NAME[r]; }).join("·") + "만 쓸 수 있어요.",
+        "홈으로", Routes.url(me.role === "OWNER" ? "owner" : me.role === "ADMIN" ? "admin" : "home"));
+      return null;
+    }
+    return me;
+  }
+  function isAdmin() {
+    const me = Auth.me();
+    return !!me && me.role === "ADMIN";
+  }
+
+  // 본문(#main)을 안내 한 줄로 바꾼다 (없는 번호, 권한 없음 등)
+  function stop(msg, linkText, href) {
+    const main = document.getElementById("main");
+    main.textContent = "";
+    main.append(UI.emptyBox(msg, linkText, href));
+  }
+
+  // ---------- 상태 표시 ----------
+  const STATUS = {
+    APPROVED: ["승인됨", "ok"],
+    PENDING: ["승인 대기", "warn"],
+    REJECTED: ["반려", "bad"],
+    OPEN: ["공개 중", "ok"],
+    CLOSED: ["운영 종료", "off"],
+  };
+  function badge(status) {
+    const s = STATUS[status] || [status, "off"];
+    return el("span", "st " + s[1], s[0]);
+  }
+  function rejectNote(reason, prefix) {
+    return el("div", "reject-note", "💬 " + (prefix || "반려 사유") + ": " + reason);
+  }
+
+  // ---------- 날짜 ("2026-11-17T10:00:00") ----------
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function parse(dt) { return dt ? new Date(dt) : null; }
+  function md(dt) {
+    const d = parse(dt);
+    return d ? (d.getMonth() + 1) + "/" + d.getDate() : "-";
+  }
+  function ymd(dt) {
+    const d = parse(dt);
+    return d ? UI.ymd(d) : "-";
+  }
+  function dateTime(dt) {
+    const d = parse(dt);
+    return d ? UI.ymd(d) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()) : "-";
+  }
+
+  // ---------- 주소 쿼리 ----------
+  function param(name) { return new URLSearchParams(location.search).get(name); }
+  function numParam(name) {
+    const n = Number(param(name));
+    return Number.isInteger(n) && n > 0 ? n : null;
+  }
+
+  // ---------- 사진 ----------
+  // 명세 1-6: jpg·png·webp, 5MB 이하 (서버도 다시 검사)
+  const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const MAX_BYTES = 5 * 1024 * 1024;
+  // 서버가 주는 공개 사진 주소 "/uploads/…" → 서버 주소를 붙인 전체 주소 (명세 1-6)
+  function publicUrl(url) {
+    if (!url) return null;
+    if (/^https?:\/\//.test(url)) return url;
+    return url.charAt(0) === "/" ? API_BASE + url : null;
+  }
+  // 작은 사진 칸 (매장 사진·테마 사진). 없거나 못 불러오면 장르 색 대신 칸 (ui.js)
+  function thumb(url, title, genres, cls) {
+    const box = el("div", cls || "thumb");
+    box.append(UI.poster({ posterUrl: url, title: title, genres: genres || [] }));
+    return box;
+  }
+  function checkImage(file) {
+    if (!file) return null;
+    if (IMAGE_TYPES.indexOf(file.type) === -1) return "이미지 파일(jpg, png, webp)만 올릴 수 있어요.";
+    if (file.size > MAX_BYTES) return "파일은 5MB까지 올릴 수 있어요.";
+    return null;
+  }
+
+  // 파일 칸을 고르면 미리보기. 규칙에 안 맞으면 칸을 비우고 hint 에 이유를 쓴다
+  //   current: 지금 저장된 사진 주소 (수정 화면, "/uploads/…")
+  function bindImageInput(input, preview, hint, current, emptyText) {
+    let objectUrl = null;
+    function show(src, alt) {
+      preview.textContent = "";
+      if (!src) {
+        preview.append(emptyText || "선택한 사진이 없어요");
+        return;
+      }
+      const img = el("img");
+      img.alt = alt;
+      img.src = src;
+      img.addEventListener("error", function () { preview.textContent = "사진을 불러오지 못했어요"; }, { once: true });
+      preview.append(img);
+    }
+    const currentSrc = publicUrl(current);
+    show(currentSrc, "지금 사진");
+
+    input.addEventListener("change", function () {
+      if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+      const file = input.files[0];
+      const err = checkImage(file);
+      hint.classList.toggle("bad", !!err);
+      if (err) {
+        hint.textContent = err;
+        input.value = "";
+        show(currentSrc, "지금 사진");
+        return;
+      }
+      hint.textContent = file ? file.name + " (" + Math.ceil(file.size / 1024) + "KB)" : "";
+      if (!file) { show(currentSrc, "지금 사진"); return; }
+      objectUrl = URL.createObjectURL(file);
+      show(objectUrl, "고른 사진 미리보기");
+    });
+  }
+
+  // 토큰이 필요한 등록증 이미지 (A-11, C-15). 파일이 없으면 404 → 안내 글
+  async function privateImage(path, box, alt) {
+    box.textContent = "불러오는 중…";
+    try {
+      const blob = await api.blob(path);
+      const url = URL.createObjectURL(blob);
+      box.textContent = "";
+      if (blob.type === "application/pdf") {
+        const a = el("a", null, "PDF 파일 열기 ↗");
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        box.append(a);
+        return;
+      }
+      const img = el("img");
+      img.alt = alt;
+      img.src = url;
+      img.addEventListener("error", function () { box.textContent = "이미지를 열 수 없는 파일이에요."; }, { once: true });
+      box.append(img);
+    } catch (e) {
+      box.textContent = e.status === 404 ? "올린 파일이 없어요." : e.message;
+    }
+  }
+
+  // ---------- 반려 사유 팝업 ----------
+  // 명세 C-16·C-19: 반려할 때 사유 필수 1~300자. 확인 → 사유 문자열, 취소 → null
+  function askReason(title, help) {
+    return new Promise(function (resolve) {
+      const dlg = el("dialog", "m-dialog");
+      dlg.setAttribute("aria-labelledby", "m-dialog-title");
+      const form = el("form");
+      form.method = "dialog";
+      const h = el("h2", null, title);
+      h.id = "m-dialog-title";
+      const ta = el("textarea");
+      ta.maxLength = 300;
+      ta.required = true;
+      ta.placeholder = "사장님 화면에 그대로 보여요. 무엇을 고치면 되는지 적어 주세요.";
+      ta.setAttribute("aria-label", "반려 사유");
+      const count = el("p", "hint m-count", "0 / 300");
+      ta.addEventListener("input", function () { count.textContent = ta.value.length + " / 300"; });
+      const actions = el("div", "m-actions");
+      const cancel = el("button", "btn btn-line", "취소");
+      cancel.type = "button";
+      const ok = el("button", "btn btn-danger", "반려하기");
+      ok.type = "submit";
+      actions.append(cancel, ok);
+      form.append(h, el("p", null, help), ta, count, actions);
+      dlg.append(form);
+      document.body.append(dlg);
+
+      let result = null;
+      cancel.addEventListener("click", function () { dlg.close(); });
+      form.addEventListener("submit", function (e) {
+        const v = ta.value.trim();
+        if (!v) { e.preventDefault(); ta.focus(); return; }
+        result = v;
+      });
+      dlg.addEventListener("close", function () { dlg.remove(); resolve(result); });
+      dlg.showModal();
+      ta.focus();
+    });
+  }
+
+  // ---------- 폼 도우미 ----------
+  // 버튼을 잠그고 글자를 바꿨다가 되돌린다
+  function busy(btn, on, text) {
+    if (on) {
+      btn.dataset.text = btn.textContent;
+      btn.textContent = text || "처리 중…";
+      btn.disabled = true;
+    } else {
+      btn.textContent = btn.dataset.text || btn.textContent;
+      btn.disabled = false;
+    }
+  }
+  // 폼 위쪽 오류 칸에 서버 메시지를 보여 주고 그 칸으로 스크롤
+  function showError(box, msg) {
+    box.textContent = msg || "";
+    box.hidden = !msg;
+    if (msg) box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  // 글자 수 표시 (maxlength 칸 옆)
+  function counter(input, out) {
+    function paint() { out.textContent = input.value.length + " / " + input.maxLength; }
+    input.addEventListener("input", paint);
+    paint();
+  }
+
+  return {
+    guard: guard, isAdmin: isAdmin, stop: stop,
+    badge: badge, rejectNote: rejectNote,
+    md: md, ymd: ymd, dateTime: dateTime,
+    param: param, numParam: numParam,
+    publicUrl: publicUrl, thumb: thumb,
+    checkImage: checkImage, bindImageInput: bindImageInput, privateImage: privateImage,
+    askReason: askReason, busy: busy, showError: showError, counter: counter,
+  };
+})();
