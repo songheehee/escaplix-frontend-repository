@@ -79,3 +79,21 @@ fieldset.field legend { padding: 0; }
 .chip input:checked + span { background: rgba(139, 92, 246, .22); border-color: var(--accent); color: #fff; font-weight: 700; }
 .chip input:checked + span::before { content: "✓ "; }
 .chip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(139, 92, 246, .35); }
+
+/* 파일 고르기 + 미리보기 (사장 가입: 사업자등록증) */
+.file-drop {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  min-height: 120px; padding: 16px; cursor: pointer; text-align: center;
+  border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg); transition: border-color .15s;
+}
+.file-drop:hover, .file-drop:focus-within { border-color: var(--accent); }
+.file-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.file-drop img { max-height: 220px; max-width: 100%; border-radius: 4px; object-fit: contain; }
+.file-drop-text { font-size: 14px; color: var(--ink2); font-weight: 700; }
+.file-drop-text small { display: block; margin-top: 4px; font-size: 12px; font-weight: 400; color: var(--muted); }
+.file-drop.has-file .file-drop-text { font-size: 13px; color: var(--accent-ink); }
+
+/* 사장 가입: 가입 후에 할 일 */
+.next-steps { margin: 4px 0 18px; padding: 12px 14px; border-radius: var(--radius); font-size: 13px; color: var(--ink2);
+  background: rgba(139, 92, 246, .1); border: 1px solid rgba(139, 92, 246, .3); }
+.next-steps ol { margin: 6px 0 0; padding-left: 18px; line-height: 1.7; }

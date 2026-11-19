@@ -110,7 +110,7 @@ const MemberForm = (function () {
     loginId: function (v) { return /^[a-z0-9]{4,20}$/.test(v) ? null : "아이디는 영문 소문자와 숫자 4~20자로 입력해 주세요."; },
     password: function (v) { return v.length >= 4 && v.length <= 20 ? null : "비밀번호는 4~20자로 입력해 주세요."; },
     nickname: function (v) { return v.length >= 2 && v.length <= 20 ? null : "닉네임은 2~20자로 입력해 주세요."; },
-    bizNo: function (v) { return /^\d{3}-\d{2}-\d{5}$/.test(v) ? null : "사업자등록번호는 000-00-00000 형식으로 입력해 주세요."; },
+    bizNo: function (v) { return /^\d{3}-\d{2}-\d{5}$/.test(v) ? null : "사업자등록번호 형식이 올바르지 않습니다. (000-00-00000)"; },
   };
 
   return { setMsg: setMsg, dupCheck: dupCheck, passwordMatch: passwordMatch, rules: rules };

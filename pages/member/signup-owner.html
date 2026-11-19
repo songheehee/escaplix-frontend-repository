@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사장 회원가입 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/member.css">
+</head>
+<body>
+  <!-- S03-2 사장 회원가입 · A-2 가입(파일), A-3 아이디 중복, A-4 닉네임 중복, A-5 사업자번호 중복 -->
+  <main class="page auth-page">
+    <section class="auth-box" style="--auth-w: 480px">
+      <a class="back-link" id="back-link" href="#">← 가입 유형 다시 고르기</a>
+      <h1>사장 회원가입</h1>
+      <p class="lead">매장과 테마를 등록하고 시간표를 관리할 수 있어요.</p>
+
+      <form class="auth-card" id="signup-form" novalidate>
+        <p class="form-error" id="form-error" role="alert" hidden></p>
+
+        <div class="field">
+          <label for="loginId">아이디<span class="req">*</span></label>
+          <div class="input-row">
+            <input class="input" id="loginId" name="loginId" autocomplete="username" autocapitalize="off" spellcheck="false"
+                   maxlength="20" placeholder="영문 소문자·숫자 4~20자" aria-describedby="loginId-msg">
+            <button class="btn btn-line" id="loginId-check" type="button">중복 확인</button>
+          </div>
+          <p class="field-msg" id="loginId-msg" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="password">비밀번호<span class="req">*</span></label>
+          <input class="input" id="password" name="password" type="password" autocomplete="new-password" maxlength="20"
+                 placeholder="4~20자" aria-describedby="password-msg">
+          <p class="field-msg" id="password-msg" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="password2">비밀번호 확인<span class="req">*</span></label>
+          <input class="input" id="password2" type="password" autocomplete="new-password" maxlength="20" aria-describedby="password2-msg">
+          <p class="field-msg" id="password2-msg" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="nickname">닉네임<span class="req">*</span> <span class="muted">(손님에게 보이는 이름)</span></label>
+          <div class="input-row">
+            <input class="input" id="nickname" name="nickname" maxlength="20" placeholder="2~20자, 예: 미스터리룸합정" aria-describedby="nickname-msg">
+            <button class="btn btn-line" id="nickname-check" type="button">중복 확인</button>
+          </div>
+          <p class="field-msg" id="nickname-msg" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="bizNo">사업자등록번호<span class="req">*</span></label>
+          <div class="input-row">
+            <input class="input" id="bizNo" name="bizNo" inputmode="numeric" maxlength="12" placeholder="000-00-00000" aria-describedby="bizNo-msg">
+            <button class="btn btn-line" id="bizNo-check" type="button">중복 확인</button>
+          </div>
+          <p class="field-msg" id="bizNo-msg" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="bizFile">사업자등록증 이미지<span class="req">*</span></label>
+          <label class="file-drop" id="file-drop">
+            <input id="bizFile" name="bizFile" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="bizFile-msg">
+            <img id="file-preview" alt="고른 사업자등록증 미리보기" hidden>
+            <span class="file-drop-text" id="file-text">눌러서 이미지 고르기<small>jpg · png · webp, 5MB 이하</small></span>
+          </label>
+          <p class="field-msg" id="bizFile-msg" aria-live="polite"></p>
+          <p class="field-hint">관리자만 볼 수 있고, 사장님 본인 확인에만 써요.</p>
+        </div>
+
+        <div class="next-steps">
+          <strong>가입 후에 할 일</strong>
+          <ol>
+            <li>사장 홈에서 <b>매장 등록</b> (매장마다 사업장 등록번호와 사업장등록증)</li>
+            <li>관리자가 매장을 승인하면</li>
+            <li>테마와 시간표를 등록할 수 있어요</li>
+          </ol>
+        </div>
+
+        <button class="btn btn-accent block" id="submit-btn" type="submit">가입하기</button>
+        <p class="auth-foot">이미 회원이신가요? <a id="login-link" href="#">로그인</a></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/member/member-form.js"></script>
+  <script src="../../js/member/signup-owner.js"></script>
+</body>
+</html>
