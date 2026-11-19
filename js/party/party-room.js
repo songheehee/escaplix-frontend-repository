@@ -24,7 +24,7 @@
   if (me.role !== "USER") { location.replace(Routes.url("partyList")); return; }
 
   const partyId = new URLSearchParams(location.search).get("id");
-  $("back-link").href = Routes.url("partyList");
+  PartyNav.setup($("back-link"));   // 왔던 화면(파티 목록 · 내 채팅 …)으로, 모르면 파티 목록
   if (!partyId || !/^\d+$/.test(partyId)) { leaveRoom("없는 파티입니다."); return; }
 
   start();

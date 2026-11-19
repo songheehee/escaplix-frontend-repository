@@ -85,6 +85,8 @@
 .pf-hint { margin: 6px 0 16px; }
 .pf-intro { resize: vertical; min-height: 72px; line-height: 1.5; }
 .pf-counter { display: flex; justify-content: space-between; gap: 8px; }
+.pf-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 4px; }
+.pf-btns .btn { padding-top: 12px; padding-bottom: 12px; }
 select.input { appearance: auto; }
 input.input[type="date"], input.input[type="datetime-local"] { color-scheme: dark; }
 @media (max-width: 480px) { .pf-two { grid-template-columns: 1fr; } .pf-two .field { margin-bottom: 4px; } }

@@ -26,7 +26,9 @@
   let pickedTime = null;   // "19:00"
   let slotSeq = 0;         // 늦게 온 옛날 시간표 응답 무시
 
-  $("back-link").href = Routes.url("partyList", { themeId: preset.themeId });
+  // 돌아가기·취소: 왔던 화면으로 (홈 · 테마 상세 · 파티 목록 …), 모르면 파티 목록
+  const back = PartyNav.setup($("back-link"), { name: "partyList", params: { themeId: preset.themeId } });
+  $("cancel-btn").addEventListener("click", function () { back.go(); });
   dateInput.min = UI.today();
   if (preset.playAt && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(preset.playAt)) {
     dateInput.value = preset.playAt.slice(0, 10);
