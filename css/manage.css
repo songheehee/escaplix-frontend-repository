@@ -22,7 +22,6 @@
 .m-actions.end { justify-content: flex-end; }
 
 .m-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; }
-.m-card + .m-card { margin-top: 10px; }
 .m-list { display: grid; gap: 10px; }
 
 /* ---------- 상태 표시 ---------- */
