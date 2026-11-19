@@ -69,6 +69,26 @@
 .pb-foot .kicked-note { color: #ff9aa5; }
 .party-sk { height: 290px; border-radius: 10px; }
 
+/* ---------- 파티 만들기 (party-form). 입력칸·카드는 member.css 를 같이 씀 ---------- */
+.slots { display: flex; flex-wrap: wrap; gap: 8px; min-height: 38px; align-items: center; }
+.slots-note { font-size: 13px; }
+.slot {
+  padding: 8px 14px; border-radius: var(--radius); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line); transition: border-color .15s, background .15s;
+}
+.slot:hover { border-color: var(--ink2); }
+.slot[aria-checked="true"] { background: rgba(139, 92, 246, .25); border-color: var(--accent); color: #fff; }
+.slot[aria-checked="true"]::after { content: " ✓"; }
+.slot small { font-weight: 400; color: var(--muted); margin-left: 4px; }
+.pf-two { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; }
+.pf-two .field { margin-bottom: 0; }
+.pf-hint { margin: 6px 0 16px; }
+.pf-intro { resize: vertical; min-height: 72px; line-height: 1.5; }
+.pf-counter { display: flex; justify-content: space-between; gap: 8px; }
+select.input { appearance: auto; }
+input.input[type="date"], input.input[type="datetime-local"] { color-scheme: dark; }
+@media (max-width: 480px) { .pf-two { grid-template-columns: 1fr; } .pf-two .field { margin-bottom: 4px; } }
+
 /* 참여 확인 팝업 (<dialog>) */
 .pdialog {
   width: min(440px, calc(100vw - 32px)); padding: 22px; border-radius: 12px; color: var(--ink);

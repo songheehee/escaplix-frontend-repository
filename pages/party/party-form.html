@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>파티 만들기 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/member.css">
+  <link rel="stylesheet" href="../../css/party.css">
+</head>
+<body>
+  <!-- S05 파티 만들기 · B-1 테마 목록, B-3 그날 시간표, A-14 만들기 -->
+  <main class="page auth-page">
+    <section class="auth-box" style="--auth-w: 560px">
+      <a class="back-link" id="back-link" href="#">← 파티 목록</a>
+      <h1>파티 만들기</h1>
+      <p class="lead">테마와 시간을 고르면 같이 갈 사람을 모집할 수 있어요.</p>
+
+      <form class="auth-card" id="party-form" novalidate>
+        <p class="form-error" id="form-error" role="alert" hidden></p>
+
+        <div class="field">
+          <label for="theme">테마<span class="req">*</span></label>
+          <select class="input" id="theme" aria-describedby="theme-info">
+            <option value="">테마를 불러오는 중…</option>
+          </select>
+          <p class="field-hint" id="theme-info"></p>
+        </div>
+
+        <div class="field">
+          <label for="date">플레이 날짜<span class="req">*</span></label>
+          <input class="input" id="date" type="date">
+        </div>
+
+        <fieldset class="field">
+          <legend class="label">시간<span class="req">*</span></legend>
+          <div class="slots" id="slots" role="radiogroup" aria-label="시간">
+            <span class="muted slots-note">테마와 날짜를 먼저 골라 주세요.</span>
+          </div>
+          <p class="field-msg" id="slot-msg" aria-live="polite"></p>
+        </fieldset>
+
+        <div class="pf-two">
+          <div class="field">
+            <label for="maxPeople">모집 인원 <span class="muted">(방장 포함)</span><span class="req">*</span></label>
+            <select class="input" id="maxPeople" disabled><option value="">테마를 먼저 골라 주세요</option></select>
+          </div>
+          <div class="field">
+            <label for="deadline">모집 기한<span class="req">*</span></label>
+            <input class="input" id="deadline" type="datetime-local" disabled>
+          </div>
+        </div>
+        <p class="field-hint pf-hint">기한은 지금부터 플레이 시간 전까지예요. 기한까지 정원이 안 차면 자동으로 마감돼요.</p>
+
+        <div class="field">
+          <label for="title">제목<span class="req">*</span></label>
+          <input class="input" id="title" maxlength="100" placeholder="예: 인형의 집 같이 가실 분 (추리 좋아하는 분)">
+        </div>
+
+        <div class="field">
+          <label for="intro">방장 한마디<span class="req">*</span></label>
+          <textarea class="input pf-intro" id="intro" maxlength="100" rows="3" placeholder="어떤 사람과 가고 싶은지 적어 주세요."></textarea>
+          <p class="field-hint pf-counter"><span>파티 목록 배너에 그대로 보여요</span><span id="intro-count">0 / 100</span></p>
+        </div>
+
+        <button class="btn btn-accent block" id="submit-btn" type="submit">모집 시작</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/party/party-form.js"></script>
+</body>
+</html>
