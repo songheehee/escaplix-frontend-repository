@@ -205,8 +205,8 @@
     Manage.busy(btn, true, "저장 중…");
     try {
       const r = theme
-        ? await api.upload("PUT", "/api/owner/themes/" + theme.themeId, f)
-        : await api.upload("POST", "/api/owner/themes", f);
+        ? await api.upload("/api/owner/themes/" + theme.themeId, f, "PUT")
+        : await api.upload("/api/owner/themes", f);
       UI.toast(r.status === "OPEN" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
       setTimeout(function () { location.href = Routes.url("owner", { storeId: $("storeId").value }); }, 900);
     } catch (e2) {

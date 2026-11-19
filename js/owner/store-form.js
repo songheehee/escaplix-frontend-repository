@@ -193,8 +193,8 @@
     Manage.busy(btn, true, "저장 중…");
     try {
       const r = storeId
-        ? await api.upload("PUT", "/api/owner/stores/" + storeId, f)
-        : await api.upload("POST", "/api/owner/stores", f);
+        ? await api.upload("/api/owner/stores/" + storeId, f, "PUT")
+        : await api.upload("/api/owner/stores", f);
       UI.toast(r.status === "APPROVED" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
       setTimeout(function () { location.href = Routes.url("owner", { storeId: r.storeId }); }, 900);
     } catch (e2) {
