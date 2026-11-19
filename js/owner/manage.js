@@ -197,6 +197,40 @@ const Manage = (function () {
     });
   }
 
+  // ---------- 승인 목록 위쪽 탭 (S22 매장 승인 · S15 테마 승인) ----------
+  //   active: "stores" | "themes". 탭 옆 숫자는 승인 대기 수 (C-12)
+  function approvalTabs(box, active) {
+    const tabs = [["stores", "adminStores", "매장 승인"], ["themes", "adminThemes", "테마 승인"]];
+    const links = {};
+    tabs.forEach(function (t) {
+      const a = el("a", null, t[2]);
+      a.href = Routes.url(t[1]);
+      if (t[0] === active) a.setAttribute("aria-current", "page");
+      links[t[0]] = a;
+      box.append(a);
+    });
+    api.get("/api/admin/summary").then(function (s) {
+      links.stores.textContent = "매장 승인 (" + s.pendingStores + ")";
+      links.themes.textContent = "테마 승인 (" + s.pendingThemes + ")";
+    }).catch(function () { /* 숫자만 못 보여 줌 */ });
+  }
+
+  // 상태 고르기 칩 (승인 대기 / 승인됨·공개 중 / 반려)
+  function statusChips(box, list, current, onPick) {
+    list.forEach(function (st) {
+      const b = el("button", null, statusText(st));
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", String(st === current));
+      b.addEventListener("click", function () {
+        box.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-selected", String(x === b)); });
+        onPick(st);
+      });
+      box.append(b);
+    });
+  }
+  function statusText(status) { return (STATUS[status] || [status])[0]; }
+
   // ---------- 폼 도우미 ----------
   // 버튼을 잠그고 글자를 바꿨다가 되돌린다
   function busy(btn, on, text) {
@@ -229,6 +263,7 @@ const Manage = (function () {
     param: param, numParam: numParam,
     publicUrl: publicUrl, thumb: thumb,
     checkImage: checkImage, bindImageInput: bindImageInput, privateImage: privateImage,
+    approvalTabs: approvalTabs, statusChips: statusChips, statusText: statusText,
     askReason: askReason, busy: busy, showError: showError, counter: counter,
   };
 })();

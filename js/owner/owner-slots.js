@@ -36,7 +36,7 @@
     }
     const ss = $("pick-store");
     stores.forEach(function (s) {
-      const o = el("option", null, s.name + (s.status === "APPROVED" ? "" : " (" + Manage.badge(s.status).textContent + ")"));
+      const o = el("option", null, s.name + (s.status === "APPROVED" ? "" : " (" + Manage.statusText(s.status) + ")"));
       o.value = s.storeId;
       ss.append(o);
     });
@@ -67,7 +67,7 @@
       return;
     }
     themes.forEach(function (t) {
-      const o = el("option", null, t.title + " · " + t.playMinutes + "분 · " + Manage.badge(t.status).textContent);
+      const o = el("option", null, t.title + " · " + t.playMinutes + "분 · " + Manage.statusText(t.status));
       o.value = t.themeId;
       ts.append(o);
     });
