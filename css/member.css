@@ -47,3 +47,16 @@
 .btn.block { display: flex; width: 100%; padding-top: 12px; padding-bottom: 12px; font-size: 15px; }
 .auth-foot { margin: 16px 0 0; text-align: center; font-size: 14px; color: var(--muted); }
 .auth-foot a { color: var(--accent-ink); font-weight: 700; }
+
+/* 가입 유형 고르기 (signup) */
+.choose { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.choose-card {
+  display: flex; flex-direction: column; gap: 8px; padding: 24px 22px; text-decoration: none; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  transition: border-color .15s, transform .15s, background .15s;
+}
+.choose-card:hover, .choose-card:focus-visible { border-color: var(--accent); background: var(--surface2); transform: translateY(-2px); outline: none; }
+.choose-ico { font-size: 30px; line-height: 1; }
+.choose-ttl { font-size: 18px; }
+.choose-desc { font-size: 14px; color: var(--ink2); line-height: 1.55; flex: 1; }
+.choose-go { margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--accent-ink); }
