@@ -37,7 +37,7 @@
     try {
       const genres = await api.get("/api/genres");
       genres.forEach(function (g) {
-        const label = el("label", "chip");
+        const label = el("label", "gchip");
         const cb = el("input");
         cb.type = "checkbox";
         cb.name = "genreIds";
