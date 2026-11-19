@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사장 홈 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/manage.css">
+</head>
+<body>
+  <!-- S12 사장 홈 · C-1 내 매장, C-5 매장의 테마 (관리자가 열면 직접 등록한 매장) -->
+  <main class="page m-page" id="main">
+    <div class="m-head">
+      <div>
+        <h1 class="page-title" id="title">내 매장</h1>
+        <p class="muted" id="lead">매장을 등록하고 관리자 승인을 받으면 테마를 올릴 수 있어요.</p>
+      </div>
+      <div class="m-actions">
+        <a class="btn btn-accent" id="add-store">+ 매장 등록</a>
+      </div>
+    </div>
+
+    <div class="m-list" id="stores">
+      <div class="sk sk-block"></div>
+    </div>
+
+    <section id="theme-sec" hidden>
+      <h2 class="m-sec-title"><span id="theme-title">테마</span> <small id="theme-note"></small></h2>
+      <div id="themes"></div>
+      <div class="m-actions" style="margin-top:14px">
+        <a class="btn btn-accent" id="add-theme">+ 새 테마 등록</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/owner/manage.js"></script>
+  <script src="../../js/owner/owner.js"></script>
+</body>
+</html>
