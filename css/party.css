@@ -147,6 +147,24 @@ input.input[type="date"], input.input[type="datetime-local"] { color-scheme: dar
   .msg { max-width: 88%; }
 }
 
+/* ---------- 내 채팅 (mypage/chats) ---------- */
+.chat-list { display: flex; flex-direction: column; gap: 10px; max-width: 860px; word-break: keep-all; overflow-wrap: anywhere; }
+.chat-sk { height: 104px; border-radius: 10px; }
+.chat-row { position: relative; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); transition: border-color .15s, background .15s; }
+.chat-row:hover, .chat-row:focus-within { border-color: var(--accent); background: var(--surface2); }
+.chat-row.ended { opacity: .78; }
+.cr-link { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; text-decoration: none; color: var(--ink); }
+.cr-link:focus-visible { outline: none; }
+.cr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.cr-title { font-size: 16px; line-height: 1.35; }
+.cr-tags { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; white-space: nowrap; }
+.cr-tags .tag { margin: 0; }
+.cr-meta { font-size: 13px; color: var(--ink2); }
+.cr-last { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+.cr-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-when { flex: 0 0 auto; }
+.cr-review { margin: 0 16px 14px; }
+
 .cd-body { margin: 0 0 18px; font-size: 14px; line-height: 1.55; }
 .pdialog .btn-accent.danger-yes { background: var(--danger); }
 
