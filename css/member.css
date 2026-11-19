@@ -80,6 +80,21 @@ fieldset.field legend { padding: 0; }
 .gchip input:checked + span::before { content: "✓ "; }
 .gchip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(139, 92, 246, .35); }
 
+/* 내 정보 (mypage/profile): 카드 여러 장 */
+.profile-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; max-width: 1100px; word-break: keep-all; overflow-wrap: anywhere; }
+.profile-sk { height: 360px; border-radius: 10px; }
+.page-title + .profile-wrap { margin-top: 22px; }   /* 사장·관리자: 탭 없이 제목 바로 아래 */
+.pcard h2 { margin: 0 0 16px; font-size: 17px; }
+.pcard[hidden] { display: none; }
+.input[readonly] { color: var(--muted); background: var(--surface2); cursor: default; }
+.input[readonly]:focus { border-color: var(--line); box-shadow: none; }
+.pinfo { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 4px 0 0; font-size: 14px; }
+.pinfo dt { color: var(--muted); }
+.pinfo dd { margin: 0; }
+.sec-foot { display: flex; justify-content: flex-end; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.pg-lead { margin: -8px 0 14px; }
+.gchip input:disabled + span { opacity: .5; cursor: not-allowed; }
+
 /* 파일 고르기 + 미리보기 (사장 가입: 사업자등록증) */
 .file-drop {
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
