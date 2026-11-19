@@ -172,6 +172,10 @@
       if (bad.id === "price") return "가격은 0원 이상이에요.";
       return name + " 값을 확인해 주세요.";
     }
+    if (!Manage.isWebUrl($("bookingUrl").value.trim())) {
+      $("bookingUrl").focus();
+      return "예약 링크가 열 수 있는 주소가 아니에요. 예) https://example.com/booking";
+    }
     if (Number($("minPeople").value) > Number($("maxPeople").value)) {
       $("minPeople").focus();
       return "최소 인원이 최대 인원보다 클 수 없어요.";

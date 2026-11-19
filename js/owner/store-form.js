@@ -153,6 +153,10 @@
       if (bad.id === "bizPlaceNo") return "사업장 등록번호는 123-45-67890 모양으로 입력해 주세요.";
       return name + " 값을 확인해 주세요.";
     }
+    if (!Manage.isWebUrl($("websiteUrl").value.trim())) {
+      $("websiteUrl").focus();
+      return "웹사이트가 열 수 있는 주소가 아니에요. 예) https://example.com";
+    }
     const lat = $("lat").value.trim(), lng = $("lng").value.trim();
     if ((lat === "") !== (lng === "")) {
       (lat === "" ? $("lat") : $("lng")).focus();

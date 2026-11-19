@@ -82,6 +82,15 @@ const Manage = (function () {
     if (/^https?:\/\//.test(url)) return url;
     return url.charAt(0) === "/" ? API_BASE + url : null;
   }
+  // 손님이 누를 웹 주소인지 (예약 링크·매장 웹사이트)
+  //   서버·명세는 "http(s):// 로 시작"만 본다 → javascript: 실행은 막히지만 "http://javascript:", "http://abc" 같은
+  //   열리지 않는 주소도 통과한다. 화면에서는 도메인(점이 있는 이름)까지 있는지 한 번 더 본다
+  function isWebUrl(v) {
+    let u;
+    try { u = new URL(v); } catch (e) { return false; }
+    if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+    return /^([a-z0-9-]+\.)+[a-z0-9-]{2,}$/i.test(u.hostname);
+  }
   // 작은 사진 칸 (매장 사진·테마 사진). 없거나 못 불러오면 장르 색 대신 칸 (ui.js)
   function thumb(url, title, genres, cls) {
     const box = el("div", cls || "thumb");
@@ -261,7 +270,7 @@ const Manage = (function () {
     badge: badge, rejectNote: rejectNote,
     md: md, ymd: ymd, dateTime: dateTime,
     param: param, numParam: numParam,
-    publicUrl: publicUrl, thumb: thumb,
+    publicUrl: publicUrl, isWebUrl: isWebUrl, thumb: thumb,
     checkImage: checkImage, bindImageInput: bindImageInput, privateImage: privateImage,
     approvalTabs: approvalTabs, statusChips: statusChips, statusText: statusText,
     askReason: askReason, busy: busy, showError: showError, counter: counter,
