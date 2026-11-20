@@ -1,5 +1,6 @@
 // S21 매장 등록·수정 (pages/owner/store-form.html?id=) · C 담당
 //   C-1 처음 값(수정), C-2 사업장 등록번호 중복 확인, C-3 등록, C-4 수정 (multipart, api.upload)
+//   지역은 B-12 전체 목록에서 고름 (서울·경기… 큰 지역별 묶음, 결정 L1)
 //   사장: 등록·수정하면 PENDING → 관리자 승인 (결정 S1). 사업장등록증은 등록할 때 꼭 필요
 //   관리자: 바로 APPROVED, 사업장등록증 없어도 됨 (결정 S3)
 (function () {
@@ -22,7 +23,7 @@
     $("cancel").href = backTo;
     if (admin) $("back").textContent = "← 직접 등록한 매장";
     Manage.counter($("intro"), $("intro-count"));
-    loadAreas();
+    const areasReady = loadAreas();   // 수정 화면에서 기존 지역을 고르려면 목록이 먼저 있어야 함
     if (me.role === "OWNER") loadMyBizNo();
 
     if (storeId) {
@@ -37,6 +38,7 @@
         Manage.stop("내 매장이 아니거나 없는 매장이에요.", "내 매장으로", Routes.url("owner"));
         return;
       }
+      await areasReady;
       fill(original);
     }
 
@@ -70,6 +72,13 @@
     ["name", "area", "phone", "address", "websiteUrl", "hours", "intro", "bizPlaceNo"].forEach(function (k) {
       $(k).value = s[k] || "";
     });
+    // 예전에 직접 입력한 지역이 목록에 없으면 그대로 보이게 넣어 둠 (저장하려면 목록에서 다시 골라야 함)
+    if (s.area && $("area").value !== s.area) {
+      const o = el("option", null, s.area + " (목록에 없음)");
+      o.value = s.area;
+      $("area").append(o);
+      $("area").value = s.area;
+    }
     $("lat").value = s.lat !== null && s.lat !== undefined ? s.lat : "";
     $("lng").value = s.lng !== null && s.lng !== undefined ? s.lng : "";
     $("intro").dispatchEvent(new Event("input"));
@@ -79,17 +88,24 @@
     }
   }
 
-  // 지역 칸 추천 목록 (B-8). 못 받아도 직접 쓰면 됨
+  // 지역 select (B-12): 큰 지역(서울·경기…)마다 묶어서 세부 지역(홍대·강남…)을 보여 줌
   async function loadAreas() {
+    const select = $("area");
     try {
-      const areas = await api.get("/api/areas");
-      const list = $("area-list");
-      areas.forEach(function (a) {
-        const o = el("option");
-        o.value = a;
-        list.append(o);
+      const regions = await api.get("/api/regions");
+      regions.forEach(function (r) {
+        const group = el("optgroup");
+        group.label = r.name;
+        r.areas.forEach(function (a) {
+          const o = el("option", null, a.name);
+          o.value = a.name;
+          group.append(o);
+        });
+        select.append(group);
       });
-    } catch (e) { /* 추천만 못 보여 줌 */ }
+    } catch (e) {
+      UI.toast("지역 목록을 불러오지 못했어요. 새로고침해 주세요.", "err");
+    }
   }
 
   // 사장 사업자등록번호 (가입 때 등록, A-7). 사업장 번호와 헷갈리지 않게 보여 줌

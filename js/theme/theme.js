@@ -244,7 +244,8 @@
 
     const facts = el("div", "rv-facts");
     facts.append(el("span", "badge " + (v.escaped ? "open" : "closed"), v.escaped ? "탈출 성공" : "탈출 실패"));
-    if (v.escaped) facts.append(el("span", null, mmss(v.remainSeconds) + " 남기고 (" + playMinutes + ":00 중)"));
+    // 남은 시간은 분(remainMinutes)·초(remainSeconds 0~59) 두 칸으로 옴 (D-4)
+    if (v.escaped) facts.append(el("span", null, mmss((v.remainMinutes || 0) * 60 + (v.remainSeconds || 0)) + " 남기고 (" + playMinutes + ":00 중)"));
     facts.append(el("span", null, "힌트 " + v.hintCount + "개"));
     facts.append(el("span", null, v.playerCount + "명이서"));
     facts.append(el("span", "muted", v.playedDate + " 플레이"));
