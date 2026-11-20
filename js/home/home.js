@@ -19,7 +19,8 @@
     sort: P.get("sort") || "popular",   // 기본은 이번 주 인기순
     tab: P.get("tab") === "stores" ? "stores" : "themes",   // 결과 탭
   };
-  let tabChosen = P.has("tab");   // 탭을 직접 고른 적이 없으면 테마 결과가 0개일 때 매장 탭을 먼저 보여 줌
+  let tabChosen = P.has("tab");   // 처음 검색에서만: 탭을 안 정했고 테마가 0개면 매장 탭을 먼저 보여 줌
+  let firstLoad = true;           // 조건을 바꿔서 다시 찾을 때는 탭을 저절로 바꾸지 않음
   // 지난 날짜는 달력에서 고를 수 없게 막아 두지만, 예전에 저장한 주소로 들어오면 남아 있을 수 있다
   //   → 날짜 조건만 빼고 주소도 고친다 (그대로 보내면 서버가 400)
   if (F.date && F.date < UI.today()) {
@@ -42,7 +43,6 @@
   let searchPage = null;
   let found = null;    // 마지막 검색 결과 { themes, stores } (탭만 바꿀 때는 다시 안 불러옴)
   let searchSeq = 0;   // 늦게 온 옛날 응답이 새 결과를 덮어쓰지 않게
-  let genreLabel = "";
 
   // 줄 제목 (장르 이름 → 문구). 없는 장르는 "{장르} 테마"
   const GENRE_ROW = {
@@ -330,7 +330,8 @@
       ]);
       if (seq !== searchSeq) return;
       found = { themes: themes, stores: stores };
-      if (!tabChosen) F.tab = !themes.length && stores.length ? "stores" : "themes";
+      if (firstLoad && !tabChosen) F.tab = !themes.length && stores.length ? "stores" : "themes";
+      firstLoad = false;
       paintResults();
     } catch (e) {
       if (seq !== searchSeq) return;
@@ -350,7 +351,7 @@
     const stores = F.tab === "stores";
     searchPage.classList.toggle("on-stores", stores);
     searchHead.textContent = "";
-    searchHead.append(el("h1", "search-title", summaryText() + " 검색 결과"));
+    searchHead.append(el("h1", "search-title", "검색 결과"));   // 조건은 위 조건 막대에 보이니 제목은 이것만
 
     searchTabs.textContent = "";
     [["themes", "테마", found.themes.length], ["stores", "매장", found.stores.length]].forEach(function (x) {
@@ -380,12 +381,25 @@
     if (!list.length) {
       searchOut.append(stores
         ? UI.emptyBox("찾는 매장이 없어요. 다른 이름이나 지역으로 검색해 보세요.", "전체 매장 보기", Routes.url("stores"))
-        : UI.emptyBox("찾는 테마가 없어요. 다른 이름이나 조건으로 검색해 보세요.", "전체 테마 보기", Routes.url("home")));
+        : themeEmptyBox());
       return;
     }
     const grid = el("div", stores ? "store-grid" : "grid");
     list.forEach(function (x) { grid.append(stores ? UI.storeCard(x) : UI.themeCard(x)); });
     searchOut.append(grid);
+  }
+
+  // 테마가 0개일 때: 매장은 있으면 "매장 N곳 보기"로 탭을 바꿀 수 있게 (저절로 바꾸지는 않음)
+  function themeEmptyBox() {
+    if (!found.stores.length) {
+      return UI.emptyBox("찾는 테마가 없어요. 다른 이름이나 조건으로 검색해 보세요.", "전체 테마 보기", Routes.url("home"));
+    }
+    const box = UI.emptyBox("조건에 맞는 테마가 없어요.");
+    const go = el("button", "btn btn-light small", "매장 " + found.stores.length + "곳 보기");
+    go.type = "button";
+    go.addEventListener("click", function () { pickTab("stores"); });
+    box.append(el("br"), go);
+    return box;
   }
 
   function pickTab(tab) {
@@ -405,18 +419,8 @@
     history.replaceState(null, "", location.pathname + "?" + q);
   }
 
-  function summaryText() {
-    const parts = [];
-    if (F.keyword) parts.push("‘" + F.keyword + "’");
-    if (F.area) parts.push(F.area);
-    else if (F.region) parts.push(F.region + " 전체");
-    if (F.tab !== "stores") {   // 매장 탭에는 날짜·인원·장르가 안 걸림
-      if (F.date) parts.push(F.date.slice(5).replace("-", "/"));
-      if (F.people) parts.push(F.people + "명");
-      if (F.genreId) parts.push(genreLabel || "장르");
-    }
-    return parts.length ? parts.join(" · ") : (F.tab === "stores" ? "전체 매장" : "전체 테마");
-  }
+
+
 
   // 검색 조건 막대: 바꾸면 바로 다시 검색 (주소가 바뀌어서 공유·뒤로가기 가능)
   function buildFilterForm() {
@@ -447,14 +451,7 @@
     form.append(field("장르", genre.el, true));
     api.get("/api/genres").then(function (list) {
       genre.setOptions([["", "모든 장르"]].concat(list.map(function (g) { return [String(g.genreId), g.name]; })), F.genreId);
-      paintGenreLabel();
     }).catch(function () { /* 장르 없이 */ });
-    // 제목의 장르 이름 ("공포 검색 결과")
-    function paintGenreLabel() {
-      genreLabel = F.genreId && genre.value() === F.genreId ? genre.label() : "";
-      const t = document.querySelector(".search-title");
-      if (t) t.firstChild.textContent = summaryText() + " 검색 결과";
-    }
 
     const sort = UI.selectPicker("sort", [["popular", "이번 주 인기순"], ["rate", "평점순"], ["new", "최신순"]], F.sort, { label: "정렬" });   // 이번 주 인기순이 맨 위·기본
     form.append(field("정렬", sort.el, true));
@@ -477,7 +474,6 @@
       };
       if (Object.keys(next).every(function (k) { return next[k] === F[k]; })) return;   // 바뀐 게 없으면 그대로
       Object.assign(F, next);
-      paintGenreLabel();
       saveToUrl();
       loadResults();
     }
