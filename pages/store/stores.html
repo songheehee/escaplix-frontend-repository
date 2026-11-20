@@ -8,16 +8,13 @@
   <link rel="stylesheet" href="../../css/stores.css">
 </head>
 <body>
-  <!-- S27 매장 목록 · B-8 지역, B-9 매장 -->
+  <!-- S27 매장 목록 · B-8 지역, B-9 매장. 이름으로 찾기는 위쪽 통합 검색(메인 결과의 "매장" 탭) -->
   <main class="page">
     <div class="stores-head">
       <div>
         <h1 class="page-title">매장</h1>
         <p class="muted" id="store-count">매장을 불러오는 중…</p>
       </div>
-      <form class="store-search" id="store-search" role="search">
-        <input type="search" id="store-q" placeholder="매장 이름 검색 (예: 미스터리룸)" aria-label="매장 이름 검색" autocomplete="off">
-      </form>
     </div>
     <div class="area-chips" id="area-chips" role="group" aria-label="지역 고르기"></div>
     <div class="store-grid" id="store-grid" aria-live="polite"></div>

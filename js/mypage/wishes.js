@@ -45,7 +45,9 @@
     art.append(UI.poster({ themeId: w.themeId, title: w.title, posterUrl: w.posterUrl, genres: [] }));
     if (closed) art.append(el("div", "wcard-closed", "운영 종료"));
     link.append(art);
-    link.append(el("div", "wcard-title", w.title));
+    const name = el("div", "wcard-title", w.title);
+    name.title = w.title;
+    link.append(name);
     link.append(el("div", "wcard-sub", w.storeName + " · " + w.createdAt.slice(5, 10).replace("-", "/") + " 찜"));
     // 운영 종료 테마는 상세가 404라서 링크를 끔
     if (closed) { link.removeAttribute("href"); link.setAttribute("aria-disabled", "true"); }

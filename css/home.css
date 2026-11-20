@@ -22,7 +22,7 @@
     linear-gradient(to right, rgba(var(--bg-rgb), .9) 0%, rgba(var(--bg-rgb), .35) 45%, rgba(var(--bg-rgb), 0) 70%);
 }
 .hero-content {
-  position: absolute; left: var(--gutter); bottom: 22%; z-index: 2;
+  position: absolute; left: var(--gutter); bottom: 20%; z-index: 2;
   width: min(560px, calc(100% - 2 * var(--gutter)));
 }
 .hero-slide .hero-content > * { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
@@ -32,19 +32,25 @@
 .hero-slide.on .hero-content > :nth-child(n+4) { transition-delay: .24s; }
 
 .hero-kicker { font-size: 13px; font-weight: 800; letter-spacing: 3px; color: var(--accent-ink); text-transform: uppercase; }
-.hero-title { margin: 6px 0 12px; font-size: clamp(34px, 5.4vw, 72px); line-height: 1.05; font-weight: 900; letter-spacing: -1.5px; text-shadow: 0 3px 20px rgba(0,0,0,.6); }
+/* 제목은 한 줄. 설명 칸(560px)보다 넓게, 배너 가로 전체를 쓸 수 있음
+     크기: 기본(34~72px)에서 길면 "줄 너비 ÷ 글자 수(--len, home.js)"만큼 줄이되, 너무 작아지지 않게 아래 한계(28~46px)까지만
+     그래도 줄 끝까지 넘치는 아주 긴 이름만 … */
+.hero-title {
+  --line: calc(100vw - 2 * var(--gutter));
+  --base: clamp(34px, 5.4vw, 72px);
+  width: var(--line);
+  margin: 6px 0 12px;
+  line-height: calc(var(--base) * 1.15);   /* 글자가 작아져도 줄 높이는 그대로 → 슬라이드마다 배너 높이가 안 흔들림 */
+  font-weight: 900; letter-spacing: -1.5px; text-shadow: 0 3px 20px rgba(0,0,0,.6);
+  font-size: max(clamp(28px, 3.4vw, 46px), min(var(--base), calc(var(--line) / var(--len, 8) * .97)));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 15px; color: var(--ink2); }
 .hero-meta .match { color: var(--good); font-weight: 800; }
 .hero-meta .lv { display: inline-flex; align-items: center; gap: 6px; }
-.hero-reason {
-  display: inline-block; margin-top: 12px; padding: 4px 12px 4px 10px; font-size: 13px; font-weight: 700;
-  border-left: 3px solid var(--accent); background: rgba(139, 92, 246, .16); color: #eadfff;
-}
-.hero-desc {
-  margin: 14px 0 6px; font-size: clamp(14px, 1.2vw, 17px); color: #e6e1ee; text-shadow: 0 1px 8px rgba(0,0,0,.6);
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 1.5em;
-}
-.hero-store { font-size: 13px; color: var(--muted); }
+.hero-genres { min-height: 24px; margin-top: 10px; }   /* 장르가 없어도 자리는 같게 */
+.hero-genres .tag { padding: 3px 11px; font-size: 13px; background: rgba(255,255,255,.22); color: #fff; backdrop-filter: blur(4px); }
+.hero-store { margin-top: 10px; font-size: 15px; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.6); }
 .hero-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; align-items: center; }
 .hero-btns .btn { padding: 11px 24px; font-size: 16px; }
 .hero-btns .icon-btn { width: 44px; height: 44px; font-size: 19px; }
@@ -75,9 +81,6 @@
 /* 배너 바로 아래 줄은 배너 위로 살짝 겹치게 (스트리밍 서비스 느낌) */
 .rows { position: relative; z-index: 4; margin-top: -9vh; padding-bottom: 20px; }
 .search-mode .rows, .rows:has(> .empty:only-child) { margin-top: 0; }
-.row-more { margin-left: 4px; font-size: 13px; font-weight: 700; color: var(--accent-ink); text-decoration: none; opacity: 0; transition: opacity .2s; }
-.row-sec:hover .row-more, .row-more:focus-visible { opacity: 1; }
-@media (hover: none) { .row-more { opacity: 1; } }
 
 /* ---------- TOP 5 줄 ---------- */
 .rank-row .track { gap: 16px; }
@@ -101,6 +104,7 @@
   background: linear-gradient(to top, rgba(0,0,0,.9), rgba(0,0,0,0)); font-size: 12px; color: var(--ink2);
 }
 .rank-cap b { font-size: 15px; color: #fff; line-height: 1.25; }
+.rank-cap b, .rank-cap span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 한 줄, 넘치면 … */
 .rank:hover .rank-art, .rank:focus-visible .rank-art { transform: scale(1.06); }
 .rank:hover .rank-no { -webkit-text-stroke-color: var(--accent-ink); }
 
@@ -117,9 +121,21 @@
 }
 .fb-field input.fb-keyword { width: min(260px, 70vw); }
 .fb-reset { margin-left: auto; height: 38px; }
-.search-head { margin-bottom: 26px; }
+.search-head { margin-bottom: 14px; }
 .search-title { font-size: clamp(20px, 2.4vw, 28px); margin: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .search-title small { font-size: 14px; font-weight: 400; color: var(--muted); }
+/* 결과 탭: 테마 · 매장 */
+.search-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+.search-tab {
+  padding: 10px 2px; margin-bottom: -1px; border: 0; border-bottom: 3px solid transparent; background: none;
+  color: var(--muted); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.search-tab:hover { color: #fff; }
+.search-tab[aria-selected="true"] { color: #fff; border-bottom-color: var(--accent); }
+.st-count { font-size: 13px; font-weight: 400; color: var(--muted); }
+.search-note { margin: -8px 0 18px; font-size: 13px; }
+/* 매장 탭에서는 테마에만 걸리는 칸(날짜·인원·장르·정렬)을 숨김 */
+.search-page.on-stores .fb-theme-only { display: none; }
 
 @media (max-width: 640px) {
   .hero { height: 78vh; min-height: 480px; }
@@ -127,7 +143,6 @@
   .hero-shade { background: linear-gradient(to top, var(--bg) 8%, rgba(var(--bg-rgb), .75) 45%, rgba(var(--bg-rgb), .2) 100%); }
   .hero-content { bottom: 64px; }
   .hero-ctrl { left: var(--gutter); right: auto; bottom: 24px; }
-  .hero-desc { -webkit-line-clamp: 2; }
   .hero-btns .btn { padding: 9px 16px; font-size: 14px; }
   .rows { margin-top: 0; }
   .fb-field { flex: 1 1 40%; }
