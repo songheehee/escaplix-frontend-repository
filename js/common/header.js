@@ -96,7 +96,8 @@
   //   검색 → 메인 결과 화면 (B-1: keyword·area·date·people·genreId·sort)
   //   메인 검색 결과 화면은 조건 막대가 이미 있으니 패널 대신 그 막대의 검색어 칸으로 보낸다
   function searchBox() {
-    const btn = el("button", "top-search-btn", "⌕");
+    const btn = el("button", "top-search-btn");
+    btn.append(el("span", "top-search-ico"));   // 글자(⌕) 대신 그림: 글꼴마다 위치가 달라 가운데가 안 맞아서
     btn.type = "button";
     btn.setAttribute("aria-label", "상세 검색 열기");
     btn.setAttribute("aria-expanded", "false");
