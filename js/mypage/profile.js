@@ -93,8 +93,7 @@
     if (isUser) $("p-title").textContent = name + " 님의 마이페이지";
     const pmName = document.querySelector(".pm-name");
     if (pmName) pmName.textContent = name + " 님";
-    const avatar = document.querySelector(".profile-btn .avatar");
-    if (avatar) avatar.textContent = name.slice(0, 1);
+    document.querySelectorAll(".profile-btn .avatar, .pm-avatar").forEach(function (x) { x.textContent = name.slice(0, 1); });
     const btn = document.querySelector(".profile-btn");
     if (btn) btn.setAttribute("aria-label", name + " 님 메뉴");
   }

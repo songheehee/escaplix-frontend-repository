@@ -239,26 +239,49 @@
 
     const box = el("div", "profile-menu");
     box.hidden = true;
-    box.append(el("div", "pm-name", me.nickname + " 님"));
+    // 위: 프로필 원 + 닉네임
+    const who = el("div", "pm-head");
+    who.append(el("span", "avatar pm-avatar", (me.nickname || "?").slice(0, 1)), el("b", "pm-name", me.nickname + " 님"));
+    box.append(who);
+    // 메뉴: 아이콘 + 이름, 지금 보고 있는 화면은 보라로
     menu.my.forEach(function (l) {
-      const a = el("a", null, l[1]);
+      const a = el("a", "pm-item");
       a.href = Routes.url(l[0]);
+      a.append(el("span", "pm-ico i-" + l[0]), el("span", null, l[1]));
+      if (Routes.isHere(l[0])) a.setAttribute("aria-current", "page");
       box.append(a);
     });
     // 로그아웃: API 없음. 토큰만 지우고 메인으로 (명세 1-3)
-    const out = el("button", "pm-logout", "로그아웃");
+    const out = el("button", "pm-item pm-logout");
     out.type = "button";
+    out.append(el("span", "pm-ico i-logout"), el("span", null, "로그아웃"));
     out.addEventListener("click", function () { Auth.clear(); location.href = Routes.url("home"); });
     box.append(out);
 
-    function close() { box.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+    // 열 때 스르륵 나타나고(pm-in), 닫을 때 스르륵 사라진 뒤(pm-out) 숨김
+    const FADE_MS = 140;   // css/common.css 의 pm-out 시간과 같게
+    let hideTimer = null;
+    function isOpen() { return btn.getAttribute("aria-expanded") === "true"; }
+    function open() {
+      clearTimeout(hideTimer);
+      box.classList.remove("pm-closing");
+      box.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+    }
+    function close() {
+      if (!isOpen()) return;
+      btn.setAttribute("aria-expanded", "false");
+      box.classList.add("pm-closing");
+      hideTimer = setTimeout(function () { box.hidden = true; box.classList.remove("pm-closing"); }, FADE_MS);
+    }
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
-      box.hidden = !box.hidden;
-      btn.setAttribute("aria-expanded", String(!box.hidden));
+      if (isOpen()) close(); else open();
     });
     document.addEventListener("click", function (e) { if (!prof.contains(e.target)) close(); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && isOpen()) { close(); btn.focus(); }
+    });
     prof.append(btn, box);
     return prof;
   }
