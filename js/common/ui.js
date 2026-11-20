@@ -482,7 +482,7 @@ const UI = (function () {
     // 매장 사진 (없으면 장르 색)
     posterBg(art, { posterUrl: s.photoUrl, genres: s.genres });
     const top = el("div", "sc-top");
-    top.append(el("span", "sc-area", "📍 " + s.area));
+    top.append(el("span", "sc-area", s.area));
     if (s.recruitingPartyCount) top.append(el("span", "sc-party", "파티 모집 " + s.recruitingPartyCount));
     art.append(top);
     // 매장명 (길면 두 줄까지만, 전체 이름은 마우스를 올리면) + NEW: 처음 승인된 지 30일 안 (테마 NEW 는 14일)

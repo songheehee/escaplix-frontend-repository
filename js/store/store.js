@@ -31,7 +31,7 @@
 
     const box = $("d-text");
     box.textContent = "";
-    box.append(el("div", "d-kicker", "📍 " + s.area));
+    box.append(el("div", "d-kicker", s.area));
     // 매장명은 한 줄. 길면 글자를 줄여서 맞춤 (detail.css .d-title)
     const title = el("h1", "d-title", s.name);
     title.title = s.name;

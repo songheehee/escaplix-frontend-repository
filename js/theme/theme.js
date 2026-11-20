@@ -160,7 +160,7 @@
       li.append(el("span", null, text));
       list.append(li);
     }
-    if (s.address) line("📍", "주소", s.address);
+    if (s.address) line("", "주소", s.address);   // 주소는 아이콘 없이 (칸만 맞춤)
     if (s.phone) line("☎", "전화", s.phone);
     if (detail && detail.hours) line("🕒", "영업시간", detail.hours);
     body.append(list);
