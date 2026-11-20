@@ -28,8 +28,9 @@
       <div class="m-grid">
         <div class="m-field">
           <label for="area">지역<span class="req">*</span></label>
-          <input type="text" id="area" name="area" maxlength="10" required list="area-list" placeholder="예: 홍대">
-          <datalist id="area-list"></datalist>
+          <select id="area" name="area" required>
+            <option value="">지역을 골라 주세요</option>
+          </select>
         </div>
         <div class="m-field">
           <label for="phone">전화번호<span class="req">*</span></label>
