@@ -16,7 +16,7 @@
   const MENU = {
     GUEST: {
       home: "home",
-      links: [["home", "홈"], ["stores", "매장"]],
+      links: [["home", "홈"], ["stores", "매장"], ["partyList", "파티"]],   // 파티 목록은 비회원도 볼 수 있음 (참여는 로그인)
       my: [],
       search: true,
     },
