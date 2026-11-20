@@ -235,7 +235,7 @@
     btn.setAttribute("aria-haspopup", "true");
     btn.setAttribute("aria-expanded", "false");
     btn.setAttribute("aria-label", me.nickname + " 님 메뉴");
-    btn.append(el("span", "avatar", (me.nickname || "?").slice(0, 1)), el("span", "caret"));   // 꺾쇠 그림 (CSS)
+    btn.append(el("span", "avatar", (me.nickname || "?").slice(0, 1)));   // 화살표 없이 프로필 원만 (누르면 메뉴)
 
     const box = el("div", "profile-menu");
     box.hidden = true;

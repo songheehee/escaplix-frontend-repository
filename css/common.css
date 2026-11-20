@@ -176,11 +176,11 @@ button { font: inherit; }
 .sp-open .page { padding-top: 24px; }
 
 .profile { position: relative; }
-.profile-btn { display: flex; align-items: center; gap: 6px; background: none; border: 0; color: #fff; cursor: pointer; padding: 4px; }
+.profile-btn { display: flex; align-items: center; gap: 6px; background: none; border: 0; color: #fff; cursor: pointer; padding: 4px; border-radius: 50%; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; background: linear-gradient(135deg, var(--accent), #d0457b); }
-.caret { width: 14px; height: 14px; flex: 0 0 auto; background: var(--ink2); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 9l7 7 7-7'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 9l7 7 7-7'/%3E%3C/svg%3E") center / contain no-repeat; transition: transform .2s, background .15s; }
-.profile-btn:hover .caret, .profile-btn[aria-expanded="true"] .caret { background: #fff; }
-.profile-btn[aria-expanded="true"] .caret { transform: rotate(180deg); }
+/* 화살표 대신: 마우스를 올리거나 메뉴가 열리면 원 둘레에 테두리 → 누를 수 있다는 표시 */
+.avatar { transition: box-shadow .15s; }
+.profile-btn:hover .avatar, .profile-btn[aria-expanded="true"] .avatar { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-ink); }
 .profile-menu {
   position: absolute; right: 0; top: calc(100% + 10px); min-width: 180px; padding: 10px 0;
   background: rgba(14,12,18,.96); border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.6);
