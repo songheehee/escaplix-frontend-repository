@@ -135,6 +135,18 @@ button { font: inherit; }
 .sp-kw { flex: 1 1 260px; }
 .sp-kw input { width: 100%; }
 .sp-go { height: 40px; padding: 0 26px; }
+/* 검색 날짜 칸 (상세 검색 패널 · 결과 화면 조건 막대): 달력과 고른 칸 색을 브라우저 기본 파랑 대신 브랜드 보라로 */
+.sp-field input[type="date"], .fb-field input[type="date"] { accent-color: var(--accent); color-scheme: dark; cursor: pointer; }
+.sp-field input[type="date"]::-webkit-calendar-picker-indicator,
+.fb-field input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .85; }
+.sp-field input[type="date"]:hover::-webkit-calendar-picker-indicator,
+.fb-field input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
+.sp-field input[type="date"]::-webkit-datetime-edit-year-field:focus,
+.sp-field input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.sp-field input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.fb-field input[type="date"]::-webkit-datetime-edit-year-field:focus,
+.fb-field input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.fb-field input[type="date"]::-webkit-datetime-edit-day-field:focus { background: var(--accent); color: #fff; border-radius: 2px; }
 /* 패널이 열리면 패널이 헤더 높이만큼 비워 두므로 본문 윗여백은 줄인다 */
 .page { transition: padding-top .35s ease; }
 .sp-open .page { padding-top: 24px; }
