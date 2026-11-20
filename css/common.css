@@ -138,18 +138,43 @@ button { font: inherit; }
 .sp-kw { flex: 1 1 260px; }
 .sp-kw input { width: 100%; }
 .sp-go { height: 40px; padding: 0 26px; }
-/* 검색 날짜 칸 (상세 검색 패널 · 결과 화면 조건 막대): 달력과 고른 칸 색을 브라우저 기본 파랑 대신 브랜드 보라로 */
-.sp-field input[type="date"], .fb-field input[type="date"] { accent-color: var(--accent); color-scheme: dark; cursor: pointer; }
-.sp-field input[type="date"]::-webkit-calendar-picker-indicator,
-.fb-field input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .85; }
-.sp-field input[type="date"]:hover::-webkit-calendar-picker-indicator,
-.fb-field input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity: 1; }
-.sp-field input[type="date"]::-webkit-datetime-edit-year-field:focus,
-.sp-field input[type="date"]::-webkit-datetime-edit-month-field:focus,
-.sp-field input[type="date"]::-webkit-datetime-edit-day-field:focus,
-.fb-field input[type="date"]::-webkit-datetime-edit-year-field:focus,
-.fb-field input[type="date"]::-webkit-datetime-edit-month-field:focus,
-.fb-field input[type="date"]::-webkit-datetime-edit-day-field:focus { background: var(--accent); color: #fff; border-radius: 2px; }
+/* 검색 날짜 칸 (UI.datePicker): 다른 고르기 칸과 같은 모양 + 사이트 색 달력 */
+.dp-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 150px; height: 40px; padding: 0 10px;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font-size: 14px; cursor: pointer; text-align: left;
+}
+.dp-btn:hover, .dp-btn[aria-expanded="true"] { border-color: var(--accent); }
+.dp-btn.dp-none .dp-text { color: var(--ink2); }
+.dp-icon {
+  width: 16px; height: 16px; flex: 0 0 auto; background: var(--ink2);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1h1.5v2h5V1H12v2h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2zM2.5 6.5v7h11v-7z'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1h1.5v2h5V1H12v2h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2zM2.5 6.5v7h11v-7z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.dp-btn:hover .dp-icon, .dp-btn[aria-expanded="true"] .dp-icon { background: var(--accent-ink); }
+.fb-field .dp-btn { height: 38px; background: var(--bg); }   /* 결과 화면 조건 막대의 다른 칸과 같게 */
+.dp-pop {
+  position: fixed; z-index: 70; width: 284px; padding: 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 14px 40px rgba(0,0,0,.6);
+}
+.dp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.dp-title { font-weight: 800; font-size: 15px; }
+.dp-nav { width: 32px; height: 32px; border: 0; border-radius: 50%; background: none; color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; }
+.dp-nav:hover:not(:disabled) { background: var(--surface2); }
+.dp-nav:disabled { color: var(--line); cursor: default; }
+.dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.dp-wd { padding: 4px 0 6px; font-size: 12px; color: var(--muted); }
+.dp-wd.sun, .dp-day.sun { color: #ff8a95; }
+.dp-wd.sat, .dp-day.sat { color: #8fb4ff; }
+.dp-day {
+  height: 34px; border: 0; border-radius: 50%; background: none; color: var(--ink); font-size: 14px; cursor: pointer;
+}
+.dp-day:hover:not(:disabled) { background: var(--surface2); }
+.dp-day.today { box-shadow: inset 0 0 0 1px var(--accent-ink); }
+.dp-day.on, .dp-day.on:hover { background: var(--accent); color: #fff; font-weight: 800; }
+.dp-day:disabled { color: #4a4454; cursor: default; }
+.dp-foot { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.dp-link { border: 0; background: none; color: var(--accent-ink); font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 6px; border-radius: 4px; }
+.dp-link:hover { background: var(--surface2); }
 /* 패널이 열리면 패널이 헤더 높이만큼 비워 두므로 본문 윗여백은 줄인다 */
 .page { transition: padding-top .35s ease; }
 .sp-open .page { padding-top: 24px; }
@@ -181,7 +206,7 @@ button { font: inherit; }
   .topnav.open ul { display: flex; }
   .topnav ul a { display: block; padding: 10px 18px; }
   .sp-field { flex: 1 1 40%; min-width: 0; }
-  .sp-field input, .sp-field select { width: 100%; }
+  .sp-field input, .sp-field select, .sp-field .dp-btn { width: 100%; }
   .sp-kw { flex-basis: 100%; }
   .sp-go { flex: 1 1 100%; }
 }

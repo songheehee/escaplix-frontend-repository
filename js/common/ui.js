@@ -79,6 +79,179 @@ const UI = (function () {
   }
   function today() { return ymd(new Date()); }
   const DAYS = ["일", "월", "화", "수", "목", "금", "토"];
+  // ---------- 날짜 고르기 (검색 조건용 달력) ----------
+  //   브라우저 기본 달력(input date)은 팝업 색을 CSS 로 못 바꿔서 사이트 색에 맞춘 달력을 직접 그린다
+  //   form 에는 숨은 칸(name)으로 "YYYY-MM-DD" 가 들어가고, 고르면 change 이벤트가 올라간다
+  //   오늘 이전 날짜는 고를 수 없음. 돌려주는 값: { el: 화면에 붙일 상자, input: 숨은 칸 }
+  function datePicker(name, value) {
+    const wrap = el("div", "dp");
+    const input = el("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value || "";
+    const btn = el("button", "dp-btn");
+    btn.type = "button";
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.setAttribute("aria-expanded", "false");
+    const text = el("span", "dp-text");
+    btn.append(text, el("span", "dp-icon"));
+    wrap.append(input, btn);
+
+    let pop = null;
+    let view = null;   // 보고 있는 달의 1일
+    let cursor = null; // 키보드로 옮겨 다니는 날 "YYYY-MM-DD"
+
+    function parse(s) { const p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2], 12); }
+    function label(s) { const d = parse(s); return (d.getMonth() + 1) + "/" + d.getDate() + " (" + DAYS[d.getDay()] + ")"; }
+    function paint() {
+      text.textContent = input.value ? label(input.value) : "날짜 무관";
+      btn.classList.toggle("dp-none", !input.value);
+      btn.setAttribute("aria-label", "날짜 " + (input.value ? label(input.value) : "무관") + ", 달력 열기");
+    }
+    paint();
+
+    function pick(v) {
+      const changed = input.value !== v;
+      input.value = v;
+      paint();
+      close(true);
+      if (changed) input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    function open() {
+      const base = input.value ? parse(input.value) : new Date();
+      view = new Date(base.getFullYear(), base.getMonth(), 1, 12);
+      cursor = input.value || today();
+      pop = el("div", "dp-pop");
+      pop.setAttribute("role", "dialog");
+      pop.setAttribute("aria-label", "날짜 고르기");
+      document.body.append(pop);
+      render();
+      place();
+      btn.setAttribute("aria-expanded", "true");
+      document.addEventListener("mousedown", outside, true);
+      document.addEventListener("touchstart", outside, true);
+      window.addEventListener("resize", place);
+      window.addEventListener("scroll", place, true);
+      focusCursor();
+    }
+    function close(refocus) {
+      if (!pop) return;
+      pop.remove();
+      pop = null;
+      btn.setAttribute("aria-expanded", "false");
+      document.removeEventListener("mousedown", outside, true);
+      document.removeEventListener("touchstart", outside, true);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+      if (refocus) btn.focus();
+    }
+    function outside(e) { if (pop && !pop.contains(e.target) && !btn.contains(e.target)) close(false); }
+
+    // 버튼 바로 아래 (화면 아래가 모자라면 위로), 화면 밖으로 안 나가게
+    function place() {
+      if (!pop) return;
+      const r = btn.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) { close(false); return; }
+      const w = pop.offsetWidth, h = pop.offsetHeight;
+      const top = r.bottom + 6 + h > innerHeight && r.top - 6 - h > 0 ? r.top - 6 - h : r.bottom + 6;
+      pop.style.top = Math.round(top) + "px";
+      pop.style.left = Math.round(Math.max(8, Math.min(r.left, innerWidth - w - 8))) + "px";
+    }
+
+    function render() {
+      const min = today();
+      const thisMonth = new Date(); thisMonth.setDate(1);
+      pop.textContent = "";
+
+      const head = el("div", "dp-head");
+      const prev = el("button", "dp-nav", "‹");
+      prev.type = "button";
+      prev.setAttribute("aria-label", "이전 달");
+      prev.disabled = view.getFullYear() * 12 + view.getMonth() <= thisMonth.getFullYear() * 12 + thisMonth.getMonth();
+      const next = el("button", "dp-nav", "›");
+      next.type = "button";
+      next.setAttribute("aria-label", "다음 달");
+      const title = el("div", "dp-title", view.getFullYear() + "년 " + (view.getMonth() + 1) + "월");
+      title.setAttribute("aria-live", "polite");
+      prev.addEventListener("click", function () { move(-1); });
+      next.addEventListener("click", function () { move(1); });
+      head.append(prev, title, next);
+      pop.append(head);
+
+      const grid = el("div", "dp-grid");
+      grid.setAttribute("role", "grid");
+      DAYS.forEach(function (d, i) { grid.append(el("span", "dp-wd" + (i === 0 ? " sun" : i === 6 ? " sat" : ""), d)); });
+      const first = new Date(view);
+      for (let i = 0; i < first.getDay(); i++) grid.append(el("span"));
+      const d = new Date(view);
+      while (d.getMonth() === view.getMonth()) {
+        const v = ymd(d);
+        const b = el("button", "dp-day", String(d.getDate()));
+        b.type = "button";
+        b.dataset.v = v;
+        if (d.getDay() === 0) b.classList.add("sun");
+        if (d.getDay() === 6) b.classList.add("sat");
+        if (v === min) b.classList.add("today");
+        if (v === input.value) { b.classList.add("on"); b.setAttribute("aria-pressed", "true"); }
+        b.setAttribute("aria-label", (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + DAYS[d.getDay()] + "요일" + (v === min ? ", 오늘" : ""));
+        b.tabIndex = v === cursor ? 0 : -1;
+        if (v < min) b.disabled = true;
+        else b.addEventListener("click", function () { pick(v); });
+        grid.append(b);
+        d.setDate(d.getDate() + 1);
+      }
+      grid.addEventListener("keydown", keys);
+      pop.append(grid);
+
+      const foot = el("div", "dp-foot");
+      const clear = el("button", "dp-link", "날짜 무관");
+      clear.type = "button";
+      clear.addEventListener("click", function () { pick(""); });
+      const now = el("button", "dp-link", "오늘");
+      now.type = "button";
+      now.addEventListener("click", function () { pick(min); });
+      foot.append(clear, now);
+      pop.append(foot);
+      pop.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); close(true); } });
+    }
+    function move(n) {
+      view = new Date(view.getFullYear(), view.getMonth() + n, 1, 12);
+      const c = parse(cursor);
+      const last = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+      cursor = ymd(new Date(view.getFullYear(), view.getMonth(), Math.min(c.getDate(), last), 12));
+      if (cursor < today()) cursor = today();
+      render();
+      place();
+    }
+    function focusCursor() {
+      const b = pop.querySelector('.dp-day[data-v="' + cursor + '"]') || pop.querySelector(".dp-day:not(:disabled)");
+      if (b) b.focus();
+    }
+    // 화살표: 하루·한 주씩, PageUp/Down: 한 달씩
+    function keys(e) {
+      const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+      if (!step && e.key !== "PageUp" && e.key !== "PageDown") return;
+      e.preventDefault();
+      const c = parse(cursor);
+      if (step) c.setDate(c.getDate() + step); else c.setMonth(c.getMonth() + (e.key === "PageUp" ? -1 : 1));
+      const v = ymd(c);
+      if (v < today()) return;
+      cursor = v;
+      if (c.getMonth() !== view.getMonth() || c.getFullYear() !== view.getFullYear()) {
+        view = new Date(c.getFullYear(), c.getMonth(), 1, 12);
+        render();
+        place();
+      } else {
+        pop.querySelectorAll(".dp-day").forEach(function (b) { b.tabIndex = b.dataset.v === v ? 0 : -1; });
+      }
+      focusCursor();
+    }
+
+    btn.addEventListener("click", function () { if (pop) close(true); else open(); });
+    return { el: wrap, input: input, close: function () { close(false); } };
+  }
+
   function isRecent(dateTime, days) {
     if (!dateTime) return false;
     return Date.now() - new Date(dateTime).getTime() < days * 86400000;
@@ -265,7 +438,7 @@ const UI = (function () {
   return {
     el: el, $: $, poster: poster, posterBg: posterBg, genreGradient: genreGradient,
     rating: rating, won: won, people: people, genresText: genresText, genreName: genreName,
-    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, isRecent: isRecent, difficultyDots: difficultyDots,
+    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, isRecent: isRecent, difficultyDots: difficultyDots,
     toast: toast, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
     skeletonRow: skeletonRow, emptyBox: emptyBox,
   };

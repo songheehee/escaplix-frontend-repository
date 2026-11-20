@@ -16,7 +16,7 @@
     genreId: P.get("genreId") || "",
     sort: P.get("sort") || "rate",
   };
-  // 지난 날짜는 고를 수 없게 막아 두지만(date.min), 예전에 저장한 주소로 들어오면 남아 있을 수 있다
+  // 지난 날짜는 달력에서 고를 수 없게 막아 두지만, 예전에 저장한 주소로 들어오면 남아 있을 수 있다
   //   → 날짜 조건만 빼고 주소도 고친다 (그대로 보내면 서버가 400)
   if (F.date && F.date < UI.today()) {
     F.date = "";
@@ -388,12 +388,8 @@
       area.value = F.area;
     }).catch(function () { /* 지역 없이 */ });
 
-    const date = el("input");
-    date.type = "date";
-    date.name = "date";
-    date.min = UI.today();
-    date.value = F.date;
-    form.append(field("날짜", date));
+    const date = UI.datePicker("date", F.date);   // 사이트 색 달력 (오늘 이전은 못 고름)
+    form.append(field("날짜", date.el));
 
     const ppl = select("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })), F.people);
     form.append(field("인원", ppl));
@@ -426,7 +422,7 @@
       clearTimeout(timer);
       if (!form.checkValidity()) { form.reportValidity(); return; }   // 지난 날짜를 직접 친 경우 등
       const next = {
-        keyword: kw.value.trim(), area: area.value, date: date.value,
+        keyword: kw.value.trim(), area: area.value, date: date.input.value,
         people: ppl.value, genreId: genre.value, sort: sort.value,
       };
       if (Object.keys(next).every(function (k) { return next[k] === F[k]; })) return;   // 바뀐 게 없으면 그대로

@@ -142,11 +142,8 @@
 
     const area = select("area", [["", "모든 지역"]]);
     fields.append(field("지역", area));
-    const date = el("input");
-    date.type = "date";
-    date.name = "date";
-    date.min = UI.today();
-    fields.append(field("날짜", date));
+    const date = UI.datePicker("date", "");   // 사이트 색 달력 (오늘 이전은 못 고름)
+    fields.append(field("날짜", date.el));
     const ppl = select("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })));
     fields.append(field("인원", ppl));
     const genre = select("genreId", [["", "모든 장르"]]);
@@ -186,6 +183,7 @@
 
     let opened = false;
     function set(v) {
+      if (!v) date.close();   // 열려 있던 달력도 같이 닫기
       opened = v;
       box.classList.toggle("open", v);
       box.inert = !v;
