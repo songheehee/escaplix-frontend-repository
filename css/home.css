@@ -52,7 +52,7 @@
 .hero-genres .tag { padding: 3px 11px; font-size: 13px; background: rgba(255,255,255,.22); color: #fff; backdrop-filter: blur(4px); }
 .hero-store { margin-top: 10px; font-size: 15px; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.6); }
 .hero-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; align-items: center; }
-.hero-btns .btn { padding: 11px 24px; font-size: 16px; }
+.hero-btns .btn { padding: 11px 24px; font-size: 16px; min-width: 210px; }   /* 버튼 글이 달라도("파티 모집하기"·"모집 중인 파티 3") 폭은 같게 */
 .hero-btns .icon-btn { width: 44px; height: 44px; font-size: 19px; }
 
 .hero-arrow {
@@ -143,7 +143,7 @@
   .hero-shade { background: linear-gradient(to top, var(--bg) 8%, rgba(var(--bg-rgb), .75) 45%, rgba(var(--bg-rgb), .2) 100%); }
   .hero-content { bottom: 64px; }
   .hero-ctrl { left: var(--gutter); right: auto; bottom: 24px; }
-  .hero-btns .btn { padding: 9px 16px; font-size: 14px; }
+  .hero-btns .btn { padding: 9px 16px; font-size: 14px; min-width: 0; flex: 1 1 0; }   /* 폰: 두 버튼이 남은 폭을 똑같이 나눔 */
   .rows { margin-top: 0; }
   .fb-field { flex: 1 1 40%; }
   .fb-field input.fb-keyword { width: 100%; }
