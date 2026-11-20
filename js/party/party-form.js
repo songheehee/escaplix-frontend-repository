@@ -16,10 +16,16 @@
   const form = $("party-form");
   const errorBox = $("form-error");
   const themeSel = $("theme");
-  const dateInput = $("date");
+  // 플레이 날짜: 사이트 색 달력. 숨은 칸(dateInput)에 "YYYY-MM-DD", 고르면 change
+  const datePk = UI.datePicker(null, "", { id: "date", placeholder: "날짜를 골라 주세요", clearable: false, label: "플레이 날짜" });
+  $("date-box").append(datePk.el);
+  const dateInput = datePk.input;
   const slotsBox = $("slots");
   const peopleSel = $("maxPeople");
-  const deadlineInput = $("deadline");
+  // 모집 기한: 날짜(달력) + 시각(고르기). 값은 deadlineValue() → "2026-11-20T16:00"
+  const dlPk = UI.datePicker(null, "", { id: "deadline", placeholder: "날짜", clearable: false, disabled: true, label: "모집 기한 날짜" });
+  const dlTime = $("deadline-time");
+  $("deadline-box").prepend(dlPk.el);
   const submitBtn = $("submit-btn");
 
   let themes = [];
@@ -29,9 +35,8 @@
   // 돌아가기·취소: 왔던 화면으로 (홈 · 테마 상세 · 파티 목록 …), 모르면 파티 목록
   const back = PartyNav.setup($("back-link"), { name: "partyList", params: { themeId: preset.themeId } });
   $("cancel-btn").addEventListener("click", function () { back.go(); });
-  dateInput.min = UI.today();
   if (preset.playAt && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(preset.playAt)) {
-    dateInput.value = preset.playAt.slice(0, 10);
+    datePk.set(preset.playAt.slice(0, 10));
     pickedTime = preset.playAt.slice(11, 16);
   }
 
@@ -154,28 +159,60 @@
   // ---------- 모집 기한: 지금 ~ 플레이 시간. 시간을 고르면 기본값(플레이 3시간 전, 너무 이르면 지금+30분) ----------
   function playAtValue() { return dateInput.value && pickedTime ? dateInput.value + "T" + pickedTime : null; }
 
+  function deadlineValue() { return dlPk.input.value && dlTime.value ? dlPk.input.value + "T" + dlTime.value : ""; }
+
   function paintDeadline(fillDefault) {
     const play = playAtValue();
     if (!play) {
-      deadlineInput.disabled = true;
-      deadlineInput.value = "";
+      dlPk.set("");
+      dlPk.disable(true);
+      fillTimes("");
+      dlTime.disabled = true;
       return;
     }
     const now = localInput(new Date());
-    deadlineInput.disabled = false;
-    deadlineInput.min = now;
-    deadlineInput.max = play;
-    const cur = deadlineInput.value;
-    if (fillDefault && (!cur || cur > play || cur < now)) {
+    dlPk.disable(false);
+    dlTime.disabled = false;
+    dlPk.range(now.slice(0, 10), play.slice(0, 10));   // 지금 ~ 플레이 날짜만 고를 수 있음
+    let cur = deadlineValue();
+    if (fillDefault && (!cur || cur > play || cur <= now)) {
       const p = new Date(play);
       let d = new Date(p.getTime() - 3 * 3600 * 1000);
       const soon = new Date(Date.now() + 30 * 60 * 1000);
       if (d < soon) d = soon < p ? soon : p;
-      deadlineInput.value = localInput(d);
+      cur = localInput(d);
+      dlPk.set(cur.slice(0, 10));
     }
+    fillTimes(cur ? cur.slice(11, 16) : dlTime.value);
   }
 
-  // Date → "2026-11-20T19:00" (datetime-local 값, 내 컴퓨터 시각 그대로)
+  // 기한 시각 목록: 30분 간격. 기한 날짜가 오늘이면 지금 이후, 플레이 날짜면 플레이 시각까지
+  //   기본값처럼 30분 단위가 아닌 시각(예: 지금+30분)도 하나 넣어 둔다
+  function fillTimes(keep) {
+    const date = dlPk.input.value;
+    const play = playAtValue();
+    dlTime.textContent = "";
+    dlTime.append(new Option("시각", ""));
+    if (!date || !play) return;
+    const now = localInput(new Date());
+    const lo = date === now.slice(0, 10) ? now.slice(11, 16) : null;    // 이 시각 "뒤"부터
+    const hi = date === play.slice(0, 10) ? play.slice(11, 16) : null;  // 이 시각 "까지"
+    function fits(t) { return (!lo || t > lo) && (!hi || t <= hi); }
+    const list = [];
+    for (let m = 0; m < 24 * 60; m += 30) {
+      const t = String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
+      if (fits(t)) list.push(t);
+    }
+    if (keep && fits(keep) && list.indexOf(keep) < 0) list.push(keep);
+    if (hi && fits(hi) && list.indexOf(hi) < 0) list.push(hi);
+    list.sort();
+    list.forEach(function (t) { dlTime.append(new Option(t, t)); });
+    dlTime.value = keep && list.indexOf(keep) >= 0 ? keep : "";
+  }
+  // 기한 날짜를 바꾸면 그날 고를 수 있는 시각으로 목록을 다시 (같은 시각이 되면 그대로)
+  dlPk.input.addEventListener("change", function () { fillTimes(dlTime.value); });
+
+  // Date → "2026-11-20T19:00" (내 컴퓨터 시각 그대로)
   function localInput(d) {
     return UI.ymd(d) + "T" + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
   }
@@ -187,16 +224,16 @@
 
     const t = currentTheme();
     const play = playAtValue();
-    const deadline = deadlineInput.value;
+    const deadline = deadlineValue();
     const title = $("title").value.trim();
     const intro = $("intro").value.trim();
 
     if (!t) return fail("테마를 골라 주세요.", themeSel);
-    if (!dateInput.value) return fail("플레이 날짜를 골라 주세요.", dateInput);
+    if (!dateInput.value) return fail("플레이 날짜를 골라 주세요.", datePk.button);
     if (!play) { setSlotMsg("시간을 골라 주세요.", "bad"); slotsBox.scrollIntoView({ block: "center" }); return; }
-    if (!deadline) return fail("모집 기한을 정해 주세요.", deadlineInput);
-    if (deadline > play) return fail("모집 기한은 플레이 시간 전이어야 합니다.", deadlineInput);
-    if (deadline <= localInput(new Date())) return fail("모집 기한은 지금 이후여야 합니다.", deadlineInput);
+    if (!deadline) return fail("모집 기한을 정해 주세요.", dlPk.input.value ? dlTime : dlPk.button);
+    if (deadline > play) return fail("모집 기한은 플레이 시간 전이어야 합니다.", dlTime);
+    if (deadline <= localInput(new Date())) return fail("모집 기한은 지금 이후여야 합니다.", dlTime);
     if (!title) return fail("제목을 입력해 주세요.", $("title"));
     if (!intro) return fail("한마디를 입력해 주세요.", $("intro"));
 
