@@ -111,7 +111,7 @@ button { font: inherit; }
 /* 사장·관리자: 업무 화면이라 처음부터 진한 바 */
 .topbar-owner, .topbar-admin { background: rgba(var(--bg-rgb), .97); box-shadow: 0 1px 0 var(--line); }
 
-.top-search-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; background: none; border: 0; color: #fff; cursor: pointer; border-radius: 4px; transition: background .2s; }
+.top-search-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; background: none; border: 0; color: #fff; cursor: pointer; border-radius: 50%; transition: background .2s; }
 .top-search-ico { width: 20px; height: 20px; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") center / contain no-repeat; }
 .top-search-btn[aria-expanded="true"] { background: rgba(255,255,255,.14); }
 
