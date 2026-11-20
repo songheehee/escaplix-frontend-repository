@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 채팅 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/stores.css">
+  <link rel="stylesheet" href="../../css/party.css">
+</head>
+<body>
+  <!-- S20 내 채팅 탭 (마이페이지) · A-22 내 파티 목록 -->
+  <main class="page">
+    <h1 class="page-title" id="c-title">마이페이지</h1>
+    <nav class="my-tabs" aria-label="마이페이지 탭">
+      <a id="tab-mypage" href="#">내 기록</a>
+      <a id="tab-wishes" href="#">찜 목록</a>
+      <a id="tab-chats" href="#" aria-current="page">내 채팅</a>
+      <a id="tab-profile" href="#">내 정보</a>
+    </nav>
+    <div class="chat-list" id="chat-list" aria-live="polite"></div>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/mypage/chats.js"></script>
+</body>
+</html>

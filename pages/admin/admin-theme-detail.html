@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>테마 승인 상세 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/manage.css">
+</head>
+<body>
+  <!-- S24 테마 승인 상세 · C-18 상세, C-19 승인·반려 -->
+  <main class="page m-page" id="main">
+    <a class="m-back" id="back">← 테마 승인 목록</a>
+    <h1 class="page-title"><span id="name">테마</span> <span id="status"></span></h1>
+    <div id="reject"></div>
+
+    <div class="m-detail" style="margin-top:18px">
+      <div class="m-photo" id="photo"></div>
+      <div class="m-card">
+        <dl class="m-dl" id="info"><div class="sk sk-line"></div></dl>
+      </div>
+    </div>
+
+    <section class="m-card" style="margin-top:16px">
+      <h2 style="margin:0 0 12px;font-size:16px">매장 <span id="store-status"></span></h2>
+      <dl class="m-dl" id="store-info"></dl>
+    </section>
+
+    <div class="m-error" id="store-warn" hidden style="margin-top:16px">매장이 아직 승인되지 않아서 이 테마를 승인할 수 없어요. 매장부터 처리해 주세요.</div>
+    <div class="m-decide" id="decide" hidden>
+      <button class="btn btn-ok" type="button" id="approve">승인 → 공개(OPEN)</button>
+      <button class="btn btn-danger" type="button" id="reject-btn">반려…</button>
+    </div>
+    <p class="muted" id="decide-note" style="margin-top:10px">승인 전에 주소·전화번호·예약 링크가 맞는지 직접 열어 확인해 주세요.</p>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/owner/manage.js"></script>
+  <script src="../../js/admin/admin-theme-detail.js"></script>
+</body>
+</html>

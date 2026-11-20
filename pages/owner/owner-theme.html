@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>테마 등록 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/manage.css">
+</head>
+<body>
+  <!-- S13 테마 등록·수정 · C-1 매장 고르기, B-7 장르, C-6 수정용 상세, C-7 등록, C-8 수정, C-9 운영 종료·재개 -->
+  <main class="page m-page narrow" id="main">
+    <a class="m-back" id="back">← 내 매장</a>
+    <div class="m-head">
+      <div>
+        <h1 class="page-title" id="title">테마 등록</h1>
+        <p class="muted" id="lead">관리자가 승인하면 손님 메인에 나타나요.</p>
+      </div>
+      <div class="m-actions" id="theme-actions" hidden>
+        <span id="status"></span>
+        <a class="btn btn-line small" id="go-slots">시간표 관리</a>
+        <button class="btn btn-dim small" type="button" id="toggle-status" hidden></button>
+      </div>
+    </div>
+
+    <form class="m-card m-form" id="form" novalidate>
+      <div class="m-notice" id="re-approve" hidden>
+        ⚠️ 테마를 수정하면 <b>다시 승인 대기</b>가 돼요. 관리자가 승인할 때까지 손님에게 보이지 않아요.
+      </div>
+      <div class="m-error" id="error" role="alert" hidden></div>
+
+      <div class="m-field">
+        <label for="storeId">매장 (승인된 매장만)<span class="req">*</span></label>
+        <select id="storeId" required></select>
+        <p class="hint" id="store-info"></p>
+      </div>
+
+      <div class="m-field">
+        <label for="title-input">테마 이름<span class="req">*</span></label>
+        <input type="text" id="title-input" maxlength="50" required placeholder="예: 거울 속 방">
+      </div>
+
+      <div class="m-field">
+        <label for="description">소개 (선택)</label>
+        <textarea id="description" maxlength="1300" placeholder="손님이 테마 상세에서 읽는 이야기예요."></textarea>
+        <p class="hint m-count" id="description-count"></p>
+      </div>
+
+      <div class="m-grid">
+        <div class="m-field">
+          <label for="difficulty">난이도<span class="req">*</span></label>
+          <select id="difficulty" required>
+            <option value="">고르기</option>
+            <option value="1">1 · 아주 쉬움</option>
+            <option value="2">2 · 쉬움</option>
+            <option value="3">3 · 보통</option>
+            <option value="4">4 · 어려움</option>
+            <option value="5">5 · 아주 어려움</option>
+          </select>
+        </div>
+        <div class="m-field">
+          <label for="playMinutes">제한 시간(분)<span class="req">*</span></label>
+          <input type="number" id="playMinutes" min="1" max="300" step="1" required placeholder="70">
+        </div>
+        <div class="m-field">
+          <label for="minPeople">최소 인원<span class="req">*</span></label>
+          <input type="number" id="minPeople" min="1" max="20" step="1" required placeholder="2">
+        </div>
+        <div class="m-field">
+          <label for="maxPeople">최대 인원<span class="req">*</span></label>
+          <input type="number" id="maxPeople" min="1" max="20" step="1" required placeholder="4">
+        </div>
+        <div class="m-field">
+          <label for="price">1인 가격(원)<span class="req">*</span></label>
+          <input type="number" id="price" min="0" step="1" required placeholder="25000">
+        </div>
+      </div>
+      <p class="hint" style="margin-top:-8px">인원이 늘어도 1인 가격은 그대로예요.</p>
+
+      <div class="m-field">
+        <span class="lbl" id="genres-label">장르 (하나 이상)<span class="req">*</span></span>
+        <div class="m-checks" id="genres" role="group" aria-labelledby="genres-label"></div>
+      </div>
+
+      <div class="m-field">
+        <label for="bookingUrl">예약 링크<span class="req">*</span></label>
+        <input type="url" id="bookingUrl" maxlength="500" required pattern="https?://.+" placeholder="https:// 로 시작">
+        <p class="hint">테마 상세의 "예약하러 가기" 버튼이 이 링크를 열어요.</p>
+      </div>
+
+      <div class="m-field">
+        <label for="poster">테마 사진 (선택)</label>
+        <input type="file" id="poster" accept="image/jpeg,image/png,image/webp">
+        <p class="hint" id="poster-hint">jpg·png·webp, 5MB 이하. 관리자가 승인할 때 같이 봐요.</p>
+        <div class="m-preview wide" id="poster-preview"></div>
+      </div>
+
+      <div class="m-submit">
+        <button class="btn btn-accent" type="submit" id="submit">승인 요청</button>
+        <a class="btn btn-line" id="cancel">취소</a>
+      </div>
+    </form>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/owner/manage.js"></script>
+  <script src="../../js/owner/owner-theme.js"></script>
+</body>
+</html>

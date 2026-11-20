@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>매장 등록 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/manage.css">
+</head>
+<body>
+  <!-- S21 매장 등록·수정 · C-1 (수정할 때 처음 값), C-2 번호 중복 확인, C-3 등록, C-4 수정 -->
+  <main class="page m-page narrow" id="main">
+    <a class="m-back" id="back">← 내 매장</a>
+    <h1 class="page-title" id="title">매장 등록</h1>
+    <p class="muted" id="lead">관리자가 사업장등록증을 확인하고 승인하면 손님에게 보여요.</p>
+
+    <form class="m-card m-form" id="form" novalidate>
+      <div class="m-notice" id="re-approve" hidden>
+        ⚠️ 매장을 수정하면 <b>다시 승인 대기</b>가 돼요. 관리자가 승인할 때까지 이 매장과 테마가 손님 화면에 보이지 않아요.
+      </div>
+      <div class="m-error" id="error" role="alert" hidden></div>
+
+      <div class="m-field">
+        <label for="name">매장 이름<span class="req">*</span></label>
+        <input type="text" id="name" name="name" maxlength="50" required placeholder="예: 미스터리룸 합정점">
+      </div>
+
+      <div class="m-grid">
+        <div class="m-field">
+          <label for="area">지역<span class="req">*</span></label>
+          <input type="text" id="area" name="area" maxlength="10" required list="area-list" placeholder="예: 홍대">
+          <datalist id="area-list"></datalist>
+        </div>
+        <div class="m-field">
+          <label for="phone">전화번호<span class="req">*</span></label>
+          <input type="tel" id="phone" name="phone" required pattern="[0-9\-]{9,13}" placeholder="02-000-0000">
+        </div>
+      </div>
+
+      <div class="m-field">
+        <label for="address">주소<span class="req">*</span></label>
+        <input type="text" id="address" name="address" maxlength="100" required placeholder="서울 마포구 …">
+      </div>
+
+      <div class="m-field">
+        <label for="websiteUrl">매장 웹사이트<span class="req">*</span></label>
+        <input type="url" id="websiteUrl" name="websiteUrl" maxlength="500" required pattern="https?://.+" placeholder="https:// 로 시작">
+        <p class="hint">매장 상세의 "매장 웹사이트 ↗" 버튼으로 바로 연결돼요.</p>
+      </div>
+
+      <div class="m-field">
+        <label for="hours">영업시간<span class="req">*</span></label>
+        <input type="text" id="hours" name="hours" maxlength="50" required placeholder="예: 10:00 ~ 23:00 (화 휴무)">
+      </div>
+
+      <div class="m-field">
+        <label for="intro">매장 소개<span class="req">*</span></label>
+        <textarea id="intro" name="intro" maxlength="200" required placeholder="찾아오는 길, 매장 분위기 등"></textarea>
+        <p class="hint m-count" id="intro-count"></p>
+      </div>
+
+      <div class="m-grid">
+        <div class="m-field">
+          <label for="lat">위도 (선택)</label>
+          <input type="number" id="lat" name="lat" step="any" min="-90" max="90" placeholder="37.556">
+        </div>
+        <div class="m-field">
+          <label for="lng">경도 (선택)</label>
+          <input type="number" id="lng" name="lng" step="any" min="-180" max="180" placeholder="126.923">
+        </div>
+      </div>
+      <p class="hint" style="margin-top:-8px">지도에 나오게 하려면 둘 다 넣어 주세요. 하나만 넣을 수는 없어요.</p>
+
+      <div class="m-field">
+        <label for="storePhoto">매장 사진 (선택)</label>
+        <input type="file" id="storePhoto" accept="image/jpeg,image/png,image/webp">
+        <p class="hint" id="storePhoto-hint">손님 화면의 매장 목록·상세에 크게 보여요. jpg·png·webp, 5MB 이하</p>
+        <div class="m-preview wide" id="storePhoto-preview"></div>
+      </div>
+
+      <p class="hint" id="owner-biz" hidden></p>
+
+      <div class="m-field">
+        <label for="bizPlaceNo">사업장 등록번호 (이 매장)<span class="req">*</span></label>
+        <div class="m-inline">
+          <input type="text" id="bizPlaceNo" name="bizPlaceNo" required pattern="\d{3}-\d{2}-\d{5}" placeholder="123-45-67890" inputmode="numeric">
+          <button class="btn btn-line small" type="button" id="check-no">중복 확인</button>
+        </div>
+        <p class="hint" id="bizPlaceNo-hint">매장마다 하나뿐이라 이미 등록된 번호는 쓸 수 없어요.</p>
+      </div>
+
+      <div class="m-field">
+        <label for="bizPlaceFile">사업장등록증 (이미지)<span class="req" id="file-req">*</span></label>
+        <input type="file" id="bizPlaceFile" accept="image/jpeg,image/png,image/webp">
+        <p class="hint" id="bizPlaceFile-hint">관리자만 볼 수 있어요. 이 사진을 보고 실제 매장인지 확인해요.</p>
+        <div class="m-preview" id="bizPlaceFile-preview"></div>
+      </div>
+
+      <div class="m-submit">
+        <button class="btn btn-accent" type="submit" id="submit">승인 요청</button>
+        <a class="btn btn-line" id="cancel">취소</a>
+      </div>
+    </form>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/owner/manage.js"></script>
+  <script src="../../js/owner/store-form.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>파티 방 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/party.css">
+</head>
+<body>
+  <!-- S06 파티 방 · A-13 방 정보, A-20 새 채팅, A-21 보내기, A-15 삭제, A-17 나가기, A-18 강퇴, A-19 마감 -->
+  <main class="page room-page">
+    <a class="back-link-p" id="back-link" href="#">← 파티 목록</a>
+    <div id="room" aria-busy="true">
+      <div class="sk room-sk"></div>
+    </div>
+
+    <!-- 다 불러오면 #room 안에 이 구조가 들어간다 -->
+    <template id="room-tpl">
+      <section class="room-info">
+        <div class="ri-top">
+          <h1 class="ri-title" id="ri-title"></h1>
+          <span class="badge" id="ri-status"></span>
+        </div>
+        <div class="ri-meta" id="ri-meta"></div>
+        <div class="ri-deadline" id="ri-deadline"></div>
+        <div class="pb-intro ri-intro" id="ri-intro"></div>
+      </section>
+
+      <div class="room-split">
+        <section class="room-members" aria-labelledby="rm-h">
+          <div class="rm-head"><h2 id="rm-h">참여자</h2><span class="muted" id="rm-count"></span></div>
+          <ul class="member-list" id="member-list"></ul>
+          <div class="member-actions" id="member-actions"></div>
+          <p class="muted rm-note" id="rm-note"></p>
+        </section>
+
+        <section class="room-chat" aria-labelledby="rc-h">
+          <div class="rm-head"><h2 id="rc-h">파티 채팅</h2><span class="muted rc-live">3초마다 새 메시지</span></div>
+          <div class="chat" id="chat" role="log" aria-live="polite" aria-label="채팅 메시지" tabindex="0"></div>
+          <button class="chat-new" id="chat-new" type="button" hidden>새 메시지 ↓</button>
+          <form class="chat-form" id="chat-form" autocomplete="off">
+            <label class="sr-only" for="chat-input">메시지</label>
+            <input class="chat-input" id="chat-input" maxlength="500" placeholder="메시지 입력 (500자까지)">
+            <button class="btn btn-accent" id="chat-send" type="submit">보내기</button>
+          </form>
+        </section>
+      </div>
+    </template>
+  </main>
+
+  <!-- 확인 팝업 (강퇴 · 나가기 · 마감 · 삭제) -->
+  <dialog class="pdialog" id="confirm-dialog" aria-labelledby="cd-title">
+    <h2 id="cd-title"></h2>
+    <p class="muted cd-body" id="cd-body"></p>
+    <div class="jd-btns">
+      <button class="btn btn-line" id="cd-no" type="button">취소</button>
+      <button class="btn btn-accent" id="cd-yes" type="button"></button>
+    </div>
+  </dialog>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/party/party-nav.js"></script>
+  <script src="../../js/party/party-room.js"></script>
+</body>
+</html>

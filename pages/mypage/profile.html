@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 정보 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/stores.css">
+  <link rel="stylesheet" href="../../css/member.css">
+</head>
+<body>
+  <!-- S26 내 정보 (마이페이지 탭, 사장·관리자도 씀) · A-7 내 정보, A-8 닉네임, A-9 비밀번호, A-4 닉네임 중복, D-7·D-8 선호 장르 -->
+  <main class="page">
+    <h1 class="page-title" id="p-title">내 정보</h1>
+    <!-- 손님만 마이페이지 탭 -->
+    <nav class="my-tabs" id="my-tabs" aria-label="마이페이지 탭" hidden>
+      <a id="tab-mypage" href="#">내 기록</a>
+      <a id="tab-wishes" href="#">찜 목록</a>
+      <a id="tab-chats" href="#">내 채팅</a>
+      <a id="tab-profile" href="#" aria-current="page">내 정보</a>
+    </nav>
+
+    <div class="profile-wrap" id="profile" aria-busy="true">
+      <div class="sk profile-sk"></div>
+    </div>
+
+    <template id="profile-tpl">
+      <!-- 1. 기본 정보 -->
+      <form class="auth-card pcard" id="info-form" novalidate>
+        <h2>기본 정보</h2>
+        <div class="field">
+          <label for="loginId">아이디</label>
+          <input class="input" id="loginId" readonly>
+          <p class="field-hint">아이디는 바꿀 수 없어요.</p>
+        </div>
+        <div class="field">
+          <label for="nickname">닉네임</label>
+          <div class="input-row">
+            <input class="input" id="nickname" maxlength="20" aria-describedby="nickname-msg">
+            <button class="btn btn-line" id="nickname-check" type="button">중복 확인</button>
+          </div>
+          <p class="field-msg" id="nickname-msg" aria-live="polite"></p>
+        </div>
+        <dl class="pinfo" id="pinfo"></dl>
+        <div class="sec-foot"><button class="btn btn-accent" id="info-save" type="submit">닉네임 저장</button></div>
+      </form>
+
+      <!-- 2. 비밀번호 변경 -->
+      <form class="auth-card pcard" id="pw-form" novalidate>
+        <h2>비밀번호 변경</h2>
+        <input type="text" autocomplete="username" id="pw-user" hidden>
+        <div class="field">
+          <label for="pw-now">현재 비밀번호</label>
+          <input class="input" id="pw-now" type="password" autocomplete="current-password" maxlength="20" aria-describedby="pw-now-msg">
+          <p class="field-msg" id="pw-now-msg" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="pw-new">새 비밀번호</label>
+          <input class="input" id="pw-new" type="password" autocomplete="new-password" maxlength="20" placeholder="4~20자" aria-describedby="pw-new-msg">
+          <p class="field-msg" id="pw-new-msg" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="pw-new2">새 비밀번호 확인</label>
+          <input class="input" id="pw-new2" type="password" autocomplete="new-password" maxlength="20" aria-describedby="pw-new2-msg">
+          <p class="field-msg" id="pw-new2-msg" aria-live="polite"></p>
+        </div>
+        <div class="sec-foot"><button class="btn btn-accent" id="pw-save" type="submit">비밀번호 변경</button></div>
+      </form>
+
+      <!-- 3. 선호 장르 (손님만, D 담당 API) -->
+      <form class="auth-card pcard" id="genre-form" novalidate hidden>
+        <h2>선호 장르</h2>
+        <p class="field-hint pg-lead">맞춤 추천에 써요. 여러 개 고를 수 있어요.</p>
+        <div class="gchips" id="genres"></div>
+        <p class="field-msg" id="genre-msg" aria-live="polite"></p>
+        <div class="sec-foot"><button class="btn btn-accent" id="genre-save" type="submit">선호 장르 저장</button></div>
+      </form>
+    </template>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/member/member-form.js"></script>
+  <script src="../../js/mypage/profile.js"></script>
+</body>
+</html>
