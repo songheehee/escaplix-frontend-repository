@@ -12,6 +12,7 @@
   const F = {
     keyword: (P.get("keyword") || "").trim(),
     area: P.get("area") || "",
+    region: P.get("area") ? "" : P.get("region") || "",   // 큰 지역 (서울 전체 등). 세부 지역이 있으면 그게 우선
     date: P.get("date") || "",
     people: P.get("people") || "",
     genreId: P.get("genreId") || "",
@@ -26,7 +27,7 @@
     P.delete("date");
     history.replaceState(null, "", location.pathname + (P.toString() ? "?" + P : "") + location.hash);
   }
-  const searchMode = !!(F.keyword || F.area || F.date || F.people || F.genreId || P.has("sort") || P.has("tab"));
+  const searchMode = !!(F.keyword || F.area || F.region || F.date || F.people || F.genreId || P.has("sort") || P.has("tab"));
 
   const heroBox = UI.$("hero");
   const main = UI.$("rows");
@@ -324,8 +325,8 @@
     try {
       // 테마는 모든 조건, 매장은 검색어·지역만 (B-9가 받는 조건)
       const [themes, stores] = await Promise.all([
-        api.get("/api/themes", { keyword: F.keyword, area: F.area, date: F.date, people: F.people, genreId: F.genreId, sort: F.sort }),
-        api.get("/api/stores", { keyword: F.keyword, area: F.area }),
+        api.get("/api/themes", { keyword: F.keyword, area: F.area, region: F.region, date: F.date, people: F.people, genreId: F.genreId, sort: F.sort }),
+        api.get("/api/stores", { keyword: F.keyword, area: F.area, region: F.region }),
       ]);
       if (seq !== searchSeq) return;
       found = { themes: themes, stores: stores };
@@ -398,7 +399,7 @@
   // 지금 조건을 주소에 남긴다 (빈 칸은 빼고 sort 는 남겨서 "검색 화면"이 유지되게). 공유·새로고침용
   function saveToUrl() {
     const q = new URLSearchParams();
-    ["keyword", "area", "date", "people", "genreId"].forEach(function (k) { if (F[k]) q.set(k, F[k]); });
+    ["keyword", "area", "region", "date", "people", "genreId"].forEach(function (k) { if (F[k]) q.set(k, F[k]); });
     q.set("sort", F.sort || "rate");
     if (tabChosen && F.tab === "stores") q.set("tab", "stores");
     history.replaceState(null, "", location.pathname + "?" + q);
@@ -408,6 +409,7 @@
     const parts = [];
     if (F.keyword) parts.push("‘" + F.keyword + "’");
     if (F.area) parts.push(F.area);
+    else if (F.region) parts.push(F.region + " 전체");
     if (F.tab !== "stores") {   // 매장 탭에는 날짜·인원·장르가 안 걸림
       if (F.date) parts.push(F.date.slice(5).replace("-", "/"));
       if (F.people) parts.push(F.people + "명");
@@ -431,12 +433,8 @@
     kw.setAttribute("aria-label", "테마·매장 이름 검색");
     form.append(field("검색어", kw));
 
-    const area = select("area", [["", "모든 지역"]], F.area);
-    form.append(field("지역", area));
-    api.get("/api/areas").then(function (list) {
-      list.forEach(function (a) { area.append(option(a, a)); });
-      area.value = F.area;
-    }).catch(function () { /* 지역 없이 */ });
+    const area = UI.areaPicker({ area: F.area, region: F.region });   // 큰 지역 → 세부 지역
+    form.append(field("지역", area.el));
 
     const date = UI.datePicker("date", F.date);   // 사이트 색 달력 (오늘 이전은 못 고름)
     form.append(field("날짜", date.el, true));
@@ -475,7 +473,7 @@
       clearTimeout(timer);
       if (!form.checkValidity()) { form.reportValidity(); return; }   // 지난 날짜를 직접 친 경우 등
       const next = {
-        keyword: kw.value.trim(), area: area.value, date: date.input.value,
+        keyword: kw.value.trim(), area: area.value().area, region: area.value().region, date: date.input.value,
         people: ppl.value, genreId: genre.value, sort: sort.value, tab: F.tab,
       };
       if (Object.keys(next).every(function (k) { return next[k] === F[k]; })) return;   // 바뀐 게 없으면 그대로
