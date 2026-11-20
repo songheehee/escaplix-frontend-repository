@@ -16,10 +16,22 @@
     genreId: P.get("genreId") || "",
     sort: P.get("sort") || "rate",
   };
+  // 지난 날짜는 고를 수 없게 막아 두지만(date.min), 예전에 저장한 주소로 들어오면 남아 있을 수 있다
+  //   → 날짜 조건만 빼고 주소도 고친다 (그대로 보내면 서버가 400)
+  if (F.date && F.date < UI.today()) {
+    F.date = "";
+    P.delete("date");
+    history.replaceState(null, "", location.pathname + (P.toString() ? "?" + P : "") + location.hash);
+  }
   const searchMode = !!(F.keyword || F.area || F.date || F.people || F.genreId || P.has("sort"));
 
   const heroBox = UI.$("hero");
   const main = UI.$("rows");
+  // 검색 결과 화면: 제목 · 결과 칸 (renderSearch 보다 먼저 만들어 둬야 함)
+  const searchHead = el("div", "search-head");
+  const searchOut = el("div", "search-out");
+  let searchSeq = 0;   // 늦게 온 옛날 응답이 새 결과를 덮어쓰지 않게
+  let genreLabel = "";
 
   // 줄 제목 (장르 이름 → 문구). 없는 장르는 "{장르} 테마"
   const GENRE_ROW = {
@@ -298,30 +310,50 @@
   // =========================================================
   // 3) 검색 결과 화면 (B-1 조건 검색)
   // =========================================================
-  async function renderSearch() {
+  // 조건을 바꾸면 화면을 새로 열지 않고 결과만 다시 그린다 (검색어를 치는 중에도 칸이 그대로 유지되게)
+  function renderSearch() {
     const wrap = el("section", "search-page");
-    const form = buildFilterForm();
-    const head = el("div", "search-head");
-    const grid = el("div", "grid");
-    wrap.append(form, head, grid);
+    wrap.append(buildFilterForm(), searchHead, searchOut);
     main.append(wrap);
-    head.append(el("div", "sk sk-title"));
+    loadResults();
+  }
 
+  async function loadResults() {
+    const seq = ++searchSeq;
+    searchHead.textContent = "";
+    searchHead.append(el("div", "sk sk-title"));
+    searchOut.setAttribute("aria-busy", "true");
     try {
       const list = await api.get("/api/themes", F);
-      head.textContent = "";
+      if (seq !== searchSeq) return;
+      searchHead.textContent = "";
+      searchOut.textContent = "";
       const h = el("h1", "search-title", summaryText() + " 검색 결과");
       h.append(el("small", null, list.length + "개"));
-      head.append(h);
+      searchHead.append(h);
       if (!list.length) {
-        grid.replaceWith(UI.emptyBox("찾는 테마나 매장이 없어요. 다른 이름이나 조건으로 검색해 보세요.", "전체 테마 보기", Routes.url("home")));
+        searchOut.append(UI.emptyBox("찾는 테마나 매장이 없어요. 다른 이름이나 조건으로 검색해 보세요.", "전체 테마 보기", Routes.url("home")));
         return;
       }
+      const grid = el("div", "grid");
       list.forEach(function (t) { grid.append(UI.themeCard(t)); });
+      searchOut.append(grid);
     } catch (e) {
-      head.textContent = "";
-      grid.replaceWith(errorBox(e.message));
+      if (seq !== searchSeq) return;
+      searchHead.textContent = "";
+      searchOut.textContent = "";
+      searchOut.append(errorBox(e.message));
+    } finally {
+      if (seq === searchSeq) searchOut.removeAttribute("aria-busy");
     }
+  }
+
+  // 지금 조건을 주소에 남긴다 (빈 칸은 빼고 sort 는 남겨서 "검색 화면"이 유지되게). 공유·새로고침용
+  function saveToUrl() {
+    const q = new URLSearchParams();
+    ["keyword", "area", "date", "people", "genreId"].forEach(function (k) { if (F[k]) q.set(k, F[k]); });
+    q.set("sort", F.sort || "rate");
+    history.replaceState(null, "", location.pathname + "?" + q);
   }
 
   function summaryText() {
@@ -333,7 +365,6 @@
     if (F.genreId) parts.push(genreLabel || "장르");
     return parts.length ? parts.join(" · ") : "전체 테마";
   }
-  let genreLabel = "";
 
   // 검색 조건 막대: 바꾸면 바로 다시 검색 (주소가 바뀌어서 공유·뒤로가기 가능)
   function buildFilterForm() {
@@ -344,9 +375,10 @@
     const kw = el("input", "fb-keyword");
     kw.type = "search";
     kw.name = "keyword";
-    kw.placeholder = "테마·매장 이름";
+    kw.placeholder = "테마나 매장 이름을 입력해 보세요";
+    kw.maxLength = 50;
     kw.value = F.keyword;
-    kw.setAttribute("aria-label", "테마·매장 이름");
+    kw.setAttribute("aria-label", "테마·매장 이름 검색");
     form.append(field("검색어", kw));
 
     const area = select("area", [["", "모든 지역"]], F.area);
@@ -371,13 +403,15 @@
     api.get("/api/genres").then(function (list) {
       list.forEach(function (g) { genre.append(option(String(g.genreId), g.name)); });
       genre.value = F.genreId;
-      const g = list.find(function (x) { return String(x.genreId) === F.genreId; });
-      if (g) {
-        genreLabel = g.name;
-        const t = document.querySelector(".search-title");
-        if (t) t.firstChild.textContent = summaryText() + " 검색 결과";
-      }
+      paintGenreLabel();
     }).catch(function () { /* 장르 없이 */ });
+    // 제목의 장르 이름 ("공포 검색 결과")
+    function paintGenreLabel() {
+      const o = genre.selectedOptions[0];
+      genreLabel = F.genreId && o && o.value === F.genreId ? o.textContent : "";
+      const t = document.querySelector(".search-title");
+      if (t) t.firstChild.textContent = summaryText() + " 검색 결과";
+    }
 
     const sort = select("sort", [["rate", "평점순"], ["popular", "이번 주 인기순"], ["new", "최신순"]], F.sort);
     form.append(field("정렬", sort));
@@ -386,11 +420,27 @@
     reset.href = Routes.url("home", { sort: "rate" });
     form.append(reset);
 
-    form.addEventListener("change", function (e) { if (e.target !== kw) form.requestSubmit(); });
-    form.addEventListener("submit", function () {
-      // 빈 칸은 주소에 안 붙임. 단 sort 는 남겨서 "검색 화면"이 유지되게
-      Array.from(form.elements).forEach(function (x) { if (x.name && x.name !== "sort" && !x.value) x.disabled = true; });
+    // 고르는 칸은 바꾸는 즉시, 검색어는 치다가 잠깐(0.4초) 멈추면 검색. 엔터는 바로
+    let timer = null;
+    function apply() {
+      clearTimeout(timer);
+      if (!form.checkValidity()) { form.reportValidity(); return; }   // 지난 날짜를 직접 친 경우 등
+      const next = {
+        keyword: kw.value.trim(), area: area.value, date: date.value,
+        people: ppl.value, genreId: genre.value, sort: sort.value,
+      };
+      if (Object.keys(next).every(function (k) { return next[k] === F[k]; })) return;   // 바뀐 게 없으면 그대로
+      Object.assign(F, next);
+      paintGenreLabel();
+      saveToUrl();
+      loadResults();
+    }
+    kw.addEventListener("input", function () {
+      clearTimeout(timer);
+      timer = setTimeout(apply, 400);
     });
+    form.addEventListener("change", function (e) { if (e.target !== kw) apply(); });
+    form.addEventListener("submit", function (e) { e.preventDefault(); apply(); });
     return form;
 
     function field(label, control) {
