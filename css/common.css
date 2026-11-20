@@ -176,7 +176,7 @@ button { font: inherit; }
 
 .profile { position: relative; }
 .profile-btn { display: flex; align-items: center; gap: 6px; background: none; border: 0; color: #fff; cursor: pointer; padding: 4px; }
-.avatar { width: 32px; height: 32px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; background: linear-gradient(135deg, var(--accent), #d0457b); }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; background: linear-gradient(135deg, var(--accent), #d0457b); }
 .caret { font-size: 11px; transition: transform .2s; }
 .profile-btn[aria-expanded="true"] .caret { transform: rotate(180deg); }
 .profile-menu {
