@@ -13,7 +13,7 @@
   // 예전 주소(?keyword=)로 들어오면 통합 검색의 매장 탭으로 보냄
   const oldKeyword = (P.get("keyword") || "").trim();
   if (oldKeyword) {
-    const q = { keyword: oldKeyword, tab: "stores", sort: "rate" };
+    const q = { keyword: oldKeyword, tab: "stores", sort: "popular" };
     if (P.get("area")) q.area = P.get("area");
     location.replace(Routes.url("home", q));
     return;

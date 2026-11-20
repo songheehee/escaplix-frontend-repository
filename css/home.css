@@ -119,7 +119,7 @@
   height: 38px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--line);
   background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; color-scheme: dark;
 }
-.fb-field input.fb-keyword { width: min(260px, 70vw); }
+.fb-field input.fb-keyword { width: min(230px, 70vw); }
 .fb-reset { margin-left: auto; height: 38px; }
 .search-head { margin-bottom: 14px; }
 .search-title { font-size: clamp(20px, 2.4vw, 28px); margin: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
@@ -146,7 +146,7 @@
   .hero-btns .btn { padding: 9px 16px; font-size: 14px; min-width: 0; flex: 1 1 0; }   /* 폰: 두 버튼이 남은 폭을 똑같이 나눔 */
   .rows { margin-top: 0; }
   .fb-field { flex: 1 1 40%; }
-  .fb-field input.fb-keyword { width: 100%; }
+  .fb-field input.fb-keyword, .fb-field .dp-btn { width: 100%; }
   .fb-reset { margin-left: 0; }
   .rank-no { -webkit-text-stroke-width: 3px; }
 }

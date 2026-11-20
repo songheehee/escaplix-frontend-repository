@@ -148,12 +148,13 @@
     fields.append(field("지역", area.el));
     const date = UI.datePicker("date", "");   // 사이트 색 달력 (오늘 이전은 못 고름)
     fields.append(field("날짜", date.el));
-    const ppl = select("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })));
-    fields.append(field("인원", ppl));
-    const genre = select("genreId", [["", "모든 장르"]]);
-    fields.append(field("장르", genre));
-    const sort = select("sort", [["rate", "평점순"], ["popular", "이번 주 인기순"], ["new", "최신순"]]);
-    fields.append(field("정렬", sort));
+    // 인원·장르·정렬: 사이트 모양 선택 칸 (UI.selectPicker). 정렬은 이번 주 인기순이 맨 위·기본
+    const ppl = UI.selectPicker("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })), "", { label: "인원" });
+    fields.append(field("인원", ppl.el));
+    const genre = UI.selectPicker("genreId", [["", "모든 장르"]], "", { label: "장르" });
+    fields.append(field("장르", genre.el));
+    const sort = UI.selectPicker("sort", [["popular", "이번 주 인기순"], ["rate", "평점순"], ["new", "최신순"]], "popular", { label: "정렬" });
+    fields.append(field("정렬", sort.el));
 
     const go = el("button", "btn btn-accent sp-go", "검색");
     go.type = "submit";
@@ -165,7 +166,7 @@
 
     // 장르 목록은 처음 열 때 한 번만 (실패하면 "모든 장르"만 남음). 지역은 지역 칸이 열 때 불러옴
     api.get("/api/genres").then(function (list) {
-      list.forEach(function (g) { genre.append(option(String(g.genreId), g.name)); });
+      genre.setOptions([["", "모든 장르"]].concat(list.map(function (g) { return [String(g.genreId), g.name]; })));
     }).catch(function () { /* 장르 없이 */ });
 
     form.addEventListener("submit", function () {
@@ -184,7 +185,7 @@
 
     let opened = false;
     function set(v) {
-      if (!v) { date.close(); area.close(); }   // 열려 있던 달력·지역 목록도 같이 닫기
+      if (!v) { date.close(); area.close(); ppl.close(); genre.close(); sort.close(); }   // 열려 있던 달력·지역 목록도 같이 닫기
       opened = v;
       box.classList.toggle("open", v);
       box.inert = !v;
@@ -203,13 +204,6 @@
       const l = el("label", "sp-field" + (cls ? " " + cls : ""));
       l.append(el("span", null, label), control);
       return l;
-    }
-    function option(v, t) { const o = el("option", null, t); o.value = v; return o; }
-    function select(name, opts) {
-      const s = el("select");
-      s.name = name;
-      opts.forEach(function (o) { s.append(option(o[0], o[1])); });
-      return s;
     }
   }
 

@@ -16,7 +16,7 @@
     date: P.get("date") || "",
     people: P.get("people") || "",
     genreId: P.get("genreId") || "",
-    sort: P.get("sort") || "rate",
+    sort: P.get("sort") || "popular",   // 기본은 이번 주 인기순
     tab: P.get("tab") === "stores" ? "stores" : "themes",   // 결과 탭
   };
   let tabChosen = P.has("tab");   // 탭을 직접 고른 적이 없으면 테마 결과가 0개일 때 매장 탭을 먼저 보여 줌
@@ -400,7 +400,7 @@
   function saveToUrl() {
     const q = new URLSearchParams();
     ["keyword", "area", "region", "date", "people", "genreId"].forEach(function (k) { if (F[k]) q.set(k, F[k]); });
-    q.set("sort", F.sort || "rate");
+    q.set("sort", F.sort || "popular");
     if (tabChosen && F.tab === "stores") q.set("tab", "stores");
     history.replaceState(null, "", location.pathname + "?" + q);
   }
@@ -439,31 +439,30 @@
     const date = UI.datePicker("date", F.date);   // 사이트 색 달력 (오늘 이전은 못 고름)
     form.append(field("날짜", date.el, true));
 
-    const ppl = select("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })), F.people);
-    form.append(field("인원", ppl, true));
+    // 인원·장르·정렬: 사이트 모양 선택 칸 (UI.selectPicker)
+    const ppl = UI.selectPicker("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })), F.people, { label: "인원" });
+    form.append(field("인원", ppl.el, true));
 
-    const genre = select("genreId", [["", "모든 장르"]], F.genreId);
-    form.append(field("장르", genre, true));
+    const genre = UI.selectPicker("genreId", [["", "모든 장르"]], F.genreId, { label: "장르" });
+    form.append(field("장르", genre.el, true));
     api.get("/api/genres").then(function (list) {
-      list.forEach(function (g) { genre.append(option(String(g.genreId), g.name)); });
-      genre.value = F.genreId;
+      genre.setOptions([["", "모든 장르"]].concat(list.map(function (g) { return [String(g.genreId), g.name]; })), F.genreId);
       paintGenreLabel();
     }).catch(function () { /* 장르 없이 */ });
     // 제목의 장르 이름 ("공포 검색 결과")
     function paintGenreLabel() {
-      const o = genre.selectedOptions[0];
-      genreLabel = F.genreId && o && o.value === F.genreId ? o.textContent : "";
+      genreLabel = F.genreId && genre.value() === F.genreId ? genre.label() : "";
       const t = document.querySelector(".search-title");
       if (t) t.firstChild.textContent = summaryText() + " 검색 결과";
     }
 
-    const sort = select("sort", [["rate", "평점순"], ["popular", "이번 주 인기순"], ["new", "최신순"]], F.sort);
-    form.append(field("정렬", sort, true));
+    const sort = UI.selectPicker("sort", [["popular", "이번 주 인기순"], ["rate", "평점순"], ["new", "최신순"]], F.sort, { label: "정렬" });   // 이번 주 인기순이 맨 위·기본
+    form.append(field("정렬", sort.el, true));
 
     const reset = el("a", "btn btn-line small fb-reset", "조건 지우기");
-    reset.href = Routes.url("home", { sort: "rate" });
+    reset.href = Routes.url("home", { sort: "popular" });
     reset.addEventListener("click", function () {   // 지금 탭은 남김
-      if (F.tab === "stores") reset.href = Routes.url("home", { sort: "rate", tab: "stores" });
+      if (F.tab === "stores") reset.href = Routes.url("home", { sort: "popular", tab: "stores" });
     });
     form.append(reset);
 
@@ -474,7 +473,7 @@
       if (!form.checkValidity()) { form.reportValidity(); return; }   // 지난 날짜를 직접 친 경우 등
       const next = {
         keyword: kw.value.trim(), area: area.value().area, region: area.value().region, date: date.input.value,
-        people: ppl.value, genreId: genre.value, sort: sort.value, tab: F.tab,
+        people: ppl.value(), genreId: genre.value(), sort: sort.value(), tab: F.tab,
       };
       if (Object.keys(next).every(function (k) { return next[k] === F[k]; })) return;   // 바뀐 게 없으면 그대로
       Object.assign(F, next);
@@ -495,14 +494,6 @@
       const l = el("label", "fb-field" + (themeOnly ? " fb-theme-only" : ""));
       l.append(el("span", null, label), control);
       return l;
-    }
-    function option(v, t) { const o = el("option", null, t); o.value = v; return o; }
-    function select(name, opts, value) {
-      const s = el("select");
-      s.name = name;
-      opts.forEach(function (o) { s.append(option(o[0], o[1])); });
-      s.value = value;
-      return s;
     }
   }
 
