@@ -148,7 +148,7 @@ input.input[type="date"], input.input[type="datetime-local"] { color-scheme: dar
 }
 
 /* ---------- 내 채팅 (mypage/chats) ---------- */
-.chat-list { display: flex; flex-direction: column; gap: 10px; max-width: 860px; word-break: keep-all; overflow-wrap: anywhere; }
+.chat-list { display: flex; flex-direction: column; gap: 10px; word-break: keep-all; overflow-wrap: anywhere; }
 .chat-sk { height: 104px; border-radius: 10px; }
 .chat-row { position: relative; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); transition: border-color .15s, background .15s; }
 .chat-row:hover, .chat-row:focus-within { border-color: var(--accent); background: var(--surface2); }
