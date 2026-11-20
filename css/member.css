@@ -108,6 +108,18 @@ fieldset.field legend { padding: 0; }
 .file-drop-text small { display: block; margin-top: 4px; font-size: 12px; font-weight: 400; color: var(--muted); }
 .file-drop.has-file .file-drop-text { font-size: 13px; color: var(--accent-ink); }
 
+/* 회원 관리 (admin/admin-members) · 표·탭·팝업은 manage.css 것을 씀 */
+.am-lead { margin: -4px 0 16px; }
+.am-search { display: flex; gap: 8px; max-width: 440px; margin: 0 0 10px; }
+.am-search .m-input { flex: 1; min-width: 0; }
+.am-search .btn { flex: 0 0 auto; }
+.am-count { margin: 0 0 12px; font-size: 13px; }
+.am-table td { white-space: nowrap; }   /* 좁은 화면은 표를 옆으로 밀어서 봄 (m-table-wrap) */
+.am-doc { width: min(640px, calc(100vw - 32px)); }
+.am-doc .m-preview { min-height: 200px; max-height: none; }
+.am-doc .m-preview img { max-height: 60vh; max-width: 100%; }
+.am-doc .m-preview a { color: var(--accent-ink); }
+
 /* 사장 가입: 가입 후에 할 일 */
 .next-steps { margin: 4px 0 18px; padding: 12px 14px; border-radius: var(--radius); font-size: 13px; color: var(--ink2);
   background: rgba(139, 92, 246, .1); border: 1px solid rgba(139, 92, 246, .3); }
