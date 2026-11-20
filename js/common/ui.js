@@ -286,6 +286,213 @@ const UI = (function () {
     };
   }
 
+  // ---------- 지역 고르기 (큰 지역 → 세부 지역) ----------
+  //   버튼을 누르면 큰 지역(서울·경기…) 줄이 나오고, 줄을 누르면 펼쳐져서 "서울 전체"·홍대·강남… 을 고른다
+  //   form 에는 숨은 칸 두 개: area (세부 지역 이름) / region (큰 지역 이름). 둘 중 하나만 값이 있다
+  //   고르면 바뀐 숨은 칸에서 change 이벤트가 올라간다
+  //   목록: B-8 /api/areas (매장이 있는 세부 지역) 를 B-12 /api/regions 로 묶는다. 매장 없는 큰 지역은 안 보임
+  //         /api/regions 가 없는 서버면 묶지 않고 세부 지역만 나란히
+  //   UI.areaPicker({ area, region }, opts)
+  //     opts.label : 화면 읽기 프로그램용 칸 이름 (기본 "지역")
+  //   돌려주는 값: { el, button, value() → { area, region }, set({ area, region }), close() }
+  let regionsReady = null;   // 화면 안 여러 칸이 같이 씀 (한 번만 부름)
+  function loadRegions() {
+    if (!regionsReady) {
+      regionsReady = Promise.all([
+        api.get("/api/areas"),
+        api.get("/api/regions").catch(function () { return null; }),
+      ]).then(function (r) {
+        const areas = r[0] || [];
+        if (!r[1]) return [{ name: null, areas: areas }];   // 묶음 정보 없음
+        const has = new Set(areas);
+        const out = r[1].map(function (g) {
+          return { name: g.name, areas: g.areas.map(function (a) { return a.name; }).filter(function (n) { return has.has(n); }) };
+        }).filter(function (g) { return g.areas.length; });
+        // 혹시 묶음에 없는 세부 지역이 있으면 "기타"로 (큰 지역 전체 검색은 없음)
+        const listed = new Set([].concat.apply([], out.map(function (g) { return g.areas; })));
+        const rest = areas.filter(function (a) { return !listed.has(a); });
+        if (rest.length) out.push({ name: "기타", areas: rest, loose: true });
+        return out;
+      });
+      regionsReady.catch(function () { regionsReady = null; });   // 실패하면 다음에 열 때 다시
+    }
+    return regionsReady;
+  }
+
+  function areaPicker(value, opts) {
+    opts = opts || {};
+    const ALL = "모든 지역";
+    const wrap = el("div", "ap");
+    const areaIn = el("input");
+    areaIn.type = "hidden";
+    areaIn.name = "area";
+    const regionIn = el("input");
+    regionIn.type = "hidden";
+    regionIn.name = "region";
+    const btn = el("button", "dp-btn ap-btn");
+    btn.type = "button";
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.setAttribute("aria-expanded", "false");
+    const text = el("span", "dp-text");
+    btn.append(text, el("span", "ap-chev"));
+    wrap.append(areaIn, regionIn, btn);
+
+    let pop = null;
+    let groups = null;    // 불러온 목록
+    let openName;         // 펼쳐 둔 큰 지역 이름 (undefined = 아직 안 정함)
+
+    function setValue(v) {
+      v = v || {};
+      areaIn.value = v.area || "";
+      regionIn.value = v.area ? "" : v.region || "";   // 세부 지역이 있으면 그게 우선 (서버와 같음)
+      paint();
+    }
+    function label() {
+      if (areaIn.value) return areaIn.value;
+      if (regionIn.value) return regionIn.value + " 전체";
+      return ALL;
+    }
+    function paint() {
+      text.textContent = label();
+      btn.classList.toggle("dp-none", !areaIn.value && !regionIn.value);
+      btn.setAttribute("aria-label", (opts.label || "지역") + " " + label() + ", 지역 목록 열기");
+    }
+    setValue(value);
+
+    function pick(area, region) {
+      const before = areaIn.value + "|" + regionIn.value;
+      setValue({ area: area, region: region });
+      close(true);
+      if (before !== areaIn.value + "|" + regionIn.value) {
+        regionIn.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+
+    function open() {
+      pop = el("div", "dp-pop ap-pop");
+      pop.setAttribute("role", "dialog");
+      pop.setAttribute("aria-label", "지역 고르기");
+      pop.append(el("div", "ap-loading muted", "지역을 불러오는 중…"));
+      document.body.append(pop);
+      place();
+      btn.setAttribute("aria-expanded", "true");
+      document.addEventListener("mousedown", outside, true);
+      document.addEventListener("touchstart", outside, true);
+      window.addEventListener("resize", place);
+      window.addEventListener("scroll", place, true);
+      pop.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); close(true); } });
+      const mine = pop;
+      loadRegions().then(function (g) {
+        groups = g;
+        if (pop !== mine) return;   // 그사이 닫힘
+        render();
+        place();
+        const on = pop.querySelector('[aria-pressed="true"]') || pop.querySelector("button");
+        if (on) on.focus();
+      }).catch(function () {
+        if (pop !== mine) return;
+        pop.textContent = "";
+        pop.append(el("div", "ap-loading muted", "지역 목록을 불러오지 못했어요."));
+      });
+    }
+    function close(refocus) {
+      if (!pop) return;
+      pop.remove();
+      pop = null;
+      btn.setAttribute("aria-expanded", "false");
+      document.removeEventListener("mousedown", outside, true);
+      document.removeEventListener("touchstart", outside, true);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+      if (refocus) btn.focus();
+    }
+    function outside(e) { if (pop && !pop.contains(e.target) && !btn.contains(e.target)) close(false); }
+    function place() {
+      if (!pop) return;
+      const r = btn.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) { close(false); return; }
+      const w = pop.offsetWidth, h = pop.offsetHeight;
+      const top = r.bottom + 6 + h > innerHeight && r.top - 6 - h > 0 ? r.top - 6 - h : r.bottom + 6;
+      pop.style.top = Math.round(top) + "px";
+      pop.style.left = Math.round(Math.max(8, Math.min(r.left, innerWidth - w - 8))) + "px";
+    }
+
+    function chipBtn(label, on, onPick) {
+      const b = el("button", "ap-chip" + (on ? " on" : ""), label);
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(on));
+      b.addEventListener("click", onPick);
+      return b;
+    }
+
+    function render() {
+      pop.textContent = "";
+      const none = !areaIn.value && !regionIn.value;
+      const all = chipBtn(ALL, none, function () { pick("", ""); });
+      all.classList.add("ap-all");
+      pop.append(all);
+
+      // 묶음 정보가 없는 서버: 세부 지역만 나란히
+      if (groups.length === 1 && groups[0].name === null) {
+        const box = el("div", "ap-chips ap-flat");
+        groups[0].areas.forEach(function (a) { box.append(chipBtn(a, a === areaIn.value, function () { pick(a, ""); })); });
+        pop.append(box);
+        return;
+      }
+
+      // 처음 열 때는 지금 고른 지역이 든 큰 지역을 펼쳐 둔다
+      if (openName === undefined) {
+        const cur = groups.find(function (g) { return g.name === regionIn.value || g.areas.indexOf(areaIn.value) >= 0; });
+        openName = cur ? cur.name : null;
+      }
+      const list = el("div", "ap-list");
+      groups.forEach(function (g, i) {
+        const here = g.name === regionIn.value || g.areas.indexOf(areaIn.value) >= 0;
+        const row = el("button", "ap-row" + (here ? " here" : ""));
+        row.type = "button";
+        const id = "ap-" + Math.random().toString(36).slice(2, 8) + "-" + i;
+        row.setAttribute("aria-controls", id);
+        row.setAttribute("aria-expanded", String(g.name === openName));
+        row.append(el("span", "ap-name", g.name), el("span", "ap-chev"));
+
+        const body = el("div", "ap-body" + (g.name === openName ? " open" : ""));
+        body.id = id;
+        const inner = el("div", "ap-inner");
+        const chips = el("div", "ap-chips");
+        if (!g.loose) {
+          chips.append(chipBtn(g.name + " 전체", regionIn.value === g.name, function () { pick("", g.name); }));
+        }
+        g.areas.forEach(function (a) { chips.append(chipBtn(a, a === areaIn.value, function () { pick(a, ""); })); });
+        inner.append(chips);
+        body.append(inner);
+        body.inert = g.name !== openName;
+
+        row.addEventListener("click", function () {
+          openName = openName === g.name ? null : g.name;   // 하나만 펼침
+          list.querySelectorAll(".ap-row").forEach(function (r) {
+            const b = document.getElementById(r.getAttribute("aria-controls"));
+            const on = r === row && openName === g.name;
+            r.setAttribute("aria-expanded", String(on));
+            b.classList.toggle("open", on);
+            b.inert = !on;
+          });
+          setTimeout(place, 200);   // 펼친 뒤 높이가 바뀌면 위치 다시
+        });
+        list.append(row, body);
+      });
+      pop.append(list);
+    }
+
+    btn.addEventListener("click", function () { if (pop) close(true); else open(); });
+    return {
+      el: wrap, button: btn,
+      value: function () { return { area: areaIn.value, region: regionIn.value }; },
+      // 값을 코드로 바꿀 때 (change 이벤트는 안 올림)
+      set: function (v) { setValue(v); openName = undefined; },
+      close: function () { close(false); },
+    };
+  }
+
   // 큰 제목 한 줄 맞추기용: 글자 몇 개 너비인지 (한글 1, 띄어쓰기·영문·숫자는 대략 0.55)
   //   제목에 style --len 으로 넣으면 CSS 가 "줄 너비 ÷ --len" 으로 글자 크기를 정함 (home.css .hero-title, detail.css .d-title)
   function textWidth(s) {
@@ -515,7 +722,7 @@ const UI = (function () {
     storeCard: storeCard,
     el: el, $: $, poster: poster, posterBg: posterBg, genreGradient: genreGradient,
     rating: rating, won: won, people: people, genresText: genresText, genreName: genreName,
-    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
+    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
     toast: toast, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
     skeletonRow: skeletonRow, emptyBox: emptyBox,
   };

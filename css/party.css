@@ -87,7 +87,6 @@
 .pf-counter { display: flex; justify-content: space-between; gap: 8px; }
 .pf-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 4px; }
 .pf-btns .btn { padding-top: 12px; padding-bottom: 12px; }
-select.input { appearance: auto; }
 /* 파티 만들기 날짜 칸 (UI.datePicker): 다른 .input 칸과 같은 모양 */
 .field .dp-btn { width: 100%; height: auto; padding: 11px 12px; font-size: 15px; background: var(--bg); border-radius: var(--radius); }
 .field .dp-btn:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139, 92, 246, .25); }

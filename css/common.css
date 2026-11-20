@@ -111,7 +111,7 @@ button { font: inherit; }
 /* 사장·관리자: 업무 화면이라 처음부터 진한 바 */
 .topbar-owner, .topbar-admin { background: rgba(var(--bg-rgb), .97); box-shadow: 0 1px 0 var(--line); }
 
-.top-search-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; background: none; border: 0; color: #fff; cursor: pointer; border-radius: 4px; transition: background .2s; }
+.top-search-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; background: none; border: 0; color: #fff; cursor: pointer; border-radius: 50%; transition: background .2s; }
 .top-search-ico { width: 20px; height: 20px; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") center / contain no-repeat; }
 .top-search-btn[aria-expanded="true"] { background: rgba(255,255,255,.14); }
 
@@ -135,6 +135,13 @@ button { font: inherit; }
   height: 40px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--line);
   background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; color-scheme: dark;
 }
+/* 모든 선택 칸(select): 브라우저 기본 화살표는 칸 끝에 딱 붙어서, 안쪽으로 들인 공용 화살표로 바꿈 */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none; appearance: none; padding-right: 36px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23c9c3d3' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 12px;
+}
+select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
 .sp-kw { flex: 1 1 260px; }
 .sp-kw input { width: 100%; }
 .sp-go { height: 40px; padding: 0 26px; }
@@ -152,6 +159,39 @@ button { font: inherit; }
 }
 .dp-btn:hover .dp-icon, .dp-btn[aria-expanded="true"] .dp-icon { background: var(--accent-ink); }
 .fb-field .dp-btn { height: 38px; background: var(--bg); }   /* 결과 화면 조건 막대의 다른 칸과 같게 */
+/* 지역 고르기 (UI.areaPicker): 날짜 버튼과 같은 모양, 팝업 안은 큰 지역 줄 → 펼치면 세부 지역 칩 */
+.ap-chev {
+  width: 12px; height: 12px; flex: 0 0 auto; background: var(--ink2); transition: transform .2s;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.ap-btn { padding-right: 14px; }
+.ap-btn[aria-expanded="true"] .ap-chev, .ap-row[aria-expanded="true"] .ap-chev { transform: rotate(180deg); }
+.ap-btn:hover .ap-chev, .ap-btn[aria-expanded="true"] .ap-chev { background: var(--accent-ink); }
+.ap-pop { width: 300px; max-height: min(440px, calc(100vh - 80px)); overflow-y: auto; padding: 8px; }
+.ap-loading { padding: 14px 10px; font-size: 13px; }
+.ap-list { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+.ap-row {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px; border: 0; border-radius: 6px;
+  background: none; color: var(--ink); font: inherit; font-size: 14px; text-align: left; cursor: pointer;
+}
+.ap-row:hover, .ap-row:focus-visible { background: var(--surface2); }
+.ap-row[aria-expanded="true"] { font-weight: 700; }
+.ap-row.here .ap-name { color: var(--accent-ink); }
+.ap-name { flex: 1; }
+.ap-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .2s ease; }
+.ap-body.open { grid-template-rows: 1fr; }
+.ap-inner { overflow: hidden; }
+.ap-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 10px 12px; }
+.ap-flat { padding: 10px 2px 4px; }
+.ap-chip {
+  padding: 6px 12px; border: 1px solid var(--line); border-radius: 99px; background: var(--bg);
+  color: var(--ink2); font: inherit; font-size: 13px; cursor: pointer; transition: border-color .12s, color .12s, background .12s;
+}
+.ap-chip:hover, .ap-chip:focus-visible { border-color: var(--accent); color: #fff; }
+.ap-chip.on, .ap-chip.on:hover { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.ap-all { margin: 2px 2px 0; }
+@media (prefers-reduced-motion: reduce) { .ap-body, .ap-chev { transition: none; } }
 .dp-pop {
   position: fixed; z-index: 70; width: 284px; padding: 12px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 14px 40px rgba(0,0,0,.6);

@@ -6,9 +6,9 @@
   const $ = UI.$;
   const el = UI.el;
 
-  const me = Auth.me();
-  if (!me) { Auth.goLogin(); return; }
-  const isUser = me.role === "USER";   // 만들기·참여는 손님만 (사장·관리자는 보기만)
+  const me = Auth.me();   // 비회원도 목록은 볼 수 있다. 참여·만들기를 누르면 로그인으로
+  const isUser = !!me && me.role === "USER";   // 만들기·참여는 손님만 (사장·관리자는 보기만)
+  const canCreate = !me || isUser;   // 비회원: 만들기 화면이 로그인으로 보낸 뒤 다시 만들기로 돌아옴
 
   // ---------- 조건 (주소에 남겨서 새로고침·뒤로가기에도 유지) ----------
   const q = new URLSearchParams(location.search);
@@ -24,7 +24,7 @@
   keywordInput.value = state.keyword;
 
   const createBtn = $("create-btn");
-  if (isUser) createBtn.href = Routes.url("partyForm", { themeId: state.themeId });
+  if (canCreate) createBtn.href = Routes.url("partyForm", { themeId: state.themeId });
   else createBtn.remove();   // .btn 은 display 가 정해져 있어서 hidden 으로는 안 숨겨짐
 
   setupThemeFilter();
@@ -143,7 +143,7 @@
       grid.textContent = "";
       $("count").textContent = "모집 중 " + list.length + "개";
       if (!list.length) {
-        grid.append(isUser
+        grid.append(canCreate
           ? UI.emptyBox("조건에 맞는 모집 중인 파티가 없어요.", "직접 파티 만들기", Routes.url("partyForm", { themeId: state.themeId }))
           : UI.emptyBox("조건에 맞는 모집 중인 파티가 없어요."));
         return;
@@ -211,6 +211,7 @@
   function onPick(p) {
     if (p.kicked) { UI.toast("강퇴된 파티에는 다시 참여할 수 없어요.", "err"); return; }
     if (p.joined) { location.href = Routes.url("partyRoom", { id: p.partyId }); return; }   // 팝업 없이 바로 방
+    if (!me) { openJoin(p); return; }   // 비회원: 같은 팝업으로 파티를 보여 주고 "로그인하고 참여하기"
     if (!isUser) { UI.toast("손님 계정만 파티에 참여할 수 있어요.", "err"); return; }
     openJoin(p);
   }
@@ -220,6 +221,11 @@
   const yesBtn = $("jd-yes");
   let picked = null;
 
+  if (!me) {
+    $("jd-q").textContent = "로그인하면 참여할 수 있어요";
+    $("jd-no").textContent = "닫기";
+    document.querySelector("#join-dialog .jd-note").textContent = "로그인한 뒤 이 목록으로 돌아와요. 파티를 다시 누르면 참여할 수 있어요.";
+  }
   $("jd-no").addEventListener("click", function () { dialog.close(); });
   dialog.addEventListener("click", function (e) { if (e.target === dialog) dialog.close(); });   // 바깥(어두운 곳) 누르면 닫기
 
@@ -231,13 +237,14 @@
     $("jd-when").textContent = "📅 " + md(play) + " " + hm(play) + " · 지금 " + p.currentPeople + " / " + p.maxPeople + "명 · 👑 " + p.leaderNickname;
     $("jd-intro").textContent = "“" + p.intro + "”";
     yesBtn.disabled = false;
-    yesBtn.textContent = "예, 참여할게요";
+    yesBtn.textContent = me ? "예, 참여할게요" : "로그인하고 참여하기";
     dialog.showModal();
     yesBtn.focus();
   }
 
   yesBtn.addEventListener("click", async function () {
     if (!picked) return;
+    if (!me) { dialog.close(); Auth.goLogin(); return; }   // 로그인하면 이 목록(같은 조건)으로 돌아옴
     yesBtn.disabled = true;
     yesBtn.textContent = "참여하는 중…";
     try {
