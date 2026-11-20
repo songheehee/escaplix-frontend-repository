@@ -48,7 +48,7 @@
   // 로고
   const logo = el("a", "logo");
   logo.href = Routes.url(menu.home);
-  logo.append("ESCAP", el("span", null, "LIX"));
+  logo.append("Escap", el("span", null, "lix"));
   if (role === "OWNER" || role === "ADMIN") logo.append(el("small", "logo-role", ROLE_NAME[role]));
   inner.append(logo);
 

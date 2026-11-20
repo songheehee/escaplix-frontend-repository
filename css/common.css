@@ -246,17 +246,12 @@ button { font: inherit; }
 .footer { margin-top: 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 .footer-inner {
   max-width: 1600px; margin: 0 auto; padding: 36px var(--gutter) 48px;
-  display: grid; grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1.5fr); gap: 24px 48px; align-items: start;
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px 48px;
 }
 .footer .logo.small { font-size: 20px; }
-.footer-brand p, .footer-notes p { margin: 8px 0 0; }
-.footer-notes p:first-child { margin-top: 0; }
-.footer-links { display: flex; flex-direction: column; gap: 8px; }
-.footer a { color: var(--ink2); }
-.footer-links a { text-decoration: none; }
-.footer-links a:hover { color: #fff; text-decoration: underline; }
-.footer-copy { font-size: 12px; }
-@media (max-width: 760px) { .footer-inner { grid-template-columns: 1fr; } .footer-links { flex-direction: row; gap: 18px; } }
+.footer-brand p { margin: 8px 0 0; }
+.footer-copy { margin: 0; font-size: 12px; }
+@media (max-width: 760px) { .footer-inner { flex-direction: column; align-items: flex-start; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
