@@ -8,15 +8,32 @@
   <link rel="stylesheet" href="../../css/stores.css">
 </head>
 <body>
-  <!-- S27 매장 목록 · B-8 지역, B-9 매장. 이름으로 찾기는 위쪽 통합 검색(메인 결과의 "매장" 탭) -->
+  <!-- S27 매장 목록 · B-12 지역(큰 지역 → 세부 지역), B-9 매장. 이름으로 찾기는 위쪽 통합 검색(메인 결과의 "매장" 탭) -->
   <main class="page">
     <div class="stores-head">
-      <div>
-        <h1 class="page-title">매장</h1>
-        <p class="muted" id="store-count">매장을 불러오는 중…</p>
+      <h1 class="page-title">매장</h1>
+      <!-- 지역 고르기: 버튼을 누르면 패널 (왼쪽 큰 지역 · 오른쪽 세부 지역). 폰에서는 아래에서 올라오는 시트 -->
+      <div class="stores-tools">
+      <div class="rp-wrap">
+        <button class="rp-btn" id="region-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="region-panel"><span id="region-label">전체 지역</span> <span class="rp-caret" aria-hidden="true">▾</span></button>
+        <div class="rp" id="region-panel" role="dialog" aria-label="지역 고르기" hidden>
+          <div class="rp-head"><b>지역</b><button class="rp-close" id="region-close" type="button" aria-label="닫기">✕</button></div>
+          <div class="rp-cols">
+            <ul class="rp-regions" id="rp-regions"></ul>
+            <div class="rp-areas" id="rp-areas"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 정렬: 평점순(기본) · 최신순 (B-9 sort) -->
+      <label class="sort-box">
+        <span class="visually-hidden">정렬</span>
+        <select id="store-sort">
+          <option value="rate">평점순</option>
+          <option value="new">최신순</option>
+        </select>
+      </label>
       </div>
     </div>
-    <div class="area-chips" id="area-chips" role="group" aria-label="지역 고르기"></div>
     <div class="store-grid" id="store-grid" aria-live="polite"></div>
   </main>
 
