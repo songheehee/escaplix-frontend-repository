@@ -104,15 +104,11 @@ button { font: inherit; }
 /* 헤더 회원가입: 배너 사진 위에서도 잘 보이게 투명 대신 어두운 바탕 */
 .auth-btns .btn-line { background: var(--surface2); border-color: var(--line); }
 .auth-btns .btn-line:hover { background: #2e2938; border-color: var(--ink2); }
-/* 사장·관리자: 업무 화면이라 처음부터 진한 바 + 로고 옆 역할 표시 */
+/* 사장·관리자: 업무 화면이라 처음부터 진한 바 */
 .topbar-owner, .topbar-admin { background: rgba(var(--bg-rgb), .97); box-shadow: 0 1px 0 var(--line); }
-.logo-role {
-  margin-left: 8px; padding: 2px 7px; border-radius: 3px; vertical-align: 4px;
-  font-size: 11px; font-weight: 800; letter-spacing: 0; color: #111; background: var(--accent-ink);
-}
-.topbar-admin .logo-role { background: var(--gold); }
 
-.top-search-btn { background: none; border: 0; color: #fff; font-size: 24px; line-height: 1; padding: 2px 8px 5px; cursor: pointer; border-radius: 4px; transition: background .2s; }
+.top-search-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; background: none; border: 0; color: #fff; cursor: pointer; border-radius: 4px; transition: background .2s; }
+.top-search-ico { width: 20px; height: 20px; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.5 15.5 21 21'/%3E%3C/svg%3E") center / contain no-repeat; }
 .top-search-btn[aria-expanded="true"] { background: rgba(255,255,255,.14); }
 
 /* 상세 검색 패널: 헤더 바로 아래에서 아래로 열림 (메인이면 헤더와 추천 배너 사이) */
@@ -180,19 +176,38 @@ button { font: inherit; }
 .sp-open .page { padding-top: 24px; }
 
 .profile { position: relative; }
-.profile-btn { display: flex; align-items: center; gap: 6px; background: none; border: 0; color: #fff; cursor: pointer; padding: 4px; }
-.avatar { width: 32px; height: 32px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; background: linear-gradient(135deg, var(--accent), #d0457b); }
-.caret { font-size: 11px; transition: transform .2s; }
-.profile-btn[aria-expanded="true"] .caret { transform: rotate(180deg); }
+.profile-btn { display: flex; align-items: center; gap: 6px; background: none; border: 0; color: #fff; cursor: pointer; padding: 4px; border-radius: 50%; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; background: linear-gradient(135deg, var(--accent), #d0457b); }
+/* 화살표 대신: 마우스를 올리거나 메뉴가 열리면 원 둘레에 테두리 → 누를 수 있다는 표시 */
+.avatar { transition: box-shadow .15s; }
+.profile-btn:hover .avatar, .profile-btn[aria-expanded="true"] .avatar { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-ink); }
 .profile-menu {
-  position: absolute; right: 0; top: calc(100% + 10px); min-width: 180px; padding: 10px 0;
-  background: rgba(14,12,18,.96); border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.6);
+  position: absolute; right: 0; top: calc(100% + 10px); min-width: 210px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 14px 40px rgba(0,0,0,.6);
+  transform-origin: top right; animation: pm-in .18s ease-out;
 }
-.profile-menu a, .profile-menu .pm-logout { display: block; width: 100%; text-align: left; padding: 8px 16px; font-size: 14px; color: var(--ink2); text-decoration: none; background: none; border: 0; cursor: pointer; }
-.profile-menu a:hover, .profile-menu .pm-logout:hover { color: #fff; text-decoration: underline; }
-.pm-name { padding: 2px 16px 0; font-weight: 800; }
-.pm-role { padding: 0 16px 8px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--line); margin-bottom: 6px; }
-.pm-logout { border-top: 1px solid var(--line) !important; margin-top: 6px; padding-top: 10px !important; }
+.profile-menu.pm-closing { animation: pm-out .14s ease-in forwards; pointer-events: none; }
+@keyframes pm-in { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes pm-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-6px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { .profile-menu, .profile-menu.pm-closing { animation: none; } }
+.pm-head { display: flex; align-items: center; gap: 10px; padding: 8px 10px 12px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.pm-avatar { width: 34px; height: 34px; flex: 0 0 auto; font-size: 15px; }
+.pm-name { font-weight: 800; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 6px; background: none;
+  font: inherit; font-size: 14px; color: var(--ink2); text-align: left; text-decoration: none; cursor: pointer; transition: background .12s, color .12s;
+}
+.pm-item:hover, .pm-item:focus-visible { background: var(--surface2); color: #fff; }
+.pm-item[aria-current="page"] { color: var(--accent-ink); font-weight: 700; }
+.pm-ico { width: 18px; height: 18px; flex: 0 0 auto; background: currentColor; -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; opacity: .9; }
+.pm-ico.i-mypage { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E"); }
+.pm-ico.i-wishes { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'/%3E%3C/svg%3E"); }
+.pm-ico.i-chats { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5h16v11H9l-5 4z'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5h16v11H9l-5 4z'/%3E%3C/svg%3E"); }
+.pm-ico.i-profile { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E"); }
+.pm-ico.i-logout { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 4H5v16h5'/%3E%3Cpath d='M14 8l4 4-4 4M18 12H9'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 4H5v16h5'/%3E%3Cpath d='M14 8l4 4-4 4M18 12H9'/%3E%3C/svg%3E"); }
+.pm-logout { margin-top: 4px; position: relative; }
+.pm-logout::before { content: ""; position: absolute; left: 4px; right: 4px; top: -3px; border-top: 1px solid var(--line); }
+.pm-logout:hover, .pm-logout:focus-visible { color: var(--danger); background: rgba(255, 92, 108, .1); }
 
 @media (max-width: 860px) {
   :root { --topbar-h: 58px; }
