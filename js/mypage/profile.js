@@ -21,7 +21,8 @@
     $("tab-chats").href = Routes.url("chats");
     $("tab-profile").href = Routes.url("profile");
   } else {
-    $("my-tabs").remove();   // .my-tabs 는 display 가 정해져 있어서 hidden 으로는 안 숨겨짐
+    $("my-tabs").remove();   // 탭 자리째 없앰
+    document.querySelector("main").classList.add("profile-solo");
   }
 
   start();
