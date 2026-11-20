@@ -29,7 +29,7 @@
 
         <div class="field">
           <label for="date">플레이 날짜<span class="req">*</span></label>
-          <input class="input" id="date" type="date">
+          <div id="date-box"></div>   <!-- 사이트 색 달력 (UI.datePicker, 버튼 id="date") -->
         </div>
 
         <fieldset class="field">
@@ -47,7 +47,9 @@
           </div>
           <div class="field">
             <label for="deadline">모집 기한<span class="req">*</span></label>
-            <input class="input" id="deadline" type="datetime-local" disabled>
+            <div class="pf-deadline" id="deadline-box">   <!-- 날짜(UI.datePicker, 버튼 id="deadline") + 시각 -->
+              <select class="input" id="deadline-time" aria-label="모집 기한 시각" disabled><option value="">시각</option></select>
+            </div>
           </div>
         </div>
         <p class="field-hint pf-hint">기한은 지금부터 플레이 시간 전까지예요. 기한까지 정원이 안 차면 자동으로 마감돼요.</p>
