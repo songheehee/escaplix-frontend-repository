@@ -5,7 +5,6 @@
   const $ = UI.$;
   const el = UI.el;
   const R = MemberForm.rules;
-  const ROLE_NAME = { USER: "손님", OWNER: "사장", ADMIN: "관리자" };
 
   let info = null;   // A-7 응답
 
@@ -54,7 +53,6 @@
 
     const dl = $("pinfo");
     function row(k, v) { dl.append(el("dt", null, k), el("dd", null, v)); }
-    row("회원 유형", ROLE_NAME[info.role] || info.role);
     if (info.createdAt) row("가입일", info.createdAt.slice(0, 10));
     if (info.role === "OWNER" && info.bizNo) row("사업자등록번호", info.bizNo);
 
@@ -95,8 +93,7 @@
     if (isUser) $("p-title").textContent = name + " 님의 마이페이지";
     const pmName = document.querySelector(".pm-name");
     if (pmName) pmName.textContent = name + " 님";
-    const avatar = document.querySelector(".profile-btn .avatar");
-    if (avatar) avatar.textContent = name.slice(0, 1);
+    document.querySelectorAll(".profile-btn .avatar, .pm-avatar").forEach(function (x) { x.textContent = name.slice(0, 1); });
     const btn = document.querySelector(".profile-btn");
     if (btn) btn.setAttribute("aria-label", name + " 님 메뉴");
   }
