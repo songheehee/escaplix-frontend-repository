@@ -11,7 +11,7 @@
   const logo = el("a", "logo small");
   logo.href = Routes.url("home");
   logo.append("Escap", el("span", null, "lix"));
-  brand.append(logo, el("p", null, "방탈출 테마와 매장을 한곳에서. 같이 갈 사람도 여기서 찾아요."));
+  brand.append(logo, el("p", null, "방탈출 테마와 매장을 한곳에서. 같이 갈 사람도 찾아요."));
   inner.append(brand);
   inner.append(el("p", "footer-copy", "© " + new Date().getFullYear() + " Escaplix"));
 

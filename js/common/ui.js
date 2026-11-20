@@ -493,6 +493,112 @@ const UI = (function () {
     };
   }
 
+  // 사이트 모양 선택 칸 (기본 <select> 대신). 날짜·지역 칸과 같은 버튼 + 펼침 목록
+  //   form 으로 보낼 값은 숨은 input(name)에 들어가고, 고르면 그 input 에서 change 가 올라간다
+  //   options: [[값, 보이는 글], …]  opts.label: 화면 읽기용 칸 이름
+  function selectPicker(name, options, value, opts) {
+    opts = opts || {};
+    const wrap = el("div", "sel");
+    const input = el("input");
+    input.type = "hidden";
+    input.name = name;
+    const btn = el("button", "dp-btn ap-btn sel-btn");
+    btn.type = "button";
+    btn.setAttribute("aria-haspopup", "listbox");
+    btn.setAttribute("aria-expanded", "false");
+    const text = el("span", "dp-text");
+    btn.append(text, el("span", "ap-chev"));
+    wrap.append(input, btn);
+    let list = options.slice();
+    let pop = null;
+
+    function labelOf(v) {
+      const o = list.find(function (x) { return x[0] === v; });
+      return o ? o[1] : (list[0] ? list[0][1] : "");
+    }
+    function setValue(v) {
+      const has = list.some(function (x) { return x[0] === v; });
+      input.value = has ? v : (list[0] ? list[0][0] : "");
+      text.textContent = labelOf(input.value);
+      btn.classList.toggle("dp-none", input.value === "" );   // "인원 무관"처럼 빈 값은 흐린 글씨
+      btn.setAttribute("aria-label", (opts.label || name) + " " + text.textContent + ", 목록 열기");
+    }
+    setValue(value === undefined ? "" : String(value));
+
+    function open() {
+      pop = el("div", "dp-pop sel-pop");
+      pop.setAttribute("role", "listbox");
+      pop.setAttribute("aria-label", opts.label || name);
+      list.forEach(function (o) {
+        const b = el("button", "sel-opt" + (o[0] === input.value ? " on" : ""), o[1]);
+        b.type = "button";
+        b.setAttribute("role", "option");
+        b.setAttribute("aria-selected", String(o[0] === input.value));
+        b.addEventListener("click", function () { pick(o[0]); });
+        pop.append(b);
+      });
+      pop.style.minWidth = btn.offsetWidth + "px";
+      document.body.append(pop);
+      place();
+      btn.setAttribute("aria-expanded", "true");
+      document.addEventListener("mousedown", outside, true);
+      document.addEventListener("touchstart", outside, true);
+      window.addEventListener("resize", place);
+      window.addEventListener("scroll", place, true);
+      pop.addEventListener("keydown", function (e) {
+        const items = Array.prototype.slice.call(pop.querySelectorAll(".sel-opt"));
+        const i = items.indexOf(document.activeElement);
+        if (e.key === "Escape") { e.stopPropagation(); close(true); }
+        else if (e.key === "ArrowDown") { e.preventDefault(); (items[i + 1] || items[0]).focus(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); (items[i - 1] || items[items.length - 1]).focus(); }
+      });
+      const on = pop.querySelector(".sel-opt.on") || pop.querySelector(".sel-opt");
+      if (on) on.focus();
+    }
+    function close(refocus) {
+      if (!pop) return;
+      pop.remove();
+      pop = null;
+      btn.setAttribute("aria-expanded", "false");
+      document.removeEventListener("mousedown", outside, true);
+      document.removeEventListener("touchstart", outside, true);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+      if (refocus) btn.focus();
+    }
+    function outside(e) { if (pop && !pop.contains(e.target) && !btn.contains(e.target)) close(false); }
+    function place() {
+      if (!pop) return;
+      const r = btn.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) { close(false); return; }
+      const w = pop.offsetWidth, h = pop.offsetHeight;
+      const top = r.bottom + 6 + h > innerHeight && r.top - 6 - h > 0 ? r.top - 6 - h : r.bottom + 6;
+      pop.style.top = Math.round(top) + "px";
+      pop.style.left = Math.round(Math.max(8, Math.min(r.left, innerWidth - w - 8))) + "px";
+    }
+    function pick(v) {
+      const before = input.value;
+      setValue(v);
+      close(true);
+      if (before !== input.value) input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    btn.addEventListener("click", function () { if (pop) close(true); else open(); });
+    btn.addEventListener("keydown", function (e) {
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !pop) { e.preventDefault(); open(); }
+    });
+
+    return {
+      el: wrap, input: input, button: btn,
+      value: function () { return input.value; },
+      label: function () { return text.textContent; },
+      // 값을 코드로 바꿀 때 (change 이벤트는 안 올림)
+      set: function (v) { setValue(String(v)); },
+      // 목록을 나중에 채울 때 (장르처럼 API 로 받는 것). 지금 값은 목록에 있으면 그대로
+      setOptions: function (opts2, v) { list = opts2.slice(); setValue(v === undefined ? input.value : String(v)); },
+      close: function () { close(false); },
+    };
+  }
+
   // 큰 제목 한 줄 맞추기용: 글자 몇 개 너비인지 (한글 1, 띄어쓰기·영문·숫자는 대략 0.55)
   //   제목에 style --len 으로 넣으면 CSS 가 "줄 너비 ÷ --len" 으로 글자 크기를 정함 (home.css .hero-title, detail.css .d-title)
   function textWidth(s) {
@@ -722,7 +828,7 @@ const UI = (function () {
     storeCard: storeCard,
     el: el, $: $, poster: poster, posterBg: posterBg, genreGradient: genreGradient,
     rating: rating, won: won, people: people, genresText: genresText, genreName: genreName,
-    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
+    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, selectPicker: selectPicker, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
     toast: toast, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
     skeletonRow: skeletonRow, emptyBox: emptyBox,
   };
