@@ -32,7 +32,13 @@
   setupGenres();
   load();
   // 파티 방에서 나가기·삭제 뒤 뒤로가기로 돌아오면 브라우저가 예전 화면을 그대로 보여 줄 수 있다 → 다시 불러오기
-  window.addEventListener("pageshow", function (e) { if (e.persisted) load(); });
+  //   참여 확인 팝업이 열린 채로 저장된 화면이면 팝업도 닫는다
+  window.addEventListener("pageshow", function (e) {
+    if (!e.persisted) return;
+    const d = $("join-dialog");
+    if (d.open) d.close();
+    load();
+  });
 
   // ---------- 테마로 들어왔을 때: "○○ 파티만" 표시 + ✕ ----------
   async function setupThemeFilter() {
@@ -236,6 +242,7 @@
     yesBtn.textContent = "참여하는 중…";
     try {
       await api.post("/api/parties/" + picked.partyId + "/join");
+      dialog.close();   // 닫고 나서 이동해야 뒤로가기로 돌아왔을 때 팝업이 다시 보이지 않음
       location.href = Routes.url("partyRoom", { id: picked.partyId });
     } catch (e) {
       // 409: 그사이 자리가 찼거나 마감됨 → 문구를 보여 주고 목록을 새로 (명세 A-16)
