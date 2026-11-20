@@ -28,8 +28,7 @@ const Routes = (function () {
     // B · 테마 · 매장
     theme: "pages/theme/theme.html",
     stores: "pages/store/stores.html",
-    store: "pages/store/store.html",
-    map: "pages/store/map.html",
+    store: "pages/store/store.html",   // 지도는 매장 상세 안에만 (전체 지도 화면 없음)
 
     // 마이페이지 탭 (A · B · D)
     mypage: "pages/mypage/mypage.html",
