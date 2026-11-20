@@ -135,6 +135,13 @@ button { font: inherit; }
   height: 40px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--line);
   background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; color-scheme: dark;
 }
+/* 모든 선택 칸(select): 브라우저 기본 화살표는 칸 끝에 딱 붙어서, 안쪽으로 들인 공용 화살표로 바꿈 */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none; appearance: none; padding-right: 36px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23c9c3d3' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 12px;
+}
+select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
 .sp-kw { flex: 1 1 260px; }
 .sp-kw input { width: 100%; }
 .sp-go { height: 40px; padding: 0 26px; }
