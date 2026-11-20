@@ -144,8 +144,8 @@
     kw.placeholder = "테마·매장 이름 (비워 두면 전체)";
     fields.append(field("검색어", kw, "sp-kw"));
 
-    const area = select("area", [["", "모든 지역"]]);
-    fields.append(field("지역", area));
+    const area = UI.areaPicker();   // 큰 지역(서울…) 누르면 펼쳐져서 세부 지역을 고름
+    fields.append(field("지역", area.el));
     const date = UI.datePicker("date", "");   // 사이트 색 달력 (오늘 이전은 못 고름)
     fields.append(field("날짜", date.el));
     const ppl = select("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })));
@@ -163,10 +163,7 @@
     box.append(clip);
     header.after(box);
 
-    // 지역·장르 목록은 처음 열 때 한 번만 (실패하면 "모든 ○○"만 남음)
-    api.get("/api/areas").then(function (list) {
-      list.forEach(function (a) { area.append(option(a, a)); });
-    }).catch(function () { /* 지역 없이 */ });
+    // 장르 목록은 처음 열 때 한 번만 (실패하면 "모든 장르"만 남음). 지역은 지역 칸이 열 때 불러옴
     api.get("/api/genres").then(function (list) {
       list.forEach(function (g) { genre.append(option(String(g.genreId), g.name)); });
     }).catch(function () { /* 장르 없이 */ });
@@ -187,7 +184,7 @@
 
     let opened = false;
     function set(v) {
-      if (!v) date.close();   // 열려 있던 달력도 같이 닫기
+      if (!v) { date.close(); area.close(); }   // 열려 있던 달력·지역 목록도 같이 닫기
       opened = v;
       box.classList.toggle("open", v);
       box.inert = !v;
