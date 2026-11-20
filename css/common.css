@@ -104,13 +104,8 @@ button { font: inherit; }
 /* 헤더 회원가입: 배너 사진 위에서도 잘 보이게 투명 대신 어두운 바탕 */
 .auth-btns .btn-line { background: var(--surface2); border-color: var(--line); }
 .auth-btns .btn-line:hover { background: #2e2938; border-color: var(--ink2); }
-/* 사장·관리자: 업무 화면이라 처음부터 진한 바 + 로고 옆 역할 표시 */
+/* 사장·관리자: 업무 화면이라 처음부터 진한 바 */
 .topbar-owner, .topbar-admin { background: rgba(var(--bg-rgb), .97); box-shadow: 0 1px 0 var(--line); }
-.logo-role {
-  margin-left: 8px; padding: 2px 7px; border-radius: 3px; vertical-align: 4px;
-  font-size: 11px; font-weight: 800; letter-spacing: 0; color: #111; background: var(--accent-ink);
-}
-.topbar-admin .logo-role { background: var(--gold); }
 
 .top-search-btn { background: none; border: 0; color: #fff; font-size: 24px; line-height: 1; padding: 2px 8px 5px; cursor: pointer; border-radius: 4px; transition: background .2s; }
 .top-search-btn[aria-expanded="true"] { background: rgba(255,255,255,.14); }
@@ -190,8 +185,7 @@ button { font: inherit; }
 }
 .profile-menu a, .profile-menu .pm-logout { display: block; width: 100%; text-align: left; padding: 8px 16px; font-size: 14px; color: var(--ink2); text-decoration: none; background: none; border: 0; cursor: pointer; }
 .profile-menu a:hover, .profile-menu .pm-logout:hover { color: #fff; text-decoration: underline; }
-.pm-name { padding: 2px 16px 0; font-weight: 800; }
-.pm-role { padding: 0 16px 8px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+.pm-name { padding: 2px 16px 8px; font-weight: 800; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
 .pm-logout { border-top: 1px solid var(--line) !important; margin-top: 6px; padding-top: 10px !important; }
 
 @media (max-width: 860px) {

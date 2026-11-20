@@ -5,7 +5,6 @@
   const $ = UI.$;
   const el = UI.el;
   const R = MemberForm.rules;
-  const ROLE_NAME = { USER: "손님", OWNER: "사장", ADMIN: "관리자" };
 
   let info = null;   // A-7 응답
 
@@ -54,7 +53,6 @@
 
     const dl = $("pinfo");
     function row(k, v) { dl.append(el("dt", null, k), el("dd", null, v)); }
-    row("회원 유형", ROLE_NAME[info.role] || info.role);
     if (info.createdAt) row("가입일", info.createdAt.slice(0, 10));
     if (info.role === "OWNER" && info.bizNo) row("사업자등록번호", info.bizNo);
 

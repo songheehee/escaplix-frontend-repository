@@ -39,7 +39,6 @@
       search: false,
     },
   };
-  const ROLE_NAME = { USER: "손님", OWNER: "사장", ADMIN: "관리자" };
   const menu = MENU[role] || MENU.GUEST;
 
   const header = el("header", "topbar topbar-" + role.toLowerCase());
@@ -49,7 +48,6 @@
   const logo = el("a", "logo");
   logo.href = Routes.url(menu.home);
   logo.append("Escap", el("span", null, "lix"));
-  if (role === "OWNER" || role === "ADMIN") logo.append(el("small", "logo-role", ROLE_NAME[role]));
   inner.append(logo);
 
   // 메뉴 (넓은 화면: 한 줄 / 좁은 화면: "메뉴 ▾" 펼치기)
@@ -241,7 +239,6 @@
     const box = el("div", "profile-menu");
     box.hidden = true;
     box.append(el("div", "pm-name", me.nickname + " 님"));
-    box.append(el("div", "pm-role", ROLE_NAME[role] || role));
     menu.my.forEach(function (l) {
       const a = el("a", null, l[1]);
       a.href = Routes.url(l[0]);
