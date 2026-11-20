@@ -286,6 +286,14 @@ const UI = (function () {
     };
   }
 
+  // 큰 제목 한 줄 맞추기용: 글자 몇 개 너비인지 (한글 1, 띄어쓰기·영문·숫자는 대략 0.55)
+  //   제목에 style --len 으로 넣으면 CSS 가 "줄 너비 ÷ --len" 으로 글자 크기를 정함 (home.css .hero-title, detail.css .d-title)
+  function textWidth(s) {
+    let w = 0;
+    for (const ch of String(s || "")) w += /[\u1100-\u11ff\u3130-\u318f\uac00-\ud7af\u4e00-\u9fff]/.test(ch) ? 1 : 0.55;
+    return Math.max(w, 1).toFixed(2);
+  }
+
   function isRecent(dateTime, days) {
     if (!dateTime) return false;
     return Date.now() - new Date(dateTime).getTime() < days * 86400000;
@@ -382,7 +390,9 @@ const UI = (function () {
     const art = el("div", "tcard-art");
     art.append(poster(t));
     const shade = el("div", "tcard-shade");
-    shade.append(el("span", "tcard-title", t.title));
+    const title = el("span", "tcard-title", t.title);
+    title.title = t.title;   // 한 줄로 잘리면 마우스를 올려 전체 이름
+    shade.append(title);
     art.append(shade);
     if (isRecent(t.createdAt, 14)) art.append(el("span", "ribbon new", "NEW"));
     else if (t.recruitingPartyCount > 0) art.append(el("span", "ribbon", "파티 모집 중"));
@@ -391,20 +401,15 @@ const UI = (function () {
 
     const info = el("div", "tcard-info");
     const actions = el("div", "tcard-actions");
-    const play = el("a", "icon-btn solid", "▶");
-    play.href = Routes.url("theme", { id: t.themeId });
-    play.title = "상세 보기";
-    play.setAttribute("aria-label", t.title + " 상세 보기");
-    actions.append(play);
     if (canWish()) actions.append(wishButton(t.themeId, t.wished, true));
     if (t.recruitingPartyCount > 0) {
-      const p = el("a", "icon-btn", "👥");
+      const p = el("a", "icon-btn party", "👥");
       p.href = Routes.url("partyList", { themeId: t.themeId });
       p.title = "모집 중인 파티 " + t.recruitingPartyCount + "개";
       p.setAttribute("aria-label", p.title);
       actions.append(p);
     }
-    info.append(actions);
+    if (actions.children.length) info.append(actions);   // 비회원·파티 없음이면 빈 줄을 안 남김
 
     const meta = el("div", "tcard-meta");
     const r = rating(t.avgRating);
@@ -415,7 +420,6 @@ const UI = (function () {
     info.append(meta);
     info.append(el("div", "tcard-genres", genresText(t.genres)));
     if (t.storeName) info.append(el("div", "tcard-store", t.storeName + (t.area ? " · " + t.area : "")));
-    if (t.recruitingPartyCount > 0) info.append(el("div", "tcard-party", "모집 중인 파티 " + t.recruitingPartyCount + "개"));
     card.append(info);
     return card;
   }
@@ -469,10 +473,49 @@ const UI = (function () {
     return box;
   }
 
+  // 매장 카드 (매장 목록 B-9 · 통합 검색 결과의 매장 탭)
+  function storeCard(s) {
+    const a = el("a", "store-card");
+    a.href = Routes.url("store", { id: s.storeId });
+
+    const art = el("div", "sc-art");
+    // 매장 사진 (없으면 장르 색)
+    posterBg(art, { posterUrl: s.photoUrl, genres: s.genres });
+    const top = el("div", "sc-top");
+    top.append(el("span", "sc-area", "📍 " + s.area));
+    if (s.recruitingPartyCount) top.append(el("span", "sc-party", "파티 모집 " + s.recruitingPartyCount));
+    art.append(top);
+    // 매장명 (길면 두 줄까지만, 전체 이름은 마우스를 올리면) + NEW: 처음 승인된 지 30일 안 (테마 NEW 는 14일)
+    const nameRow = el("div", "sc-name-row");
+    const name = el("h2", "sc-name", s.name);
+    name.title = s.name;
+    nameRow.append(name);
+    if (isRecent(s.approvedAt, 30)) nameRow.append(el("span", "sc-new", "NEW"));
+    art.append(nameRow);
+    a.append(art);
+
+    const body = el("div", "sc-body");
+    const r = rating(s.avgRating);
+    const line = el("div", "sc-line");
+    line.append(el("span", "match", r ? "★ " + r : "후기 없음"));
+    line.append(el("span", null, "테마 " + s.themeCount + "개"));
+    body.append(line);
+    if (s.address) body.append(el("div", "sc-addr", s.address));
+    if (s.hours) body.append(el("div", "muted small", "🕒 " + s.hours));
+    if (s.genres && s.genres.length) {
+      const tags = el("div", "sc-tags");
+      s.genres.forEach(function (g) { tags.append(el("span", "tag", g)); });
+      body.append(tags);
+    }
+    a.append(body);
+    return a;
+  }
+
   return {
+    storeCard: storeCard,
     el: el, $: $, poster: poster, posterBg: posterBg, genreGradient: genreGradient,
     rating: rating, won: won, people: people, genresText: genresText, genreName: genreName,
-    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, isRecent: isRecent, difficultyDots: difficultyDots,
+    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
     toast: toast, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
     skeletonRow: skeletonRow, emptyBox: emptyBox,
   };

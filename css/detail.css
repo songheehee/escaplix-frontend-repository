@@ -1,7 +1,8 @@
 /* S09 테마 상세 · S28 매장 상세 */
 
 /* ---------- 위쪽 큰 화면 ---------- */
-.d-hero { position: relative; min-height: min(78vh, 700px); display: flex; align-items: flex-end; overflow: hidden; }
+/* 내용은 위에서부터 같은 자리에 시작 (소개글이 길든 짧든 헤더와의 여백이 같음). 길면 아래로 늘어남 */
+.d-hero { position: relative; min-height: min(62vh, 560px); display: flex; align-items: flex-start; overflow: hidden; }
 .d-hero-bg {
   position: absolute; inset: 0; background-size: cover; background-position: center 30%;
   filter: saturate(1.05); transform: scale(1.04);
@@ -9,31 +10,49 @@
 .d-hero-shade {
   position: absolute; inset: 0;
   background:
-    linear-gradient(to top, var(--bg) 0%, rgba(var(--bg-rgb), .7) 30%, rgba(var(--bg-rgb), .2) 70%, rgba(var(--bg-rgb), .45) 100%),
-    linear-gradient(to right, rgba(var(--bg-rgb), .95) 0%, rgba(var(--bg-rgb), .6) 45%, rgba(var(--bg-rgb), .1) 80%);
+    /* 글자가 있는 왼쪽·아래만 어둡게, 오른쪽 위는 사진이 밝게 보이게 */
+    linear-gradient(to top, var(--bg) 0%, rgba(var(--bg-rgb), .55) 22%, rgba(var(--bg-rgb), 0) 55%, rgba(var(--bg-rgb), .35) 100%),
+    linear-gradient(to right, rgba(var(--bg-rgb), .9) 0%, rgba(var(--bg-rgb), .45) 40%, rgba(var(--bg-rgb), 0) 70%);
 }
 .d-hero-inner {
   position: relative; z-index: 1; width: 100%; max-width: 1600px; margin: 0 auto;
-  padding: calc(var(--topbar-h) + 40px) var(--gutter) 40px;
+  padding: calc(var(--topbar-h) + 120px) var(--gutter) 40px;   /* 헤더 아래 여백 (모든 상세 페이지 같음) */
   display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;
 }
-.d-hero-text { max-width: 640px; flex: 1; }
-.d-poster {
-  flex: 0 0 auto; width: clamp(180px, 18vw, 260px); aspect-ratio: 2 / 3; border-radius: 8px; overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,.7); background: var(--surface2); transform: rotate(1.5deg);
-}
-.d-poster img { width: 100%; height: 100%; object-fit: cover; }
-.d-genres .tag { background: rgba(255,255,255,.12); color: #fff; text-decoration: none; backdrop-filter: blur(4px); }
-.d-genres .tag:hover { background: var(--accent); }
+.d-hero-text { flex: 1; min-width: 0; container-type: inline-size; }   /* 제목이 포스터 왼쪽 폭을 다 쓸 수 있게 (cqw) */
+.d-hero-text > :not(.d-title) { max-width: 640px; }
+.d-genres .tag { padding: 3px 11px; font-size: 13px; background: rgba(255,255,255,.22); color: #fff; text-decoration: none; backdrop-filter: blur(4px); }   /* 메인 배너 장르 태그와 같은 모양 */
 .d-kicker { font-size: 14px; font-weight: 800; letter-spacing: 1px; color: var(--accent-ink); }
-.d-title { margin: 8px 0 12px; font-size: clamp(32px, 5vw, 64px); line-height: 1.05; font-weight: 900; letter-spacing: -1.5px; text-shadow: 0 3px 20px rgba(0,0,0,.6); }
+/* 제목은 한 줄 (메인 배너와 같은 방식): 기본(32~64px)에서 길면 "칸 너비 ÷ 글자 수(--len, theme.js)"만큼 줄이되
+     너무 작아지지 않게 26~42px 까지만. 그래도 넘치는 아주 긴 이름만 … */
+.d-title {
+  margin: 8px 0 12px; line-height: 1.15; font-weight: 900; letter-spacing: -1.5px; text-shadow: 0 3px 20px rgba(0,0,0,.6);
+  font-size: max(clamp(26px, 3vw, 42px), min(clamp(32px, 5vw, 64px), calc(100cqw / var(--len, 8) * .97)));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .d-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; color: var(--ink2); font-size: 15px; }
 .d-meta .match { color: var(--good); font-weight: 800; }
 .d-meta .party { color: var(--accent-ink); font-weight: 700; }
 .d-meta .lv { display: inline-flex; align-items: center; gap: 6px; }
-.d-store { display: inline-block; margin-top: 10px; color: #fff; font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.35); }
+.d-store { color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.35); }
+/* 핵심 정보 네 칸 (난이도 · 시간 · 인원 · 가격): 상자 없이, 라벨 작게 · 숫자 크게 · 단위 작게, 칸 사이 얇은 세로줄 */
+.d-stats { display: flex; flex-wrap: wrap; margin: 22px 0 4px; }
+.ds-cell { display: flex; flex-direction: column; gap: 6px; padding: 2px 28px; min-width: 0; }
+.ds-cell:first-child { padding-left: 0; }
+.ds-cell + .ds-cell { border-left: 1px solid rgba(255,255,255,.18); }
+.ds-cell dt { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,.55); }
+.ds-cell dd { margin: 0; display: flex; align-items: baseline; gap: 4px; white-space: nowrap; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+.ds-num { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -.5px; }
+.ds-unit { font-size: 14px; color: rgba(255,255,255,.7); }
+.ds-level { margin-left: 6px; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; color: var(--accent-ink); background: rgba(139, 92, 246, .18); align-self: center; }
+.d-btns .icon-btn { width: 46px; height: 46px; font-size: 19px; }
 .d-store:hover { border-color: #fff; }
-.d-desc { margin: 16px 0 0; font-size: 16px; color: #e6e1ee; line-height: 1.65; white-space: pre-line; max-width: 60ch; }
+.d-desc { margin: 0; font-size: 16px; color: #e6e1ee; line-height: 1.7; white-space: pre-line; max-width: 72ch; }
+.d-hero-text .d-desc { margin-top: 16px; max-width: 60ch; }   /* 매장 상세는 소개가 위쪽 큰 화면에 있음 */
+/* 긴 소개글은 네 줄까지 (theme.js longText). "더 보기"를 누르면 clamp 를 떼서 전부 */
+.d-desc.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+.d-more { margin-top: 6px; padding: 0; border: 0; background: none; color: #fff; font: inherit; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.d-more:hover { color: var(--accent-ink); }
 .d-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 .d-btns .btn { padding: 11px 22px; font-size: 15px; }
 
@@ -45,6 +64,12 @@
 .d-sec-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .d-sec-head h2 { margin: 0; }
 .d-sec-head .btn { margin-left: auto; }
+/* 테마 상세 본문: 섹션(테마 소개 · 시간표 · 후기 · 매장 정보)마다 가는 줄로 나누고 간격을 넉넉히 */
+.d-body > .d-sec { margin: 0; padding: 34px 0; border-top: 1px solid var(--line); }
+.d-body > .d-sec:first-child, .d-body > .d-sec[hidden] + .d-sec { border-top: 0; padding-top: 10px; }
+.d-body > .d-sec h2 { font-size: 22px; }
+.d-body > .d-sec .d-sec-head { margin-bottom: 18px; }
+.d-body > .d-sec > h2 { margin-bottom: 18px; }
 .small { font-size: 13px; }
 
 .d-info { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; }
@@ -52,6 +77,24 @@
 .d-info dt { color: var(--muted); }
 .d-info dd { margin: 0; color: var(--ink); word-break: keep-all; overflow-wrap: anywhere; }
 .d-info dd a { color: var(--accent-ink); }
+/* 테마 상세 맨 아래 매장 카드: [사진] 이름·지역 / 주소·전화·영업시간 [매장 보기] */
+.sinfo {
+  display: flex; align-items: center; gap: 22px; padding: 16px; text-decoration: none; color: inherit;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  transition: border-color .2s, background .2s, transform .2s;
+}
+.sinfo:hover, .sinfo:focus-visible { border-color: #5a5068; background: var(--surface2); transform: translateY(-2px); }
+.sinfo:hover .sinfo-arrow { color: #fff; transform: translateX(3px); }
+.sinfo-photo { flex: 0 0 180px; aspect-ratio: 16 / 10; border-radius: 6px; background-size: cover; background-position: center; }
+.sinfo-body { flex: 1; min-width: 0; }
+.sinfo-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.sinfo-name { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+.sinfo-area { font-size: 12px; padding: 2px 9px; border-radius: 99px; background: var(--surface2); color: var(--ink2); }
+.sinfo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--ink2); }
+.sinfo-list li { display: flex; gap: 8px; min-width: 0; }
+.sinfo-list li > :last-child { overflow-wrap: anywhere; }
+.si-icon { flex: 0 0 18px; text-align: center; opacity: .8; }
+.sinfo-arrow { flex: none; padding: 0 8px; font-size: 28px; line-height: 1; color: var(--muted); transition: color .2s, transform .2s; }   /* 누를 수 있다는 표시 */
 .map-box { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
 .map-box iframe { width: 100%; height: 220px; border: 0; border-radius: 6px; filter: invert(.9) hue-rotate(180deg) saturate(.6); }
 .map-box a { color: var(--accent-ink); }
@@ -72,6 +115,7 @@
 .date-chip.on.weekend .dc-num { color: #d0263f; }
 
 .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; margin: 14px 0 10px; min-height: 44px; }
+.slots > p, .slots > .sk { grid-column: 1 / -1; margin: 0; align-self: center; }   /* "남은 회차가 없어요"·오류 문구·불러오는 중은 한 칸이 아니라 한 줄 전체 */
 .slot {
   display: flex; flex-direction: column; align-items: center; padding: 10px 6px; border-radius: 6px;
   background: var(--surface2); border: 1px solid transparent; text-decoration: none; color: var(--ink);
@@ -84,36 +128,60 @@ a.slot:hover { border-color: var(--accent); background: rgba(139, 92, 246, .15);
 .review-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
 .rs-score { font-size: 48px; font-weight: 900; line-height: 1; }
 .rs-stars { color: var(--gold); font-size: 18px; letter-spacing: 2px; }
-.reviews { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-.review { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; position: relative; }
+/* 후기 목록: 한 후기가 한 줄 전체, 사이를 가는 줄로 나눔 */
+.reviews { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.review { padding: 18px 4px; border-bottom: 1px solid var(--line); position: relative; }
+.review:last-child { border-bottom: 0; }   /* 마지막 후기 밑줄은 빼서 섹션 구분줄과 겹치지 않게 */
+/* 후기 쪽 넘기기 ‹ 1 2 3 › */
+.pager { display: flex; justify-content: center; gap: 6px; margin-top: 22px; }
+.pg {
+  min-width: 36px; height: 36px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line);
+  background: transparent; color: var(--ink2); font: inherit; font-size: 14px; cursor: pointer;
+}
+.pg:hover:not(:disabled) { border-color: var(--ink2); color: #fff; }
+.pg[aria-current="page"] { background: #fff; border-color: #fff; color: #111; font-weight: 800; }
+.pg:disabled { opacity: .35; cursor: default; }
+.pg-arrow { font-size: 18px; line-height: 1; }
 .rv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .rv-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .rv-who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rv-who .tag { margin: 0; }
+.rv-date { flex: none; font-size: 12px; color: var(--muted); }
+.rv-bits { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .avatar.small { width: 26px; height: 26px; font-size: 12px; border-radius: 50%; }
 .rv-stars { color: var(--gold); letter-spacing: 1px; flex: 0 0 auto; }
-.rv-facts { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-top: 10px; font-size: 13px; color: var(--ink2); }
-.rv-text { margin: 10px 0 0; font-size: 14px; white-space: pre-line; overflow-wrap: anywhere; }
+.rv-facts { display: flex; flex-wrap: nowrap; gap: 4px 10px; align-items: center; margin-top: 10px; font-size: 13px; color: var(--ink2); }
+.rv-text { margin: 10px 0 0; font-size: 15px; line-height: 1.6; max-width: 90ch; white-space: pre-line; overflow-wrap: anywhere; }
 .rv-report { margin-top: 8px; background: none; border: 0; padding: 0; color: var(--muted); font-size: 12px; cursor: pointer; }
 .rv-report:hover:not(:disabled) { color: var(--danger); }
 .rv-report:disabled { cursor: default; opacity: .7; }
 
 #more-rows { padding-bottom: 20px; }
+/* "○○의 다른 테마" 줄 위에도 본문 섹션과 같은 가는 줄 (본문 폭에 맞춤) */
+#more-rows > .row-sec { padding-top: 34px; margin-top: 0; }
+#more-rows > .row-sec::before {
+  content: ""; position: absolute; top: 0; height: 1px; background: var(--line);
+  left: max(var(--gutter), calc((100% - 1600px) / 2 + var(--gutter)));
+  right: max(var(--gutter), calc((100% - 1600px) / 2 + var(--gutter)));
+}
 
 /* 매장 상세: 사진을 더 어둡게 (글이 주인공) */
 .store-hero .d-hero-bg { filter: blur(2px) saturate(.9); }
-.store-hero { min-height: min(62vh, 560px); }
-.d-cols .grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.d-cols .grid { grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); }
 
 @media (max-width: 980px) {
   .d-cols { grid-template-columns: minmax(0, 1fr); }
   .d-info { order: -1; }
 }
 @media (max-width: 640px) {
-  .d-hero { min-height: auto; }
-  .d-hero-inner { flex-direction: column-reverse; align-items: flex-start; gap: 18px; padding-top: calc(var(--topbar-h) + 16px); }
-  .d-poster { width: 130px; transform: none; }
+  .d-hero { min-height: 60vh; }   /* 배경 사진이 보일 만큼은 높이를 둠 */
+  .d-hero-inner { flex-direction: column; align-items: stretch; gap: 18px; padding-top: calc(var(--topbar-h) + 60px); }   /* 글 칸이 화면 폭을 다 쓰게 (안 그러면 cqw 칸이 0 폭으로 접힘) */
   .d-btns .btn { flex: 1 1 auto; padding: 10px 14px; font-size: 14px; }
-  .reviews { grid-template-columns: 1fr; }
-  .store-hero .d-hero-inner { padding-top: calc(var(--topbar-h) + 60px); }
+  .sinfo { flex-direction: column; align-items: stretch; gap: 14px; }   /* 폰: 사진 위, 글 아래 */
+  .sinfo-photo { flex: none; width: 100%; }
+  .sinfo-arrow { display: none; }
+  .d-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 0; }   /* 폰: 2×2 */
+  .ds-cell { padding: 2px 16px; }
+  .ds-cell:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .ds-num { font-size: 24px; }
 }

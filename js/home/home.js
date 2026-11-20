@@ -1,7 +1,8 @@
 // S08 메인 (index.html) · B 담당
 //   - 맨 위 추천 배너: 로그인 손님은 D-9 맞춤 추천, 비회원은 B-1(sort=rate) 상위 5개 (결정 C1)
 //   - 가로 줄: B-1 응답을 한 번 받아서 화면이 나눠 그림 (명세 B-1)
-//   - 검색·필터로 들어오면(주소에 조건이 있으면) 배너·줄 대신 결과 격자
+//   - 검색·필터로 들어오면(주소에 조건이 있으면) 배너·줄 대신 통합 검색 결과
+//     테마(B-1)·매장(B-9)을 한 번에 찾아서 [테마] [매장] 탭으로 보여 줌. 매장 탭은 검색어·지역만 적용
 (function () {
   const el = UI.el;
   const me = Auth.me();
@@ -15,7 +16,9 @@
     people: P.get("people") || "",
     genreId: P.get("genreId") || "",
     sort: P.get("sort") || "rate",
+    tab: P.get("tab") === "stores" ? "stores" : "themes",   // 결과 탭
   };
+  let tabChosen = P.has("tab");   // 탭을 직접 고른 적이 없으면 테마 결과가 0개일 때 매장 탭을 먼저 보여 줌
   // 지난 날짜는 달력에서 고를 수 없게 막아 두지만, 예전에 저장한 주소로 들어오면 남아 있을 수 있다
   //   → 날짜 조건만 빼고 주소도 고친다 (그대로 보내면 서버가 400)
   if (F.date && F.date < UI.today()) {
@@ -23,13 +26,20 @@
     P.delete("date");
     history.replaceState(null, "", location.pathname + (P.toString() ? "?" + P : "") + location.hash);
   }
-  const searchMode = !!(F.keyword || F.area || F.date || F.people || F.genreId || P.has("sort"));
+  const searchMode = !!(F.keyword || F.area || F.date || F.people || F.genreId || P.has("sort") || P.has("tab"));
 
   const heroBox = UI.$("hero");
   const main = UI.$("rows");
   // 검색 결과 화면: 제목 · 결과 칸 (renderSearch 보다 먼저 만들어 둬야 함)
   const searchHead = el("div", "search-head");
+  const searchTabs = el("div", "search-tabs");
+  searchTabs.setAttribute("role", "tablist");
+  searchTabs.setAttribute("aria-label", "검색 결과 종류");
   const searchOut = el("div", "search-out");
+  searchOut.id = "search-out";
+  searchOut.setAttribute("role", "tabpanel");
+  let searchPage = null;
+  let found = null;    // 마지막 검색 결과 { themes, stores } (탭만 바꿀 때는 다시 안 불러옴)
   let searchSeq = 0;   // 늦게 온 옛날 응답이 새 결과를 덮어쓰지 않게
   let genreLabel = "";
 
@@ -103,7 +113,7 @@
       : Array.from(new Set(themes.flatMap(function (t) { return t.genres; })));
     names.forEach(function (name) {
       const list = themes.filter(function (t) { return t.genres.indexOf(name) !== -1; });
-      rows.push({ title: GENRE_ROW[name] || name + " 테마", list: list, genre: name });
+      rows.push({ title: GENRE_ROW[name] || name + " 테마", list: list });
     });
 
     rows.push({ title: "방탈출이 처음이라면", note: "난이도 2 이하", list: themes.filter(function (t) { return t.difficulty <= 2; }) });
@@ -115,14 +125,6 @@
         ? UI.row(r.title, r.note, r.list, rankCard, "rank-row")
         : UI.row(r.title, r.note, r.list, UI.themeCard);
       if (r.id) sec.id = r.id;
-      if (r.genre && genres) {
-        const g = genres.find(function (x) { return x.name === r.genre; });
-        if (g) {
-          const more = el("a", "row-more", "모두 보기 ›");
-          more.href = Routes.url("home", { genreId: g.genreId });
-          sec.querySelector(".row-title").append(more);
-        }
-      }
       main.append(sec);
     });
   }
@@ -137,7 +139,9 @@
     const art = el("div", "rank-art");
     art.append(UI.poster(t));
     const cap = el("div", "rank-cap");
-    cap.append(el("b", null, t.title));
+    const name = el("b", null, t.title);
+    name.title = t.title;
+    cap.append(name);
     const r = UI.rating(t.avgRating);
     cap.append(el("span", null, (r ? "★ " + r : "새 테마") + " · " + t.storeName));
     art.append(cap);
@@ -161,9 +165,7 @@
         return Object.assign({}, t, r, { wished: !!t.wished, area: t.area, createdAt: t.createdAt });
       });
     } else {
-      picks = themes.slice(0, 5).map(function (t) {
-        return Object.assign({}, t, { reason: "최근 7일 파티·찜·후기가 많은 테마" });
-      });
+      picks = themes.slice(0, 5);
     }
 
     const track = UI.$("hero-track");
@@ -183,8 +185,16 @@
 
       const box = el("div", "hero-content");
       box.append(el("div", "hero-kicker",
-        personal ? me.nickname + " 님을 위한 추천" : (i === 0 ? "이번 주 가장 인기 있는 테마" : "이번 주 인기 " + (i + 1) + "위")));
-      box.append(el("h1", "hero-title", t.title));
+        personal ? me.nickname + " 님을 위한 추천" : "이번 주 인기 " + (i + 1) + "위"));
+      // 장르 태그 (테마 상세와 같은 모양)
+      const genres = el("div", "hero-genres");
+      (t.genres || []).forEach(function (g) { genres.append(el("span", "tag", UI.genreName(g))); });
+      box.append(genres);
+      // 제목은 한 줄. 길수록 글자를 줄여서 한 줄에 맞추고(--len), 그래도 넘치면 … (전체 이름은 마우스를 올리면)
+      const title = el("h1", "hero-title", t.title);
+      title.title = t.title;
+      title.style.setProperty("--len", UI.textWidth(t.title));
+      box.append(title);
 
       const meta = el("div", "hero-meta");
       const r = UI.rating(t.avgRating);
@@ -193,15 +203,10 @@
       lv.append(UI.difficultyDots(t.difficulty));
       meta.append(lv);
       meta.append(el("span", null, t.playMinutes + "분"));
-      meta.append(el("span", null, UI.people(t.minPeople, t.maxPeople)));
-      meta.append(el("span", null, "1인 " + UI.won(t.price)));
       box.append(meta);
 
-      if (t.reason) box.append(el("div", "hero-reason", t.reason));
-      const desc = el("p", "hero-desc", t.description || "");
-      box.append(desc);
-      if (!t.description) fillDescription(t.themeId, desc);
-      box.append(el("div", "hero-store", UI.genresText(t.genres) + "  ·  " + t.storeName));
+      // 매장 (설명·추천 이유는 배너에서 뺌. 자세한 건 상세에서)
+      box.append(el("div", "hero-store", t.storeName));
 
       const btns = el("div", "hero-btns");
       const go = el("a", "btn btn-light", "▶  상세 보기");
@@ -300,21 +305,14 @@
     schedule();
   }
 
-  // 비회원 배너는 B-1에 설명이 없어서 B-2로 한 줄 채워 넣는다 (실패하면 빈 칸 그대로)
-  function fillDescription(themeId, node) {
-    api.get("/api/themes/" + themeId).then(function (d) {
-      node.textContent = d.description || "";
-    }).catch(function () { /* 설명 없이 둠 */ });
-  }
-
   // =========================================================
   // 3) 검색 결과 화면 (B-1 조건 검색)
   // =========================================================
   // 조건을 바꾸면 화면을 새로 열지 않고 결과만 다시 그린다 (검색어를 치는 중에도 칸이 그대로 유지되게)
   function renderSearch() {
-    const wrap = el("section", "search-page");
-    wrap.append(buildFilterForm(), searchHead, searchOut);
-    main.append(wrap);
+    searchPage = el("section", "search-page");
+    searchPage.append(buildFilterForm(), searchHead, searchTabs, searchOut);
+    main.append(searchPage);
     loadResults();
   }
 
@@ -324,23 +322,20 @@
     searchHead.append(el("div", "sk sk-title"));
     searchOut.setAttribute("aria-busy", "true");
     try {
-      const list = await api.get("/api/themes", F);
+      // 테마는 모든 조건, 매장은 검색어·지역만 (B-9가 받는 조건)
+      const [themes, stores] = await Promise.all([
+        api.get("/api/themes", { keyword: F.keyword, area: F.area, date: F.date, people: F.people, genreId: F.genreId, sort: F.sort }),
+        api.get("/api/stores", { keyword: F.keyword, area: F.area }),
+      ]);
       if (seq !== searchSeq) return;
-      searchHead.textContent = "";
-      searchOut.textContent = "";
-      const h = el("h1", "search-title", summaryText() + " 검색 결과");
-      h.append(el("small", null, list.length + "개"));
-      searchHead.append(h);
-      if (!list.length) {
-        searchOut.append(UI.emptyBox("찾는 테마나 매장이 없어요. 다른 이름이나 조건으로 검색해 보세요.", "전체 테마 보기", Routes.url("home")));
-        return;
-      }
-      const grid = el("div", "grid");
-      list.forEach(function (t) { grid.append(UI.themeCard(t)); });
-      searchOut.append(grid);
+      found = { themes: themes, stores: stores };
+      if (!tabChosen) F.tab = !themes.length && stores.length ? "stores" : "themes";
+      paintResults();
     } catch (e) {
       if (seq !== searchSeq) return;
+      found = null;
       searchHead.textContent = "";
+      searchTabs.textContent = "";
       searchOut.textContent = "";
       searchOut.append(errorBox(e.message));
     } finally {
@@ -348,11 +343,64 @@
     }
   }
 
+  // 받아 둔 결과로 제목 · 탭 · 목록을 그림
+  function paintResults() {
+    if (!found) return;
+    const stores = F.tab === "stores";
+    searchPage.classList.toggle("on-stores", stores);
+    searchHead.textContent = "";
+    searchHead.append(el("h1", "search-title", summaryText() + " 검색 결과"));
+
+    searchTabs.textContent = "";
+    [["themes", "테마", found.themes.length], ["stores", "매장", found.stores.length]].forEach(function (x) {
+      const b = el("button", "search-tab");
+      b.type = "button";
+      b.id = "tab-" + x[0];
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-controls", "search-out");
+      b.setAttribute("aria-selected", String(F.tab === x[0]));
+      b.tabIndex = F.tab === x[0] ? 0 : -1;
+      b.append(x[1] + " ", el("span", "st-count", String(x[2])));
+      b.addEventListener("click", function () { pickTab(x[0]); });
+      b.addEventListener("keydown", function (e) {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        pickTab(x[0] === "themes" ? "stores" : "themes");
+        UI.$("tab-" + F.tab).focus();
+      });
+      searchTabs.append(b);
+    });
+    searchOut.setAttribute("aria-labelledby", "tab-" + F.tab);
+
+    searchOut.textContent = "";
+    const list = stores ? found.stores : found.themes;
+    if (stores && (F.date || F.people || F.genreId)) {
+      searchOut.append(el("p", "search-note muted", "매장은 검색어·지역으로만 골라요. 날짜·인원·장르는 테마 탭에 적용돼요."));
+    }
+    if (!list.length) {
+      searchOut.append(stores
+        ? UI.emptyBox("찾는 매장이 없어요. 다른 이름이나 지역으로 검색해 보세요.", "전체 매장 보기", Routes.url("stores"))
+        : UI.emptyBox("찾는 테마가 없어요. 다른 이름이나 조건으로 검색해 보세요.", "전체 테마 보기", Routes.url("home")));
+      return;
+    }
+    const grid = el("div", stores ? "store-grid" : "grid");
+    list.forEach(function (x) { grid.append(stores ? UI.storeCard(x) : UI.themeCard(x)); });
+    searchOut.append(grid);
+  }
+
+  function pickTab(tab) {
+    tabChosen = true;
+    if (F.tab === tab) return;
+    F.tab = tab;
+    saveToUrl();
+    paintResults();
+  }
+
   // 지금 조건을 주소에 남긴다 (빈 칸은 빼고 sort 는 남겨서 "검색 화면"이 유지되게). 공유·새로고침용
   function saveToUrl() {
     const q = new URLSearchParams();
     ["keyword", "area", "date", "people", "genreId"].forEach(function (k) { if (F[k]) q.set(k, F[k]); });
     q.set("sort", F.sort || "rate");
+    if (tabChosen && F.tab === "stores") q.set("tab", "stores");
     history.replaceState(null, "", location.pathname + "?" + q);
   }
 
@@ -360,10 +408,12 @@
     const parts = [];
     if (F.keyword) parts.push("‘" + F.keyword + "’");
     if (F.area) parts.push(F.area);
-    if (F.date) parts.push(F.date.slice(5).replace("-", "/"));
-    if (F.people) parts.push(F.people + "명");
-    if (F.genreId) parts.push(genreLabel || "장르");
-    return parts.length ? parts.join(" · ") : "전체 테마";
+    if (F.tab !== "stores") {   // 매장 탭에는 날짜·인원·장르가 안 걸림
+      if (F.date) parts.push(F.date.slice(5).replace("-", "/"));
+      if (F.people) parts.push(F.people + "명");
+      if (F.genreId) parts.push(genreLabel || "장르");
+    }
+    return parts.length ? parts.join(" · ") : (F.tab === "stores" ? "전체 매장" : "전체 테마");
   }
 
   // 검색 조건 막대: 바꾸면 바로 다시 검색 (주소가 바뀌어서 공유·뒤로가기 가능)
@@ -389,13 +439,13 @@
     }).catch(function () { /* 지역 없이 */ });
 
     const date = UI.datePicker("date", F.date);   // 사이트 색 달력 (오늘 이전은 못 고름)
-    form.append(field("날짜", date.el));
+    form.append(field("날짜", date.el, true));
 
     const ppl = select("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })), F.people);
-    form.append(field("인원", ppl));
+    form.append(field("인원", ppl, true));
 
     const genre = select("genreId", [["", "모든 장르"]], F.genreId);
-    form.append(field("장르", genre));
+    form.append(field("장르", genre, true));
     api.get("/api/genres").then(function (list) {
       list.forEach(function (g) { genre.append(option(String(g.genreId), g.name)); });
       genre.value = F.genreId;
@@ -410,10 +460,13 @@
     }
 
     const sort = select("sort", [["rate", "평점순"], ["popular", "이번 주 인기순"], ["new", "최신순"]], F.sort);
-    form.append(field("정렬", sort));
+    form.append(field("정렬", sort, true));
 
     const reset = el("a", "btn btn-line small fb-reset", "조건 지우기");
     reset.href = Routes.url("home", { sort: "rate" });
+    reset.addEventListener("click", function () {   // 지금 탭은 남김
+      if (F.tab === "stores") reset.href = Routes.url("home", { sort: "rate", tab: "stores" });
+    });
     form.append(reset);
 
     // 고르는 칸은 바꾸는 즉시, 검색어는 치다가 잠깐(0.4초) 멈추면 검색. 엔터는 바로
@@ -423,7 +476,7 @@
       if (!form.checkValidity()) { form.reportValidity(); return; }   // 지난 날짜를 직접 친 경우 등
       const next = {
         keyword: kw.value.trim(), area: area.value, date: date.input.value,
-        people: ppl.value, genreId: genre.value, sort: sort.value,
+        people: ppl.value, genreId: genre.value, sort: sort.value, tab: F.tab,
       };
       if (Object.keys(next).every(function (k) { return next[k] === F[k]; })) return;   // 바뀐 게 없으면 그대로
       Object.assign(F, next);
@@ -439,8 +492,9 @@
     form.addEventListener("submit", function (e) { e.preventDefault(); apply(); });
     return form;
 
-    function field(label, control) {
-      const l = el("label", "fb-field");
+    // themeOnly: 테마에만 걸리는 칸 (매장 탭에서는 숨김)
+    function field(label, control, themeOnly) {
+      const l = el("label", "fb-field" + (themeOnly ? " fb-theme-only" : ""));
       l.append(el("span", null, label), control);
       return l;
     }

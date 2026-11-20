@@ -32,11 +32,15 @@
     const box = $("d-text");
     box.textContent = "";
     box.append(el("div", "d-kicker", "📍 " + s.area));
-    box.append(el("h1", "d-title", s.name));
+    // 매장명은 한 줄. 길면 글자를 줄여서 맞춤 (detail.css .d-title)
+    const title = el("h1", "d-title", s.name);
+    title.title = s.name;
+    title.style.setProperty("--len", UI.textWidth(s.name));
+    box.append(title);
 
     const meta = el("div", "d-meta");
     const r = UI.rating(s.avgRating);
-    meta.append(el("span", "match", r ? "★ " + r + " (테마 평균)" : "아직 후기 없음"));
+    meta.append(el("span", "match", r ? "★ " + r : "아직 후기 없음"));   // 매장 별점 = 테마 평균의 평균
     meta.append(el("span", null, "테마 " + s.themes.length + "개"));
     const parties = s.themes.reduce(function (n, t) { return n + t.recruitingPartyCount; }, 0);
     if (parties) meta.append(el("span", "party", "모집 중인 파티 " + parties + "개"));
