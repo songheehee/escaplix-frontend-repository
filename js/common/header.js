@@ -108,7 +108,12 @@
     btn.addEventListener("click", function () {
       const bar = document.querySelector(".filter-bar .fb-keyword");
       if (bar) { window.scrollTo({ top: 0, behavior: "smooth" }); bar.focus({ preventScroll: true }); return; }
-      if (!panel) panel = searchPanel(btn);
+      if (!panel) {
+        panel = searchPanel(btn);
+        // 방금 만든 패널은 "닫힌 모습"을 한 번 계산시켜야 처음 열 때도 펼쳐지는 움직임이 나온다
+        //   (안 하면 만들자마자 열린 상태로 그려져서 툭 튀어나옴)
+        void document.getElementById("search-panel").offsetHeight;
+      }
       panel.toggle();
     });
     return btn;
