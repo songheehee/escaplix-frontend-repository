@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/member.css">
+</head>
+<body>
+  <!-- S03 가입 유형 고르기 (API 없음) -->
+  <main class="page auth-page">
+    <section class="auth-box" style="--auth-w: 640px">
+      <h1>회원가입</h1>
+      <p class="lead">어떤 회원으로 가입할지 골라 주세요.</p>
+
+      <div class="choose">
+        <a class="choose-card" id="go-user" href="#">
+          <span class="choose-ico" aria-hidden="true">🔑</span>
+          <strong class="choose-ttl">손님으로 가입</strong>
+          <span class="choose-desc">테마를 찾고, 찜하고, 파티를 만들어 같이 갈 사람을 구해요.</span>
+          <span class="choose-go">손님 가입 →</span>
+        </a>
+        <a class="choose-card" id="go-owner" href="#">
+          <span class="choose-ico" aria-hidden="true">🏪</span>
+          <strong class="choose-ttl">사장으로 가입</strong>
+          <span class="choose-desc">내 매장과 테마를 등록하고 시간표를 관리해요. 사업자등록증 이미지가 필요해요.</span>
+          <span class="choose-go">사장 가입 →</span>
+        </a>
+      </div>
+
+      <p class="auth-foot">이미 회원이신가요? <a id="login-link" href="#">로그인</a></p>
+    </section>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/member/signup.js"></script>
+</body>
+</html>

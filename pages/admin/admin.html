@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 홈 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/manage.css">
+</head>
+<body>
+  <!-- S25 관리자 홈 · C-12 숫자 요약, C-13·C-17 지금 처리할 것 -->
+  <main class="page m-page" id="main">
+    <h1 class="page-title">관리자 홈</h1>
+    <p class="muted" style="margin-bottom:20px">승인 대기부터 처리해 주세요. 오래 기다린 순서로 보여요.</p>
+
+    <div class="stat-grid" id="stats">
+      <div class="sk sk-block"></div><div class="sk sk-block"></div><div class="sk sk-block"></div><div class="sk sk-block"></div>
+    </div>
+
+    <h2 class="m-sec-title">지금 처리할 것</h2>
+    <div class="m-card" id="todo-box"><div class="sk sk-line"></div><div class="sk sk-line"></div></div>
+
+    <h2 class="m-sec-title">관리 메뉴</h2>
+    <div class="tile-grid" id="tiles"></div>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/owner/manage.js"></script>
+  <script src="../../js/admin/admin.js"></script>
+</body>
+</html>

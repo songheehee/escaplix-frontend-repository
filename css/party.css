@@ -1,0 +1,181 @@
+/* =========================================================
+   파티 화면 (A): 파티 목록 · 파티 만들기 · 파티 방
+   색은 common.css 의 :root 변수만 쓴다
+   ========================================================= */
+
+/* ---------- 파티 목록 (party-list) ---------- */
+.pl-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.pl-sub { margin: 0; font-size: 14px; }
+
+.pl-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.pl-search { flex: 1 1 220px; max-width: 340px; }
+.pl-search input {
+  width: 100%; box-sizing: border-box; padding: 8px 14px; border-radius: 99px; font: inherit; font-size: 14px;
+  color: var(--ink); background: var(--surface); border: 1px solid var(--line);
+}
+.pl-search input:focus { outline: none; border-color: var(--accent); }
+.pl-genre { position: relative; }
+.pl-genre .btn[aria-expanded="true"] { border-color: var(--accent); }
+.pl-panel {
+  position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; width: min(360px, calc(100vw - 32px));
+  padding: 14px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--line); box-shadow: 0 12px 32px rgba(0,0,0,.5);
+}
+.pl-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; font-size: 14px; }
+.pl-panel-note { margin: 10px 0 0; font-size: 12px; }
+.pl-theme { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px; border-radius: 99px; font-size: 13px;
+  background: rgba(139, 92, 246, .18); border: 1px solid var(--accent); color: #fff; }
+.pl-theme[hidden] { display: none; }
+.pl-theme-x { background: none; border: 0; color: var(--ink2); cursor: pointer; font-size: 13px; padding: 0 6px; }
+.pl-theme-x:hover { color: #fff; }
+.pl-count { font-size: 13px; }
+
+/* 장르 칩 (목록 필터, 파티 만들기에서도 씀) */
+.pchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pchip { position: relative; cursor: pointer; }
+.pchip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pchip span { display: inline-block; padding: 5px 12px; border-radius: 99px; font-size: 13px; border: 1px solid var(--line); color: var(--ink2); background: var(--bg); }
+.pchip input:checked + span { background: rgba(139, 92, 246, .25); border-color: var(--accent); color: #fff; font-weight: 700; }
+.pchip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(139, 92, 246, .35); }
+
+/* 파티 배너 카드 */
+.party-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.party-card {
+  display: flex; flex-direction: column; overflow: hidden; text-align: left; font: inherit; color: var(--ink); padding: 0;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
+  transition: border-color .15s, transform .15s, box-shadow .15s; word-break: keep-all; overflow-wrap: anywhere;
+}
+.party-card:hover, .party-card:focus-visible { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.45); outline: none; }
+.party-card.kicked { opacity: .5; cursor: not-allowed; }
+.party-card.kicked:hover { transform: none; border-color: var(--line); box-shadow: none; }
+.pb-top { padding: 12px 14px; color: #fff; }
+.pb-theme { font-size: 12px; font-weight: 700; opacity: .92; }
+.pb-genres { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
+.pb-genre { font-size: 11px; padding: 1px 8px; border-radius: 99px; background: rgba(255,255,255,.2); }
+.pb-date { font-size: 22px; font-weight: 800; line-height: 1.2; }
+.pb-time { font-size: 13px; opacity: .88; }
+.pb-body { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; flex: 1; }
+.pb-badges { display: flex; gap: 4px; flex-wrap: wrap; min-height: 18px; }
+.badge.mine { background: rgba(139, 92, 246, .25); color: var(--accent-ink); }
+.badge.bad { background: rgba(255, 92, 108, .18); color: #ff9aa5; }
+.badge.soon { background: rgba(242, 184, 75, .18); color: var(--gold); }
+.pb-title { font-weight: 800; line-height: 1.35; }
+.pb-intro { font-size: 13px; color: var(--ink2); background: var(--surface2); border-left: 3px solid var(--accent); padding: 6px 9px; border-radius: 4px; }
+.pb-seats { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+.seats { display: flex; gap: 4px; }
+.seats i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--accent); }
+.seats i.on { background: var(--accent); }
+.pb-foot { margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
+.pb-deadline { color: var(--gold); }
+.pb-foot .kicked-note { color: #ff9aa5; }
+.party-sk { height: 290px; border-radius: 10px; }
+
+/* ---------- 파티 만들기 (party-form). 입력칸·카드는 member.css 를 같이 씀 ---------- */
+.slots { display: flex; flex-wrap: wrap; gap: 8px; min-height: 38px; align-items: center; }
+.slots-note { font-size: 13px; }
+.slot {
+  padding: 8px 14px; border-radius: var(--radius); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line); transition: border-color .15s, background .15s;
+}
+.slot:hover { border-color: var(--ink2); }
+.slot[aria-checked="true"] { background: rgba(139, 92, 246, .25); border-color: var(--accent); color: #fff; }
+.slot[aria-checked="true"]::after { content: " ✓"; }
+.slot small { font-weight: 400; color: var(--muted); margin-left: 4px; }
+.pf-two { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; }
+.pf-two .field { margin-bottom: 0; }
+.pf-hint { margin: 6px 0 16px; }
+.pf-intro { resize: vertical; min-height: 72px; line-height: 1.5; }
+.pf-counter { display: flex; justify-content: space-between; gap: 8px; }
+.pf-btns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 4px; }
+.pf-btns .btn { padding-top: 12px; padding-bottom: 12px; }
+select.input { appearance: auto; }
+input.input[type="date"], input.input[type="datetime-local"] { color-scheme: dark; }
+@media (max-width: 480px) { .pf-two { grid-template-columns: 1fr; } .pf-two .field { margin-bottom: 4px; } }
+
+/* ---------- 파티 방 (party-room) ---------- */
+.room-page { max-width: 1100px; word-break: keep-all; overflow-wrap: anywhere; }
+.back-link-p { display: inline-block; margin-bottom: 12px; font-size: 13px; color: var(--muted); text-decoration: none; }
+.back-link-p:hover { color: var(--ink); }
+.room-sk { height: 420px; border-radius: 10px; }
+.room-info { padding: 18px 20px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 14px; }
+.ri-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ri-top .badge { flex: 0 0 auto; white-space: nowrap; margin-top: 4px; }
+.ri-title { margin: 0; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.3; }
+.ri-meta { margin-top: 6px; font-size: 14px; color: var(--ink2); }
+.ri-deadline { margin-top: 2px; font-size: 13px; color: var(--gold); }
+.ri-intro { margin-top: 10px; font-size: 14px; }
+.badge.st-recruiting { background: rgba(70, 214, 140, .15); color: var(--good); }
+.badge.st-full { background: rgba(242, 184, 75, .18); color: var(--gold); }
+.badge.st-closed { background: #3a3542; color: var(--ink2); }
+
+.room-split { display: grid; grid-template-columns: 280px 1fr; gap: 14px; align-items: start; }
+.room-members, .room-chat { padding: 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.rm-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.rm-head h2 { margin: 0; font-size: 16px; }
+.rm-head span { font-size: 13px; }
+.member-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.member-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 4px 10px; border-radius: 6px; background: var(--bg); font-size: 14px; }
+.member-list li.empty { color: var(--muted); border: 1px dashed var(--line); background: transparent; }
+.member-list .me { color: var(--muted); font-size: 12px; margin-left: 4px; }
+.btn.danger { background: transparent; color: #ff9aa5; border-color: rgba(255, 92, 108, .45); }
+.btn.danger:hover { background: rgba(255, 92, 108, .12); }
+.member-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.rm-note { margin: 8px 0 0; font-size: 12px; }
+
+.room-chat { position: relative; display: flex; flex-direction: column; }
+.rc-live { font-size: 12px; }
+.chat { height: min(56vh, 520px); overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 6px 4px 6px 0; }
+.chat:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.msg { max-width: 78%; align-self: flex-start; }
+.msg .who { font-size: 12px; color: var(--muted); margin: 0 0 3px 2px; }
+.msg .bubble { display: inline-block; padding: 8px 12px; border-radius: 4px 12px 12px 12px; background: var(--surface2); white-space: pre-wrap; line-height: 1.45; font-size: 14px; }
+.msg.mine { align-self: flex-end; text-align: right; }
+.msg.mine .who { margin: 0 2px 3px 0; }
+.msg.mine .bubble { background: var(--accent-deep); color: #fff; border-radius: 12px 4px 12px 12px; text-align: left; }
+.msg.leader .who b::before { content: "👑 "; }
+.notice { align-self: center; font-size: 12px; color: var(--muted); background: rgba(255,255,255,.04); padding: 3px 12px; border-radius: 99px; }
+.day-line { align-self: center; font-size: 12px; color: var(--muted); margin: 6px 0; }
+.chat-empty { margin: auto; color: var(--muted); font-size: 14px; text-align: center; }
+.chat-new { position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); padding: 6px 14px; border-radius: 99px; border: 0; font: inherit; font-size: 13px; font-weight: 700; color: #fff; background: var(--accent); cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+.chat-new[hidden] { display: none; }
+.chat-form { display: flex; gap: 8px; margin-top: 10px; }
+.chat-input { flex: 1; min-width: 0; padding: 10px 12px; font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+.chat-input:focus { outline: none; border-color: var(--accent); }
+.room-gone { padding: 40px 20px; text-align: center; }
+@media (max-width: 760px) {
+  .room-split { grid-template-columns: 1fr; }
+  .chat { height: 52vh; }
+  .msg { max-width: 88%; }
+}
+
+/* ---------- 내 채팅 (mypage/chats) ---------- */
+.chat-list { display: flex; flex-direction: column; gap: 10px; word-break: keep-all; overflow-wrap: anywhere; }
+.chat-sk { height: 104px; border-radius: 10px; }
+.chat-row { position: relative; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); transition: border-color .15s, background .15s; }
+.chat-row:hover, .chat-row:focus-within { border-color: var(--accent); background: var(--surface2); }
+.chat-row.ended { opacity: .78; }
+.cr-link { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; text-decoration: none; color: var(--ink); }
+.cr-link:focus-visible { outline: none; }
+.cr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.cr-title { font-size: 16px; line-height: 1.35; }
+.cr-tags { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; white-space: nowrap; }
+.cr-tags .tag { margin: 0; }
+.cr-meta { font-size: 13px; color: var(--ink2); }
+.cr-last { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+.cr-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-when { flex: 0 0 auto; }
+.cr-review { margin: 0 16px 14px; }
+
+.cd-body { margin: 0 0 18px; font-size: 14px; line-height: 1.55; }
+.pdialog .btn-accent.danger-yes { background: var(--danger); }
+
+/* 참여 확인 팝업 (<dialog>) */
+.pdialog {
+  width: min(440px, calc(100vw - 32px)); padding: 22px; border-radius: 12px; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); box-shadow: 0 24px 60px rgba(0,0,0,.6); word-break: keep-all;
+}
+.pdialog::backdrop { background: rgba(0, 0, 0, .6); }
+.pdialog h2 { margin: 0 0 12px; font-size: 19px; }
+.jd-box { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 8px; background: var(--surface2); font-size: 14px; }
+.jd-box .pb-intro { margin-top: 6px; }
+.jd-note { font-size: 12px; margin: 12px 0 16px; }
+.jd-btns { display: flex; justify-content: flex-end; gap: 8px; }

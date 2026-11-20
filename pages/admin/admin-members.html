@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원 관리 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/manage.css">
+  <link rel="stylesheet" href="../../css/member.css">
+</head>
+<body>
+  <!-- S07 회원 관리 (관리자) · A-10 회원 목록, A-11 사업자등록증 이미지 -->
+  <main class="page m-page" id="main">
+    <h1 class="page-title">회원 관리</h1>
+    <p class="muted am-lead">손님과 사장 목록이에요. 아이디나 닉네임 일부로 찾을 수 있어요.</p>
+
+    <div class="m-tabs" id="roles" role="tablist" aria-label="회원 유형"></div>
+
+    <form class="am-search" id="search" role="search">
+      <input class="m-input" id="keyword" type="search" maxlength="20" placeholder="아이디나 닉네임 일부" aria-label="아이디나 닉네임으로 찾기" autocomplete="off" spellcheck="false">
+      <button class="btn btn-accent" type="submit">검색</button>
+    </form>
+    <p class="muted am-count" id="count" aria-live="polite"></p>
+
+    <div id="list"><div class="sk sk-block"></div></div>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/owner/manage.js"></script>
+  <script src="../../js/admin/admin-members.js"></script>
+</body>
+</html>
