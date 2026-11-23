@@ -332,20 +332,26 @@
     who.append(el("b", null, v.nickname));
     if (v.mine) who.append(el("span", "tag", "내 후기"));
     who.append(el("span", "rv-date", v.playedDate));   // 플레이한 날 (이름 옆 작게)
-    head.append(who, el("span", "rv-stars", stars(v.rating)));
+    head.append(who);
     c.append(head);
 
-    // 한 줄: [탈출 성공] 12분 34초 · 힌트 2개 · 2인  (실패면 남은 시간 없이)
+    // 결과 칩 (마이페이지 후기와 같은 모양): [탈출 성공] [⏱️ 12:34] [노힌트] [2인]
     const facts = el("div", "rv-facts");
-    facts.append(el("span", "badge " + (v.escaped ? "open" : "closed"), v.escaped ? "탈출 성공" : "탈출 실패"));
-    const bits = [];
-    // 남은 시간은 분(remainMinutes)·초(remainSeconds 0~59) 두 칸으로 옴 (D-4)
-    if (v.escaped) bits.push(remainText(v.remainMinutes || 0, v.remainSeconds || 0));   // 남은 시간
-    bits.push("힌트 " + v.hintCount + "개");
-    bits.push(v.playerCount + "인");
-    facts.append(el("span", "rv-bits", bits.join(" · ")));
+    facts.append(fact(v.escaped ? "탈출 성공" : "탈출 실패", v.escaped ? "is-good" : "is-bad"));
+    if (v.escaped) {
+      // 남은 시간은 분(remainMinutes)·초(remainSeconds 0~59) 두 칸으로 옴 (D-4)
+      const remain = fact("⏱️ " + mmss(v.remainMinutes, v.remainSeconds), "");
+      remain.setAttribute("aria-label", "남은 시간 " + (v.remainMinutes || 0) + "분 " + (v.remainSeconds || 0) + "초");
+      facts.append(remain);
+    }
+    facts.append(fact(v.hintCount === 0 ? "노힌트" : "힌트 " + v.hintCount + "개", v.escaped && v.hintCount === 0 ? "is-nohint" : ""));
+    facts.append(fact(v.playerCount + "인", ""));
     c.append(facts);
 
+    // 별점은 칩 아래 한 줄, 그 아래 후기 글
+    const starLine = el("span", "rv-stars", stars(v.rating));
+    starLine.setAttribute("aria-label", "별점 " + v.rating + "점");
+    c.append(starLine);
     if (v.content) c.append(el("p", "rv-text", v.content));
 
     // 신고: 손님·사장만, 내 후기는 빼고 (D-11)
@@ -366,12 +372,10 @@
     const full = Math.round(Number(n) || 0);
     return "★★★★★".slice(0, full) + "☆☆☆☆☆".slice(0, 5 - full);
   }
-  // 남은 시간 글: 12분 34초 / 21분 / 35초
-  function remainText(min, sec) {
-    if (min && sec) return min + "분 " + sec + "초";
-    if (min) return min + "분";
-    return sec + "초";
-  }
+  // 후기 결과 칩 한 개
+  function fact(text, cls) { return el("span", "rv-fact" + (cls ? " " + cls : ""), text); }
+  // 남은 시간 12:34 (마이페이지와 같은 표기)
+  function mmss(min, sec) { return String(min || 0).padStart(2, "0") + ":" + String(sec || 0).padStart(2, "0"); }
 
   // 후기 팝업(D)이 저장을 마치면 다시 불러오기
   document.addEventListener("review-saved", function () {
