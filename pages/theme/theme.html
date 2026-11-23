@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>테마 상세 · Escaplix</title>
   <link rel="stylesheet" href="../../css/common.css">
+  <!-- 후기 팝업(D) 모양. detail.css 보다 먼저: 이름이 겹치는 .rv-stars 는 detail.css 가 이김 -->
+  <link rel="stylesheet" href="../../css/review.css">
   <link rel="stylesheet" href="../../css/detail.css">
 </head>
 <body>
@@ -30,7 +32,6 @@
     <section class="d-sec" aria-labelledby="slot-h">
       <div class="d-sec-head">
         <h2 id="slot-h">시간표</h2>
-        <span class="muted small" id="slot-note"></span>
       </div>
       <div class="date-strip" id="date-strip" role="tablist" aria-label="날짜 고르기"></div>
       <div class="slots" id="slots" aria-live="polite"></div>
@@ -60,6 +61,7 @@
   <script src="../../js/common/ui.js"></script>
   <script src="../../js/common/header.js"></script>
   <script src="../../js/common/footer.js"></script>
+  <script src="../../js/mypage/review-modal.js"></script>
   <script src="../../js/theme/theme.js"></script>
 </body>
 </html>

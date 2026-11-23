@@ -115,10 +115,7 @@
   });
   dialog.addEventListener("close", function () { detail = null; });
 
-  document.addEventListener("review-saved", function (e) {
-    if (e.detail && e.detail.type === "report") return;
-    loadAll();
-  });
+  document.addEventListener("review-saved", function () { loadAll(); });
   window.addEventListener("pageshow", function (e) { if (e.persisted) loadAll(); });
 
   Promise.all(loadAll()).finally(function () { document.body.classList.add("my-ready"); });   // 다 불러오면 탭 아래 내용을 한 번에 보여 줌 (깜빡임 방지, common.css)
@@ -491,7 +488,7 @@
     facts.append(fact(r.playerCount + "인", ""));
     info.append(facts);
     if (r.status === "HIDDEN") {
-      info.append(el("p", "rd-hidden", "신고로 숨김 처리된 후기예요. 다른 사람에게는 보이지 않아요."));
+      info.append(el("p", "rd-hidden", "숨김 처리된 후기예요. 다른 사람에게는 보이지 않아요."));
     }
 
     const body = el("div", "rd-body");
