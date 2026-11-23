@@ -147,11 +147,15 @@ a.slot:hover { border-color: var(--accent); background: rgba(139, 92, 246, .15);
 .rv-who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rv-who .tag { margin: 0; }
 .rv-date { flex: none; font-size: 12px; color: var(--muted); }
-.rv-bits { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .avatar.small { width: 26px; height: 26px; font-size: 12px; border-radius: 50%; }
-.rv-stars { color: var(--gold); letter-spacing: 1px; flex: 0 0 auto; }
-.rv-facts { display: flex; flex-wrap: nowrap; gap: 4px 10px; align-items: center; margin-top: 10px; font-size: 13px; color: var(--ink2); }
-.rv-text { margin: 10px 0 0; font-size: 15px; line-height: 1.6; max-width: 90ch; white-space: pre-line; overflow-wrap: anywhere; }
+.rv-stars { display: block; margin-top: 10px; color: var(--gold); font-size: 15px; letter-spacing: 2px; }   /* 칩 아래 한 줄 */
+/* 후기 결과 칩: 마이페이지 후기(review.css .rd-fact)와 같은 모양 */
+.rv-facts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.rv-fact { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--ink2); background: rgba(255, 255, 255, .06); }
+.rv-fact.is-good { color: var(--good); background: rgba(70, 214, 140, .12); }
+.rv-fact.is-bad { color: var(--danger); background: rgba(255, 92, 108, .12); }
+.rv-fact.is-nohint { color: #77bdff; background: rgba(73, 158, 255, .14); }
+.rv-text { margin: 6px 0 0; font-size: 15px; line-height: 1.6; max-width: 90ch; white-space: pre-line; overflow-wrap: anywhere; }
 .rv-report { margin-top: 8px; background: none; border: 0; padding: 0; color: var(--muted); font-size: 12px; cursor: pointer; }
 .rv-report:hover:not(:disabled) { color: var(--danger); }
 .rv-report:disabled { cursor: default; opacity: .7; }
