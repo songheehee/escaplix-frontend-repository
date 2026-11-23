@@ -121,11 +121,11 @@
   });
   window.addEventListener("pageshow", function (e) { if (e.persisted) loadAll(); });
 
-  loadAll();
+  Promise.all(loadAll()).finally(function () { document.body.classList.add("my-ready"); });   // 다 불러오면 탭 아래 내용을 한 번에 보여 줌 (깜빡임 방지, common.css)
 
+  // 불러오기를 시작하고, 끝나기를 기다릴 수 있게 약속(Promise) 목록을 돌려줌
   function loadAll() {
-    if (view === "home") loadStats();
-    loadReviews();
+    return [view === "home" ? loadStats() : null, loadReviews()];
   }
 
   // ======================================================== D-10 통계
@@ -268,7 +268,6 @@
       return;
     }
 
-    $("m-tab").textContent = "내 기록 (" + reviewRows.length + ")";
     if (view === "home") {
       $("link-reviews").textContent = "전체 보기 (" + reviewRows.length + ") →";
       renderCalendar();

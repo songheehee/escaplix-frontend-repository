@@ -26,8 +26,22 @@
   // 왔던 화면(파티 목록 · 내 채팅 …). 돌아가기 링크 · 나가기 · 삭제 · 강퇴됐을 때 모두 여기로, 모르면 파티 목록
   const back = PartyNav.setup($("back-link"));
   if (!partyId || !/^\d+$/.test(partyId)) { leaveRoom("없는 파티입니다."); return; }
+  closeOnSideClick();
 
   start();
+
+  // 방 바깥 빈 곳(양옆 여백)을 누르면 왼쪽 위 돌아가기 링크와 똑같이 돌아감
+  //   누르기 시작한 곳도 빈 곳일 때만 (채팅 글자를 드래그하다 바깥에서 떼면 안 나가게). 확인 팝업이 열려 있으면 무시
+  function closeOnSideClick() {
+    const main = document.querySelector("main");
+    function isSide(t) { return t === document.body || t === document.documentElement || t === main; }
+    let downSide = false;
+    document.addEventListener("pointerdown", function (e) { downSide = isSide(e.target); });
+    document.addEventListener("click", function (e) {
+      if (!downSide || !isSide(e.target) || $("confirm-dialog").open) return;
+      back.go();
+    });
+  }
 
   async function start() {
     try {
@@ -79,7 +93,10 @@
     st.textContent = s.label;
     st.className = s.cls;
     $("ri-meta").textContent = room.theme.title + " · " + room.theme.storeName + " · 📅 " + md(play) + " " + hm(play) + " (" + room.theme.playMinutes + "분)";
-    $("ri-deadline").textContent = ended ? "예정된 플레이 시간이 지나 파티가 종료됐어요" : room.status === "CLOSED" ? "모집이 마감됐어요" : "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집";
+    // 모집 중일 때만 마감 시각 (종료·마감은 제목 옆 배지로 알 수 있음)
+    const recruiting = !ended && room.status !== "CLOSED";
+    $("ri-deadline").textContent = recruiting ? "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집" : "";
+    $("ri-deadline").hidden = !recruiting;
     $("ri-intro").textContent = "👑 방장 한마디 · “" + room.intro + "”";
 
     $("rm-count").textContent = room.currentPeople + " / " + room.maxPeople + "명";
@@ -107,30 +124,23 @@
     if (isLeader()) {
       if (room.status !== "CLOSED" && !ended) actions.append(actionBtn("모집 마감", "btn btn-line small", doClose));
       actions.append(actionBtn("파티 삭제", "btn danger small", doDelete));
-      $("rm-note").textContent = "방장은 나갈 수 없어요. 대신 강퇴하거나 파티를 삭제할 수 있어요.";
     } else {
       actions.append(actionBtn("나가기", "btn btn-line small", doLeave));
-      $("rm-note").textContent = "나가면 파티와 채팅방에서 함께 빠져요. 모집 중이면 다시 참여할 수 있어요.";
     }
     if (ended) paintEnded();
   }
 
-  // 끝난 파티: 입력칸 대신 안내 + 후기 쓰기 (한 번만 바꿈)
+  // 끝난 파티: 입력칸 대신 후기 쓰기 버튼 (한 번만 바꿈)
   function paintEnded() {
     const form = $("chat-form");
     if (!form || form.hidden) return;
     form.hidden = true;
-    const live = document.querySelector(".rc-live");
-    if (live) live.textContent = "지난 대화";
     const bar = el("div", "chat-ended");
-    bar.append(el("span", null, "종료된 파티예요. 지난 대화만 볼 수 있어요."));
     const btn = el("button", "btn btn-line small", "후기 쓰기");
     btn.type = "button";
     btn.addEventListener("click", function () { writeReview(btn); });
     bar.append(btn);
     form.after(bar);
-    const empty = document.querySelector("#chat .chat-empty");
-    if (empty) empty.textContent = "주고받은 메시지가 없어요.";
   }
 
   // 후기 쓰기: D 담당 후기 팝업(window.openReviewModal)이 있으면 열고, 없으면 테마 상세로 (chats.js 와 같음)
@@ -298,7 +308,6 @@
           if (m.msgType !== "CHAT") notice = true;
         }
       });
-      if (first && !list.length) showEmptyChat();
       if (lastId === null) lastId = 0;
       if (fresh) {
         if (wasBottom) scrollToBottom();
@@ -321,8 +330,6 @@
     shown.add(m.messageId);
     if (lastId === null || m.messageId > lastId) lastId = m.messageId;
     const chat = $("chat");
-    const empty = chat.querySelector(".chat-empty");
-    if (empty) empty.remove();
 
     const at = new Date(m.createdAt);
     const day = UI.ymd(at);
@@ -331,7 +338,7 @@
       chat.append(el("div", "day-line", (at.getMonth() + 1) + "월 " + at.getDate() + "일 (" + UI.DAYS[at.getDay()] + ")"));
     }
     if (m.msgType !== "CHAT") {
-      chat.append(el("div", "notice", m.nickname + (NOTICE[m.msgType] || "") + " · " + hm(at)));
+      chat.append(el("div", "notice", m.nickname + (NOTICE[m.msgType] || "")));   // 들어옴·나감 알림은 시각 없이
       return true;
     }
     const leaderId = room && room.members.filter(function (x) { return x.leader; }).map(function (x) { return x.memberId; })[0];
@@ -344,7 +351,6 @@
     return true;
   }
 
-  function showEmptyChat() { $("chat").append(el("div", "chat-empty", isEnded() ? "주고받은 메시지가 없어요." : "아직 메시지가 없어요. 먼저 인사해 보세요!")); }
   function nearBottom() { const c = $("chat"); return !c || c.scrollHeight - c.scrollTop - c.clientHeight < 60; }
   function scrollToBottom() { const c = $("chat"); if (c) c.scrollTop = c.scrollHeight; $("chat-new").hidden = true; }
 

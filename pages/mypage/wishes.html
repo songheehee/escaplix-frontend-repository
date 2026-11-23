@@ -6,11 +6,16 @@
   <title>찜 목록 · Escaplix</title>
   <link rel="stylesheet" href="../../css/common.css">
   <link rel="stylesheet" href="../../css/stores.css">
+  <!-- 로그인 정보(Auth)를 화면 그리기 전에 읽으려고 이 두 개는 위에서 먼저 불러옴 (제목 깜빡임 방지) -->
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
 </head>
 <body>
   <!-- S10 찜 목록 탭 (마이페이지) · B-6 목록, B-5 찜 취소 -->
   <main class="page">
     <h1 class="page-title" id="w-title">마이페이지</h1>
+    <!-- 닉네임 제목을 처음부터 그려 둠 (JS 가 나중에 바꾸면 글자가 깜빡여서) -->
+    <script>(function () { var m = Auth.me(); if (m && m.role === "USER") { document.getElementById("w-title").textContent = m.nickname + " 님의 마이페이지"; } })();</script>
     <nav class="my-tabs" aria-label="마이페이지 탭">
       <a href="mypage.html">내 기록</a>
       <a href="wishes.html" aria-current="page" id="w-tab">찜 목록</a>
@@ -20,8 +25,6 @@
     <div class="wish-grid" id="wish-grid" aria-live="polite"></div>
   </main>
 
-  <script src="../../js/common/routes.js"></script>
-  <script src="../../js/common/api.js"></script>
   <script src="../../js/common/ui.js"></script>
   <script src="../../js/common/header.js"></script>
   <script src="../../js/common/footer.js"></script>

@@ -80,21 +80,51 @@ fieldset.field legend { padding: 0; }
 .gchip input:checked + span::before { content: "✓ "; }
 .gchip input:focus-visible + span { box-shadow: 0 0 0 3px rgba(139, 92, 246, .35); }
 
-/* 내 정보 (mypage/profile): 카드 여러 장 */
-/* 카드를 위에서 아래로 한 줄, 가운데 */
-.profile-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 560px; margin-inline: auto; word-break: keep-all; overflow-wrap: anywhere; }
-.profile-sk { height: 360px; border-radius: 10px; }
+/* 내 정보 (mypage/profile): 카드 한 장에 줄 목록 + [수정] → 팝업 */
+.profile-wrap { max-width: 560px; margin-inline: auto; word-break: keep-all; overflow-wrap: anywhere; }
+.profile-sk { height: 260px; border-radius: 12px; }
 .page-title + .profile-wrap { margin-top: 22px; }   /* 사장·관리자: 탭 없이 제목 바로 아래 */
 .profile-solo .page-title { max-width: 560px; margin-inline: auto; }   /* 사장·관리자: 제목도 카드와 같은 줄에 */
-.pcard h2 { margin: 0 0 16px; font-size: 17px; }
-.pcard[hidden] { display: none; }
-.input[readonly] { color: var(--muted); background: var(--surface2); cursor: default; }
-.input[readonly]:focus { border-color: var(--line); box-shadow: none; }
-.pinfo { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 4px 0 0; font-size: 14px; }
-.pinfo dt { color: var(--muted); }
-.pinfo dd { margin: 0; }
-.sec-foot { display: flex; justify-content: flex-end; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
-.pg-lead { margin: -8px 0 14px; }
+
+.pcard { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.pcard-head { margin: 0; padding: 14px 20px; font-size: 16px; color: #fff; background: var(--accent); }
+.plist { margin: 0; padding: 0; list-style: none; }
+.prow { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 20px; }
+.prow + .prow { border-top: 1px solid var(--line); }
+.prow[hidden] { display: none; }
+.prow-ic { flex: 0 0 auto; width: 20px; height: 20px; fill: none; stroke: var(--ink2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.prow-k { flex: 0 0 auto; min-width: 72px; font-size: 15px; font-weight: 600; }
+.prow-v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: var(--ink2); }
+.prow-v.is-empty { color: var(--muted); }
+.prow-btn {
+  flex: 0 0 auto; padding: 6px 12px; border: 0; border-radius: 6px; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 700; color: var(--ink2); background: var(--surface2);
+  transition: background-color .15s, color .15s;
+}
+.prow-btn:hover { color: var(--ink); background: var(--line); }
+.prow-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.prow-btn:disabled { opacity: .5; cursor: default; }
+@media (max-width: 480px) {
+  .prow { padding-inline: 14px; gap: 10px; }
+  .prow-k { min-width: 0; }
+}
+
+/* 수정 팝업 */
+.pdlg {
+  width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; overflow: auto;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: inherit;
+}
+.pdlg::backdrop { background: rgba(0, 0, 0, .66); }
+.pdlg[open] { animation: pdlg-in .16s ease-out; }
+@keyframes pdlg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.pdlg form { padding: 18px 22px 20px; }
+.pdlg-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.pdlg-head h2 { margin: 0; font-size: 18px; }
+.pdlg-x { width: 34px; height: 34px; border: 0; border-radius: 50%; cursor: pointer; font-size: 15px; color: inherit; background: var(--surface2); }
+.pdlg-x:hover { background: var(--line); }
+.pdlg-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.pdlg .gchips { margin-top: 2px; }
+@media (prefers-reduced-motion: reduce) { .pdlg[open] { animation: none; } .prow-btn { transition: none; } }
 .gchip input:disabled + span { opacity: .5; cursor: not-allowed; }
 
 /* 파일 고르기 + 미리보기 (사장 가입: 사업자등록증) */
