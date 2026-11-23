@@ -459,6 +459,8 @@
     const list = $("calendar-day-list");
     list.textContent = "";
     rows.forEach(function (r) { list.append(reviewCard(r)); });
+    // 캘린더 날짜로 열면 작은 크기(75%), 후기 줄로 열면 원래 크기
+    dialog.classList.toggle("is-full", !detail.date);
     if (!dialog.open) dialog.showModal();
   }
 
