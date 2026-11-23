@@ -68,11 +68,12 @@
       ["인원", UI.people(t.minPeople, t.maxPeople)],
       ["가격", "1인 " + UI.won(t.price) + " (고정)"],
       ["예약 링크", link(t.bookingUrl)],
-      ["소개", t.description],
       ["등록한 곳", t.source === "ADMIN" ? "관리자" : "사장"],
       ["신청일", Manage.dateTime(t.createdAt)],
       ["수정일", Manage.dateTime(t.updatedAt)],
     ]);
+
+    $("desc").textContent = t.description || "-";
 
     fillDl($("store-info"), [
       ["이름", store.name],
@@ -84,7 +85,7 @@
     ss.textContent = "";
     if (store.status) ss.append(Manage.badge(store.status));
     if (store.storeId && store.status !== "APPROVED") {
-      const a = el("a", "btn btn-line small", "매장 승인 상세 →");
+      const a = el("a", "btn btn-line small", "매장 승인 상세");
       a.href = Routes.url("adminStoreDetail", { id: store.storeId });
       a.style.marginLeft = "8px";
       ss.append(a);

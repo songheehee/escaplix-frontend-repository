@@ -46,7 +46,7 @@ const Manage = (function () {
     return el("span", "st " + s[1], s[0]);
   }
   function rejectNote(reason, prefix) {
-    return el("div", "reject-note", "💬 " + (prefix || "반려 사유") + ": " + reason);
+    return el("div", "reject-note", (prefix || "반려 사유") + ": " + reason);
   }
 
   // ---------- 날짜 ("2026-11-17T10:00:00") ----------
@@ -186,7 +186,7 @@ const Manage = (function () {
       const actions = el("div", "m-actions");
       const cancel = el("button", "btn btn-line", "취소");
       cancel.type = "button";
-      const ok = el("button", "btn btn-danger", "반려하기");
+      const ok = el("button", "btn btn-danger", "반려");
       ok.type = "submit";
       actions.append(cancel, ok);
       form.append(h, el("p", null, help), ta, count, actions);
@@ -209,7 +209,7 @@ const Manage = (function () {
   // ---------- 승인 목록 위쪽 탭 (S22 매장 승인 · S15 테마 승인) ----------
   //   active: "stores" | "themes". 탭 옆 숫자는 승인 대기 수 (C-12)
   function approvalTabs(box, active) {
-    const tabs = [["stores", "adminStores", "매장 승인"], ["themes", "adminThemes", "테마 승인"]];
+    const tabs = [["stores", "adminStores", "매장"], ["themes", "adminThemes", "테마"]];
     const links = {};
     tabs.forEach(function (t) {
       const a = el("a", null, t[2]);
@@ -219,8 +219,8 @@ const Manage = (function () {
       box.append(a);
     });
     api.get("/api/admin/summary").then(function (s) {
-      links.stores.textContent = "매장 승인 (" + s.pendingStores + ")";
-      links.themes.textContent = "테마 승인 (" + s.pendingThemes + ")";
+      links.stores.textContent = "매장 (" + s.pendingStores + ")";
+      links.themes.textContent = "테마 (" + s.pendingThemes + ")";
     }).catch(function () { /* 숫자만 못 보여 줌 */ });
   }
 

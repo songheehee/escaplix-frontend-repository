@@ -10,7 +10,7 @@
 
   // 역할별 메뉴 (API 명세 3. 역할군별 보기)
   //   home  : 로고를 누르면 갈 곳
-  //   links : 위쪽 바 메뉴
+  //   links : 위쪽 바 메뉴. [화면, 글자, (같이 불을 켤 화면들)] 또는 펼침 메뉴 { label, items: [[화면, 글자], ...] }
   //   my    : 오른쪽 프로필 ▾ 안의 메뉴
   //   search: 테마·매장 검색칸을 보여 줄지
   const MENU = {
@@ -30,11 +30,18 @@
       home: "home",       // 로고는 손님과 같은 메인으로. 사장 홈은 메뉴의 "사장 홈"
       links: [["owner", "사장 홈"], ["storeForm", "매장 등록"], ["ownerTheme", "테마 등록"], ["ownerSlots", "시간표 관리"]],
       my: [["profile", "내 정보"]],
-      search: false,
+      search: true,       // 사장도 손님 메인에서 테마를 찾아볼 수 있게
     },
     ADMIN: {
-      home: "admin",
-      links: [["admin", "관리자 홈"], ["adminStores", "매장 승인"], ["adminThemes", "테마 승인"], ["adminMembers", "회원 관리"]],
+      home: "home",       // 로고는 손님과 같은 메인으로. 관리자 홈은 메뉴의 "관리자 홈"
+      //   승인: 매장·테마는 승인 화면 안의 탭으로 나눔 (위쪽 메뉴에 둘 다 두면 겹침)
+      //   직접 등록: 펼침 메뉴 { 이름, items }
+      links: [
+        ["admin", "관리자 홈"],
+        ["adminStores", "승인", ["adminThemes", "adminStoreDetail", "adminThemeDetail"]],
+        { label: "직접 등록", items: [["owner", "등록한 매장"], ["storeForm", "매장 등록"], ["ownerTheme", "테마 등록"], ["ownerSlots", "시간표"]] },
+        ["adminMembers", "회원 관리"],
+      ],
       my: [["profile", "내 정보"]],
       search: false,
     },
@@ -57,14 +64,55 @@
   navToggle.type = "button";
   navToggle.setAttribute("aria-expanded", "false");
   const list = el("ul");
+  const subs = [];   // 펼침 메뉴들 (바깥을 누르면 닫기)
   menu.links.forEach(function (l) {
     const li = el("li");
-    const a = el("a", null, l[1]);
-    a.href = Routes.url(l[0]);
-    if (Routes.isHere(l[0]) && !location.search) a.setAttribute("aria-current", "page");
-    li.append(a);
+    if (l.items) {
+      li.append.apply(li, subMenu(l, li));
+    } else {
+      const a = el("a", null, l[1]);
+      a.href = Routes.url(l[0]);
+      // 같이 켤 화면(l[2])이 있으면 주소 뒤 ?… 와 상관없이 켠다 (승인 → 매장·테마 목록과 상세)
+      const here = l[2] ? [l[0]].concat(l[2]).some(Routes.isHere) : Routes.isHere(l[0]) && !location.search;
+      if (here) a.setAttribute("aria-current", "page");
+      li.append(a);
+    }
     list.append(li);
   });
+
+  // 펼침 메뉴: 넓은 화면은 눌러서 여는 작은 상자, 좁은 화면은 "메뉴 ▾" 안에 그대로 펼쳐 둠
+  function subMenu(l, li) {
+    li.className = "has-sub";
+    const btn = el("button", "nav-sub-btn", l.label);   // ▾ 는 CSS (좁은 화면에선 안 보임)
+    btn.type = "button";
+    btn.setAttribute("aria-expanded", "false");
+    const ul = el("ul", "sub");
+    l.items.forEach(function (it) {
+      const sli = el("li");
+      const a = el("a", null, it[1]);
+      a.href = Routes.url(it[0]);
+      if (Routes.isHere(it[0])) {
+        a.setAttribute("aria-current", "page");
+        btn.classList.add("here");
+      }
+      sli.append(a);
+      ul.append(sli);
+    });
+    btn.addEventListener("click", function () {
+      const open = !li.classList.contains("open");
+      li.classList.toggle("open", open);
+      btn.setAttribute("aria-expanded", String(open));
+    });
+    subs.push([li, btn]);
+    return [btn, ul];
+  }
+  function closeSubs(except) {
+    subs.forEach(function (s) {
+      if (s[0] === except) return;
+      s[0].classList.remove("open");
+      s[1].setAttribute("aria-expanded", "false");
+    });
+  }
   navToggle.addEventListener("click", function () {
     const open = !nav.classList.contains("open");
     nav.classList.toggle("open", open);
@@ -84,7 +132,9 @@
   // 좁은 화면 메뉴: 바깥을 누르거나 Esc 면 닫기
   document.addEventListener("click", function (e) {
     if (!nav.contains(e.target)) { nav.classList.remove("open"); navToggle.setAttribute("aria-expanded", "false"); }
+    closeSubs(e.target.closest ? e.target.closest(".has-sub") : null);
   });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSubs(null); });
 
   // 스크롤하면 바 배경이 진해짐
   function onScroll() { header.classList.toggle("solid", window.scrollY > 10 || document.body.classList.contains("sp-open")); }

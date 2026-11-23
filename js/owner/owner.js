@@ -54,7 +54,7 @@
     const head = el("div");
     head.append(el("span", "name", s.name), Manage.badge(s.status));
     info.append(head);
-    info.append(el("div", "sub", [s.area, s.address, "☎ " + s.phone].join(" · ")));
+    info.append(el("div", "sub", [s.area, s.address, "전화 " + s.phone].join(" · ")));
     info.append(el("div", "sub", "사업장 " + s.bizPlaceNo + " · 테마 " + s.themeCount + "개 · 등록 " + Manage.ymd(s.createdAt)));
     if (s.status === "PENDING") info.append(el("div", "sub", "관리자 승인 전에는 손님에게 보이지 않고, 테마도 등록할 수 없어요."));
     if (s.status === "REJECTED" && s.rejectReason) info.append(Manage.rejectNote(s.rejectReason));
@@ -130,7 +130,7 @@
       st.append(Manage.badge(t.status));
       tr.append(st);
       const r = UI.rating(t.avgRating);
-      tr.append(el("td", "num", r ? "★ " + r + " (" + t.reviewCount + ")" : "-"));
+      tr.append(el("td", "num", r ? r + " (" + t.reviewCount + ")" : "-"));
       tr.append(el("td", "num", Manage.ymd(t.updatedAt)));
 
       const go = el("td", "go");

@@ -103,6 +103,19 @@ button { font: inherit; }
 .topnav a:hover { color: #fff; }
 .topnav a[aria-current="page"] { color: #fff; font-weight: 700; }
 .topnav-toggle { display: none; background: none; border: 0; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; padding: 6px 0; }
+/* 펼침 메뉴 (관리자 "직접 등록 ▾") */
+.topnav .has-sub { position: relative; }
+.nav-sub-btn { background: none; border: 0; padding: 0; font: inherit; font-size: 14px; color: var(--ink2); cursor: pointer; white-space: nowrap; transition: color .15s; }
+.nav-sub-btn:hover, .has-sub.open .nav-sub-btn { color: #fff; }
+.nav-sub-btn.here { color: #fff; font-weight: 700; }
+.nav-sub-btn::after { content: " ▾"; }
+.topnav .sub {
+  display: none; position: absolute; left: -10px; top: calc(100% + 14px); z-index: 60; flex-direction: column; gap: 0;
+  min-width: 160px; padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 14px 40px rgba(0,0,0,.6);
+}
+.topnav .has-sub.open .sub { display: flex; }
+.topnav .sub a { display: block; padding: 8px 10px; border-radius: 4px; }
+.topnav .sub a:hover { background: var(--surface2); }
 .topbar-right { display: flex; align-items: center; gap: 14px; flex: 0 0 auto; }
 .auth-btns { display: flex; gap: 8px; }
 /* 헤더 회원가입: 배너 사진 위에서도 잘 보이게 투명 대신 어두운 바탕 */
@@ -276,6 +289,11 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
   }
   .topnav.open ul { display: flex; }
   .topnav ul a { display: block; padding: 10px 18px; }
+  /* 좁은 화면: 펼침 메뉴는 이름만 작게 두고 항목을 그 아래에 늘어놓음 */
+  .topnav .sub { display: flex; position: static; min-width: 0; padding: 0; background: none; border: 0; box-shadow: none; }
+  .topnav .sub a { padding: 8px 18px 8px 30px; border-radius: 0; }
+  .nav-sub-btn { display: block; padding: 10px 18px 2px; font-size: 13px; color: var(--muted); cursor: default; pointer-events: none; }
+  .nav-sub-btn::after { content: none; }
   .sp-field { flex: 1 1 40%; min-width: 0; }
   .sp-field input, .sp-field select, .sp-field .dp-btn { width: 100%; }
   .sp-kw { flex-basis: 100%; }

@@ -99,7 +99,7 @@
   }
   // 고른 매장의 사업장 번호·전화 (회의 v2-4)
   function showStoreInfo(s, extra) {
-    $("store-info").textContent = s ? "사업장 " + s.bizPlaceNo + " · ☎ " + s.phone + (extra ? " · " + extra : "") : (extra || "");
+    $("store-info").textContent = s ? "사업장 " + s.bizPlaceNo + " · 전화 " + s.phone + (extra ? " · " + extra : "") : (extra || "");
   }
 
   function fill(t) {
