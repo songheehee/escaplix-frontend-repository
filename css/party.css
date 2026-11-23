@@ -4,8 +4,7 @@
    ========================================================= */
 
 /* ---------- 파티 목록 (party-list) ---------- */
-.pl-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
-.pl-sub { margin: 0; font-size: 14px; }
+.pl-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
 
 .pl-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
 .pl-search { flex: 1 1 220px; max-width: 340px; }
