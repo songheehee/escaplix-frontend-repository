@@ -364,6 +364,27 @@ dialog.rm[open] { animation: rm-in 0.16s ease-out; }
 .rd-content { margin: 6px 0 0; color: var(--ink2); font-size: 0.82rem; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 .rd-actions { display: flex; align-self: flex-end; gap: 6px; margin-top: 10px; }
 
+/* 후기 줄(플레이 후기 · 전체 후기)로 열 때는 원래 크기 (위의 75% 는 캘린더 날짜로 열 때) */
+.review-detail-dialog.is-full { width: min(720px, calc(100vw - 32px)); border-radius: 14px; }
+.is-full .review-detail-box { padding: 22px; }
+.is-full .review-detail-header { gap: 16px; margin-bottom: 18px; }
+.is-full .review-detail-header h2 { font-size: 0.95rem; }
+.is-full .review-detail-header p { margin-top: 4px; font-size: 0.9rem; }
+.is-full .review-detail-close { width: 34px; height: 34px; font-size: 1.25rem; }
+.is-full .calendar-day-list { gap: 18px; }
+.is-full .rd-card { grid-template-columns: 150px minmax(0, 1fr); gap: 20px; padding-bottom: 18px; }
+.is-full .rd-poster { border-radius: 8px; }
+.is-full .rd-poster .poster-ph span { font-size: 48px; }
+.is-full .rd-title { font-size: 1.45rem; }
+.is-full .rd-place { margin-top: 4px; font-size: 1.02rem; }
+.is-full .rd-facts { gap: 6px; margin-top: 12px; }
+.is-full .rd-fact { padding: 4px 10px; font-size: 0.82rem; }
+.is-full .rd-hidden { margin-top: 10px; font-size: 0.85rem; }
+.is-full .rd-body { margin-top: 14px; padding-top: 14px; }
+.is-full .rd-stars { font-size: 1.15rem; }
+.is-full .rd-content { margin-top: 8px; font-size: 0.95rem; line-height: 1.6; }
+.is-full .rd-actions { margin-top: 14px; }
+
 /* ---------- 좁은 화면 ---------- */
 @media (max-width: 760px) {
   .region-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -380,6 +401,10 @@ dialog.rm[open] { animation: rm-in 0.16s ease-out; }
   .rd-card { grid-template-columns: 80px minmax(0, 1fr); gap: 12px; }
   .rd-title { font-size: 1rem; }
   .review-detail-box { padding: 14px 14px 16px; }
+  .is-full .rd-card { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; }
+  .is-full .rd-title { font-size: 1.2rem; }
+  .is-full .rd-place { font-size: 0.95rem; }
+  .is-full .review-detail-box { padding: 18px 16px; }
 }
 @media (max-width: 420px) {
   .rv-row { grid-template-columns: 40px minmax(0, 1fr); gap: 10px; }
@@ -387,4 +412,6 @@ dialog.rm[open] { animation: rm-in 0.16s ease-out; }
   .rv-stars { grid-column: 2; font-size: 0.85rem; }
   .rd-card { grid-template-columns: 1fr; }
   .rd-poster { width: 84px; }
+  .is-full .rd-card { grid-template-columns: 1fr; }
+  .is-full .rd-poster { width: 110px; }
 }
