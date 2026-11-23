@@ -208,11 +208,11 @@ const Manage = (function () {
 
   // ---------- 사장 화면 경로 (내 매장 › 홍대점 › 사라진 탐정) ----------
   //   items: [[글자, 주소], ..., [글자]]. 마지막은 지금 화면이라 링크 없음
-  //   맨 앞 "내 매장"(관리자는 "직접 등록한 매장")은 자동으로 붙인다
+  //   맨 앞 "내 매장"(관리자는 "매장 관리")은 자동으로 붙인다
   //   ?list=1: 매장이 1개뿐이어도 목록을 보여 줌 (안 붙이면 바로 그 매장 화면으로 넘어감)
   function crumbs(box, items) {
     box.textContent = "";
-    const all = [[isAdmin() ? "직접 등록한 매장" : "내 매장", Routes.url("owner", { list: 1 })]].concat(items);
+    const all = [[isAdmin() ? "매장 관리" : "내 매장", Routes.url("owner", { list: 1 })]].concat(items);
     all.forEach(function (it, i) {
       if (i) box.append(el("span", "sep", "›"));
       if (it[1] && i < all.length - 1) {
@@ -259,10 +259,11 @@ const Manage = (function () {
     }).catch(function () { /* 숫자만 못 보여 줌 */ });
   }
 
-  // 상태 고르기 칩 (승인 대기 / 승인됨·공개 중 / 반려)
+  // 상태 고르기 칩. list 한 칸은 상태("PENDING") 또는 [상태, 글자] (승인 요청 화면은 "대기" · "반려")
   function statusChips(box, list, current, onPick) {
-    list.forEach(function (st) {
-      const b = el("button", null, statusText(st));
+    list.forEach(function (item) {
+      const st = Array.isArray(item) ? item[0] : item;
+      const b = el("button", null, Array.isArray(item) ? item[1] : statusText(st));
       b.type = "button";
       b.setAttribute("role", "tab");
       b.setAttribute("aria-selected", String(st === current));
@@ -300,8 +301,115 @@ const Manage = (function () {
     paint();
   }
 
+  // ---------- 승인 상세 · 매장 관리 상세 공용 칸 (관리자 개편 11/23) ----------
+  // 이름 아래 "글자 값" 칸들. rows: [[글자, 값, 빨강?], …] (값이 없으면 그 칸은 뺌)
+  function metaRow(box, rows) {
+    box.textContent = "";
+    rows.forEach(function (r) {
+      if (r[1] === null || r[1] === undefined || r[1] === "") return;
+      const d = el("div", r[2] ? "red" : null);
+      d.append(el("span", null, r[0]), el("b", null, r[1]));
+      box.append(d);
+    });
+  }
+  // 이름-값 목록. 값은 글자 또는 요소. 빈 값은 "-"
+  function dlRows(rows) {
+    const dl = el("dl", "m-dl");
+    rows.forEach(function (r) {
+      const dd = el("dd");
+      if (r[1] instanceof Node) dd.append(r[1]);
+      else dd.textContent = r[1] === null || r[1] === undefined || r[1] === "" ? "-" : r[1];
+      dl.append(el("dt", null, r[0]), dd);
+    });
+    return dl;
+  }
+  // 새 창 링크 (http(s) 주소만. 아니면 글자 그대로)
+  function webLink(href) {
+    const safe = UI.safeUrl(href);
+    if (!safe) return href || "-";
+    const a = el("a", null, safe + " ↗");
+    a.href = safe;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    return a;
+  }
+  // 칸 제목: <section><div 제목줄><h2>제목</h2>[오른쪽]</div>…</section>
+  //   n(①②③)은 예전 자리. 번호는 화면에 보이지 않음 (11/23)
+  function section(n, title, right) {
+    const sec = el("section", "ad-sec");
+    const h = el("div", "ad-sec-h");
+    const h2 = el("h2", null, title);
+    h.append(h2);
+    if (right) h.append(right);
+    sec.append(h);
+    return sec;
+  }
+  // 매장 칸: 작은 사진 + 지역·전화·영업시간·웹사이트·소개 (C-14 모양)
+  function storePublic(s) {
+    const card = el("div", "m-card ad-pub");
+    card.append(thumb(s.photoUrl, s.name));
+    card.append(dlRows([
+      ["지역", s.area], ["주소", s.address], ["전화", s.phone], ["영업시간", s.hours],
+      ["웹사이트", webLink(s.websiteUrl)], ["소개", s.intro],
+    ]));
+    return card;
+  }
+  // 서류 칸: 사업장등록증(C-15) · 사장 사업자등록증(A-11) 나란히. 관리자 직접 등록이면 사업장등록증만
+  function storeDocs(s) {
+    const wrap = el("div", "ad-docs");
+    const place = el("div", "m-card ad-doc");
+    const pv = el("div", "m-preview");
+    place.append(el("h3", null, "사업장등록증"), pv,
+      dlRows([["상호", s.name], ["주소", s.address], ["등록번호", s.bizPlaceNo]]));
+    wrap.append(place);
+    if (s.hasBizPlaceFile) privateImage("/api/admin/stores/" + s.storeId + "/biz-place-file", pv, "사업장등록증");
+    else pv.textContent = s.owner ? "올린 사업장등록증이 없어요." : "관리자가 등록한 매장이라 등록증이 없어요.";
+    if (s.owner) {
+      const own = el("div", "m-card ad-doc");
+      const opv = el("div", "m-preview");
+      own.append(el("h3", null, "사업자등록증"), opv, dlRows([
+        ["사장", s.owner.loginId + " (" + s.owner.nickname + ")"],
+        ["사업자번호", s.owner.bizNo],
+        ["가입일", s.owner.joinedAt ? ymd(s.owner.joinedAt) : null],
+      ]));
+      wrap.append(own);
+      privateImage("/api/admin/members/" + s.owner.memberId + "/biz-file", opv, "사업자등록증");
+    }
+    return wrap;
+  }
+
+  // ---------- 쪽 나누기 ‹ 1 2 3 › (목록을 한 번에 받아 화면에서 나눔) ----------
+  //   total 개를 per 개씩. 한 쪽뿐이면 null. 누르면 onGo(쪽)
+  function pager(total, page, per, onGo) {
+    const pages = Math.ceil(total / per);
+    if (pages <= 1) return null;
+    const nav = el("nav", "m-pager");
+    nav.setAttribute("aria-label", "쪽 넘기기");
+    function btn(text, target, opts) {
+      const b = el("button", "m-pg" + (opts.cls ? " " + opts.cls : ""), text);
+      b.type = "button";
+      b.setAttribute("aria-label", opts.aria);
+      if (opts.current) b.setAttribute("aria-current", "page");
+      b.disabled = !!opts.disabled;
+      b.addEventListener("click", function () { onGo(target); });
+      nav.append(b);
+    }
+    btn("‹", page - 1, { cls: "arrow", aria: "이전 쪽", disabled: page === 1 });
+    // 쪽이 많으면 지금 쪽 앞뒤 2개 + 처음·끝만 (1 … 4 5 6 7 8 … 30)
+    let last = 0;
+    for (let p = 1; p <= pages; p++) {
+      if (p !== 1 && p !== pages && Math.abs(p - page) > 2) continue;
+      if (p - last > 1) nav.append(el("span", "m-pg-gap", "…"));
+      btn(String(p), p, { current: p === page, aria: p + "쪽" });
+      last = p;
+    }
+    btn("›", page + 1, { cls: "arrow", aria: "다음 쪽", disabled: page === pages });
+    return nav;
+  }
+
   return {
-    guard: guard, isAdmin: isAdmin, stop: stop,
+    guard: guard, isAdmin: isAdmin, stop: stop, pager: pager,
+    metaRow: metaRow, dlRows: dlRows, webLink: webLink, section: section, storePublic: storePublic, storeDocs: storeDocs,
     badge: badge, rejectNote: rejectNote,
     md: md, ymd: ymd, dateTime: dateTime,
     param: param, numParam: numParam,

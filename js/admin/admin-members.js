@@ -12,6 +12,9 @@
   const ROLE_BADGE = { USER: ["손님", "off"], OWNER: ["사장", "warn"], ADMIN: ["관리자", "ok"] };
 
   let loadSeq = 0;   // 늦게 도착한 예전 응답 무시
+  const PER_PAGE = 20;   // 한 쪽에 20명 (A-10 은 한 번에 다 주므로 화면에서 나눔)
+  let members = [];
+  let page = 1;
   let timer = null;
   let role = ["USER", "OWNER"].indexOf(Manage.param("role")) !== -1 ? Manage.param("role") : "";
   let keyword = (Manage.param("keyword") || "").trim();
@@ -98,7 +101,21 @@
       box.append(UI.emptyBox(keyword ? "「" + keyword + "」에 맞는 " + what + "이 없어요." : what + "이 아직 없어요."));
       return;
     }
-    box.append(table(res.members));
+    members = res.members;
+    page = 1;   // 검색어·탭이 바뀌면 다시 1쪽부터
+    showPage();
+  }
+
+  function showPage() {
+    const box = $("list");
+    box.textContent = "";
+    box.append(table(members.slice((page - 1) * PER_PAGE, page * PER_PAGE)));
+    const nav = Manage.pager(members.length, page, PER_PAGE, function (p) {
+      page = p;
+      showPage();
+      $("roles").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    if (nav) box.append(nav);
   }
 
   function table(members) {
@@ -122,7 +139,18 @@
       rc.append(el("span", "st " + b[1], b[0]));
       tr.append(rc);
       tr.append(el("td", "num", owner ? (m.bizNo || "-") : "-"));
-      tr.append(el("td", "num", owner ? m.managedStoreCount + "곳" : "-"));
+      // 사장: "매장 N곳 ▾" 을 누르면 그 줄 아래에 매장 목록 (관리자 개편 11/23)
+      const sc = el("td", "num");
+      if (owner) {
+        const n = (m.stores || []).length;
+        const btn = el("button", "am-stores-btn", n ? "매장 " + n + "곳 ▾" : "매장 없음");
+        btn.type = "button";
+        btn.disabled = !n;
+        btn.setAttribute("aria-expanded", "false");
+        btn.addEventListener("click", function () { toggleStores(tr, btn, m); });
+        sc.append(btn);
+      } else sc.textContent = "-";
+      tr.append(sc);
       tr.append(el("td", "num", Manage.ymd(m.createdAt)));
       const go = el("td", "go");
       if (owner) {
@@ -137,6 +165,35 @@
     t.append(tbody);
     wrap.append(t);
     return wrap;
+  }
+
+  // 사장의 매장 목록 펼치기/접기. 승인된 매장 → 매장 관리의 그 매장, 대기·반려 → 승인 상세
+  function toggleStores(tr, btn, m) {
+    const next = tr.nextElementSibling;
+    if (next && next.classList.contains("am-stores")) {
+      next.remove();
+      btn.setAttribute("aria-expanded", "false");
+      btn.textContent = "매장 " + m.stores.length + "곳 ▾";
+      return;
+    }
+    // 매장마다 한 줄: 이름 · 상태 · 오른쪽 "매장 보기 ›" (줄 전체가 링크)
+    const row = el("tr", "am-stores");
+    const td = el("td");
+    td.colSpan = tr.children.length;
+    const list = el("div", "am-store-list");
+    m.stores.forEach(function (s) {
+      const a = el("a", "am-store");
+      a.href = s.status === "APPROVED" ? Routes.url("ownerStore", { id: s.storeId }) : Routes.url("adminStoreDetail", { id: s.storeId });
+      const name = el("span", "am-store-name", s.name);
+      name.title = s.name;
+      a.append(name, Manage.badge(s.status), el("span", "am-store-go", s.status === "APPROVED" ? "매장 보기 ›" : "승인 상세 ›"));
+      list.append(a);
+    });
+    td.append(list);
+    row.append(td);
+    tr.after(row);
+    btn.setAttribute("aria-expanded", "true");
+    btn.textContent = "매장 " + m.stores.length + "곳 ▴";
   }
 
   // A-11 사업자등록증 보기 (팝업). 닫으면 팝업을 지움

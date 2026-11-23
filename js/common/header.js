@@ -34,13 +34,13 @@
       search: true,       // 사장도 손님 메인에서 테마를 찾아볼 수 있게
     },
     ADMIN: {
-      home: "home",       // 로고는 손님과 같은 메인으로. 관리자 홈은 메뉴의 "관리자 홈"
-      //   승인: 매장·테마는 승인 화면 안의 탭으로 나눔 (위쪽 메뉴에 둘 다 두면 겹침)
-      //   직접 등록: 사장 화면과 같은 매장 → 테마 → 시간표 화면 (등록 버튼은 화면 안에)
+      home: "admin",      // 관리자는 손님 메인에서 할 일이 없어서 로고도 관리자 홈으로 (관리자 개편 11/23)
+      //   승인 요청: 처리할 것(대기·반려). 매장·테마는 화면 안의 탭으로
+      //   매장 관리: 승인된 매장 전체 → 매장 → 테마 → 시간표 (사장 화면을 같이 씀)
       links: [
         ["admin", "관리자 홈"],
-        ["adminStores", "승인", ["adminThemes", "adminStoreDetail", "adminThemeDetail"]],
-        ["owner", "직접 등록", ["ownerStore", "ownerTheme", "storeForm"]],
+        ["adminStores", "승인 요청", ["adminThemes", "adminStoreDetail", "adminThemeDetail"]],
+        ["owner", "매장 관리", ["ownerStore", "ownerTheme", "storeForm"]],
         ["adminMembers", "회원 관리"],
       ],
       my: [["profile", "내 정보"]],

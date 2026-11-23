@@ -3,6 +3,8 @@
 //   테마 한 줄: 이름 · 상태 · 평점 · 주중 N회 / 주말 N회. 시간표가 없으면 "시간표 없음"을 눈에 띄게
 //   회차 수는 C-5 에 없어서 테마마다 C-10 을 부른다 (매장 하나의 테마는 몇 개뿐이라 한꺼번에)
 //   줄을 누르면 ③ 테마 화면. 반려된 테마는 거기서 고쳐서 다시 신청
+//   관리자(매장 관리, 관리자 개편 11/23): 승인 상세와 같은 틀 (C-14 상세 + C-15·A-11 서류)
+//     맨 위 한 줄(이름·승인됨 / 신청자·승인일, [매장 수정]) → 매장 → 서류 → 테마 (+ 테마 등록)
 (function () {
   const el = UI.el;
   const $ = UI.$;
@@ -10,11 +12,51 @@
   if (!me) return;
   const storeId = Manage.numParam("id");
 
+  const admin = me.role === "ADMIN";
   if (!storeId) {
-    Manage.stop("매장 번호가 없어요.", "내 매장으로", Routes.url("owner", { list: 1 }));
+    Manage.stop("매장 번호가 없어요.", admin ? "매장 관리로" : "내 매장으로", Routes.url("owner", { list: 1 }));
     return;
   }
-  load();
+  if (admin) loadAdmin(); else load();
+
+  // ---------- 관리자: 매장 관리 상세 ----------
+  async function loadAdmin() {
+    let s, themes;
+    try {
+      const r = await Promise.all([
+        api.get("/api/admin/stores/" + storeId),
+        api.get("/api/owner/stores/" + storeId + "/themes").catch(function () { return null; }),
+      ]);
+      s = r[0];
+      themes = r[1];
+    } catch (e) {
+      Manage.stop(e.status === 404 ? "없는 매장이에요." : e.message, "매장 관리로", Routes.url("owner", { list: 1 }));
+      return;
+    }
+    document.title = s.name + " · 매장 관리 · Escaplix";
+    Manage.crumbs($("crumbs"), [[s.name]]);
+    $("owner-view").hidden = true;
+    $("admin-view").hidden = false;
+    $("a-name").textContent = s.name;
+    $("a-status").append(Manage.badge(s.status));
+    Manage.metaRow($("a-meta"), s.owner
+      ? [["신청자", s.owner.loginId + " (" + s.owner.nickname + ")"], ["승인일", s.approvedAt ? Manage.ymd(s.approvedAt) : null]]
+      : [["등록자", "관리자"], ["등록일", Manage.ymd(s.approvedAt || s.createdAt)]]);
+    $("a-edit").href = Routes.url("storeForm", { id: s.storeId });
+
+    const body = $("a-body");
+    const pub = Manage.section("①", "매장");
+    pub.append(Manage.storePublic(s));
+    const docs = Manage.section("②", "서류");
+    docs.append(Manage.storeDocs(s));
+    const add = el("a", "btn btn-line small", "+ 테마 등록");
+    add.href = Routes.url("ownerTheme", { storeId: s.storeId });
+    add.hidden = s.status !== "APPROVED";
+    const th = Manage.section("③", "테마", add);
+    body.append(pub, docs, th);
+    th.append($("themes"));   // 테마 줄은 사장 화면과 같은 모양
+    renderThemes(s, themes);
+  }
 
   async function load() {
     let store, themes;
@@ -72,7 +114,7 @@
     const ok = s.status === "APPROVED";
     const add = $("add-theme");
     add.hidden = !ok;
-    add.href = Routes.url("ownerTheme", { storeId: s.storeId });
+    add.href = Routes.url("ownerTheme", { storeId: s.storeId });   // 관리자 화면에서는 ③ 제목 줄의 "+ 테마 등록"
 
     const box = $("themes");
     box.textContent = "";

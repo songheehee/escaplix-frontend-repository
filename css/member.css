@@ -141,10 +141,7 @@ fieldset.field legend { padding: 0; }
 .file-drop.has-file .file-drop-text { font-size: 13px; color: var(--accent-ink); }
 
 /* 회원 관리 (admin/admin-members) · 표·탭·팝업은 manage.css 것을 씀 */
-.am-lead { margin: -4px 0 16px; }
-.am-search { display: flex; gap: 8px; max-width: 440px; margin: 0 0 10px; }
-.am-search .m-input { flex: 1; min-width: 0; }
-.am-search .btn { flex: 0 0 auto; }
+.am-search { display: flex; margin: 0 0 10px; }   /* 검색칸 모양은 manage.css .mg-search (파티 목록 검색창과 같음). 치는 동안 찾고 Enter 로도 찾음 */
 .am-count { margin: 0 0 12px; font-size: 13px; }
 .am-table td { white-space: nowrap; }   /* 좁은 화면은 표를 옆으로 밀어서 봄 (m-table-wrap) */
 .am-doc { width: min(640px, calc(100vw - 32px)); }

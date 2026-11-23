@@ -3,6 +3,8 @@
 //   [시간표] 탭 = S14 (theme-slots.js). 새 테마는 [기본 정보]만 → 승인 요청하면 ?id=새번호&tab=slots 로 다시 열림
 //   매장은 ② 매장 화면에서 정해져 들어오므로 고르는 칸이 없다 (등록: ?storeId=, 수정: C-6 의 매장)
 //   사장: 등록·수정하면 PENDING → 관리자 승인. 관리자: 바로 OPEN (결정 S3)
+//   관리자 개편 11/23: ① 기본 → ② 플레이 정보(4칸) → ③ 포스터 · 소개, 버튼 줄은 화면 아래에 붙어 따라옴
+//     난이도는 직접 만든 드롭다운(UI.selectPicker), 시간·인원은 숫자만, 가격은 숫자만 + 쉼표, 제한 시간 1~720분
 (function () {
   const el = UI.el;
   const $ = UI.$;
@@ -14,6 +16,16 @@
 
   let store = null; // 이 테마의 매장 (C-1 한 줄)
   let theme = null; // 수정 중인 테마 (C-6)
+  const LEVELS = [["", "선택"], ["1", "1 · 아주 쉬움"], ["2", "2 · 쉬움"], ["3", "3 · 보통"], ["4", "4 · 어려움"], ["5", "5 · 아주 어려움"]];
+  const difficulty = UI.selectPicker("difficulty", LEVELS, "", { label: "난이도" });
+  $("difficulty-box").append(difficulty.el);
+  // 시간·인원: 숫자 말고는 안 들어감 (붙여 넣어도 숫자만). 가격: 숫자만 + 쉼표
+  document.querySelectorAll("#form input.num").forEach(function (inp) {
+    inp.addEventListener("input", function () { const v = inp.value.replace(/[^0-9]/g, ""); if (v !== inp.value) inp.value = v; });
+  });
+  $("price").addEventListener("input", function () { $("price").value = money($("price").value); });
+  function money(v) { const d = String(v).replace(/[^0-9]/g, ""); return d ? Number(d).toLocaleString("ko-KR") : ""; }
+  function digits(id) { return $(id).value.replace(/[^0-9]/g, ""); }
 
   setup();
 
@@ -50,6 +62,7 @@
     document.title = (theme ? theme.title : "새 테마") + " · Escaplix";
     $("title").textContent = theme ? theme.title : "새 테마";
     $("submit").textContent = admin ? "저장" : (theme ? "수정하고 다시 승인 요청" : "승인 요청");
+    $("submit-note").textContent = admin ? "저장하면 바로 손님에게 보여요." : "승인 전에는 손님에게 보이지 않아요.";
 
     renderGenres(genres);
     if (theme) {
@@ -58,9 +71,29 @@
       if (theme.status !== "REJECTED") setupTabs();
     }
 
-    Manage.bindImageInput($("poster"), $("poster-preview"), $("poster-hint"),
-      theme && theme.posterUrl, "사진이 없으면 장르 색으로 대신 보여요");
+    bindDrop($("poster"), $("poster-drop"), theme && theme.posterUrl);
     form.addEventListener("submit", submit);
+  }
+
+  // 포스터 칸: 누르거나 끌어다 놓으면 미리보기 (jpg·png·webp, 5MB 이하)
+  function bindDrop(input, box, current) {
+    let objectUrl = null;
+    function show(src) {
+      let img = box.querySelector("img");
+      if (!src) { if (img) img.remove(); return; }
+      if (!img) { img = el("img"); img.alt = "포스터 미리보기"; box.insertBefore(img, input); }
+      img.src = src;
+    }
+    show(Manage.publicUrl(current));
+    input.addEventListener("change", function () {
+      if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+      const file = input.files[0];
+      const err = Manage.checkImage(file);
+      if (err) { UI.toast(err, "err"); input.value = ""; show(Manage.publicUrl(current)); return; }
+      if (!file) { show(Manage.publicUrl(current)); return; }
+      objectUrl = URL.createObjectURL(file);
+      show(objectUrl);
+    });
   }
 
   // C-6 응답의 매장 번호 (명세는 B-2 모양 store.storeId, 백엔드는 storeId)
@@ -101,11 +134,11 @@
     $("title-input").value = t.title;
     $("description").value = t.description || "";
     $("description").dispatchEvent(new Event("input"));
-    $("difficulty").value = t.difficulty;
+    difficulty.set(String(t.difficulty));
     $("playMinutes").value = t.playMinutes;
     $("minPeople").value = t.minPeople;
     $("maxPeople").value = t.maxPeople;
-    $("price").value = t.price;
+    $("price").value = money(t.price);
     $("bookingUrl").value = t.bookingUrl;
     const ids = (t.genreIds || []).map(Number);
     document.querySelectorAll("#genres input").forEach(function (cb) { cb.checked = ids.indexOf(Number(cb.value)) !== -1; });
@@ -154,18 +187,17 @@
   }
 
   function validate() {
-    if (!form.checkValidity()) {
-      const bad = form.querySelector(":invalid");
-      const label = form.querySelector('label[for="' + bad.id + '"]');
-      const name = label ? label.firstChild.textContent.trim() : "입력 칸";
-      bad.focus();
-      if (bad.validity.valueMissing) return name + "을(를) 입력해 주세요.";
-      if (bad.id === "bookingUrl") return "예약 링크는 http:// 또는 https:// 로 시작해야 해요.";
-      if (bad.id === "playMinutes") return "제한 시간은 1~300분이에요.";
-      if (bad.id === "minPeople" || bad.id === "maxPeople") return "인원은 1~20명이에요.";
-      if (bad.id === "price") return "가격은 0원 이상이에요.";
-      return name + " 값을 확인해 주세요.";
-    }
+    function bad(id, msg) { $(id).focus(); return msg; }
+    if (!$("title-input").value.trim()) return bad("title-input", "테마 이름을 입력해 주세요.");
+    if (!checkedGenres().length) { $("genres").querySelector("input").focus(); return "장르를 하나 이상 골라 주세요."; }
+    if (!difficulty.value()) { difficulty.button.focus(); return "난이도를 골라 주세요."; }
+    const mins = Number(digits("playMinutes"));
+    if (!digits("playMinutes") || mins < 1 || mins > 720) return bad("playMinutes", "제한 시간은 1~720분이에요.");
+    const lo = Number(digits("minPeople")), hi = Number(digits("maxPeople"));
+    if (!digits("minPeople") || lo < 1 || lo > 20) return bad("minPeople", "인원은 1~20명이에요.");
+    if (!digits("maxPeople") || hi < 1 || hi > 20) return bad("maxPeople", "인원은 1~20명이에요.");
+    if (!digits("price")) return bad("price", "가격을 입력해 주세요.");
+    if (!$("bookingUrl").value.trim()) return bad("bookingUrl", "예약 링크를 입력해 주세요.");
     if (!Manage.isWebUrl($("bookingUrl").value.trim())) {
       $("bookingUrl").focus();
       return "예약 링크가 열 수 있는 주소가 아니에요. 예) https://example.com/booking";
@@ -173,10 +205,6 @@
     if (Number($("minPeople").value) > Number($("maxPeople").value)) {
       $("minPeople").focus();
       return "최소 인원이 최대 인원보다 클 수 없어요.";
-    }
-    if (!checkedGenres().length) {
-      $("genres").querySelector("input").focus();
-      return "장르를 하나 이상 골라 주세요.";
     }
     return null;
   }
@@ -194,7 +222,8 @@
     f.append("storeId", $("storeId").value);
     f.append("title", $("title-input").value.trim());
     f.append("description", $("description").value.trim());
-    ["difficulty", "playMinutes", "minPeople", "maxPeople", "price"].forEach(function (k) { f.append(k, $(k).value); });
+    f.append("difficulty", difficulty.value());
+    ["playMinutes", "minPeople", "maxPeople", "price"].forEach(function (k) { f.append(k, digits(k)); });
     f.append("bookingUrl", $("bookingUrl").value.trim());
     checkedGenres().forEach(function (id) { f.append("genreIds", id); }); // genreIds=1&genreIds=2 (명세 C-7)
     if ($("poster").files[0]) f.append("poster", $("poster").files[0]);

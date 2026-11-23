@@ -26,110 +26,119 @@
       <button type="button" role="tab" id="tab-slots" aria-controls="slots-panel" aria-selected="false">시간표</button>
     </div>
 
-    <form class="m-card m-form" id="form" role="tabpanel" aria-labelledby="tab-info" novalidate>
+    <form class="m-form" id="form" role="tabpanel" aria-labelledby="tab-info" novalidate>
       <div class="m-notice" id="re-approve" hidden>
         테마를 수정하면 <b>다시 승인 대기</b>가 돼요. 관리자가 승인할 때까지 손님에게 보이지 않아요.
       </div>
       <div class="m-error" id="error" role="alert" hidden></div>
-
       <input type="hidden" id="storeId">
 
-      <div class="m-field">
-        <label for="title-input">테마 이름<span class="req">*</span></label>
-        <input type="text" id="title-input" maxlength="50" required placeholder="예: 거울 속 방">
-      </div>
-
-      <div class="m-field">
-        <label for="description">소개 (선택)</label>
-        <textarea id="description" maxlength="1300" placeholder="손님이 테마 상세에서 읽는 이야기예요."></textarea>
-        <p class="hint m-count" id="description-count"></p>
-      </div>
-
-      <div class="m-grid">
-        <div class="m-field">
-          <label for="difficulty">난이도<span class="req">*</span></label>
-          <select id="difficulty" required>
-            <option value="">고르기</option>
-            <option value="1">1 · 아주 쉬움</option>
-            <option value="2">2 · 쉬움</option>
-            <option value="3">3 · 보통</option>
-            <option value="4">4 · 어려움</option>
-            <option value="5">5 · 아주 어려움</option>
-          </select>
+      <!-- 관리자 개편 11/23: ① 기본 → ② 플레이 정보(손님 테마 상세 4칸과 같은 배치) → ③ 포스터 · 소개 -->
+      <section class="f-sec">
+        <h2>기본</h2>
+        <div class="m-card m-form">
+          <div class="m-field">
+            <label for="title-input">테마 이름<span class="req">*</span></label>
+            <input type="text" id="title-input" maxlength="50" placeholder="예: 거울 속 방">
+          </div>
+          <div class="m-field">
+            <span class="lbl" id="genres-label">장르<span class="req">*</span></span>
+            <div class="m-checks" id="genres" role="group" aria-labelledby="genres-label"></div>
+          </div>
         </div>
-        <div class="m-field">
-          <label for="playMinutes">제한 시간(분)<span class="req">*</span></label>
-          <input type="number" id="playMinutes" min="1" max="300" step="1" required placeholder="70">
-        </div>
-        <div class="m-field">
-          <label for="minPeople">최소 인원<span class="req">*</span></label>
-          <input type="number" id="minPeople" min="1" max="20" step="1" required placeholder="2">
-        </div>
-        <div class="m-field">
-          <label for="maxPeople">최대 인원<span class="req">*</span></label>
-          <input type="number" id="maxPeople" min="1" max="20" step="1" required placeholder="4">
-        </div>
-        <div class="m-field">
-          <label for="price">1인 가격(원)<span class="req">*</span></label>
-          <input type="number" id="price" min="0" step="1" required placeholder="25000">
-        </div>
-      </div>
-      <p class="hint" style="margin-top:-8px">인원이 늘어도 1인 가격은 그대로예요.</p>
+      </section>
 
-      <div class="m-field">
-        <span class="lbl" id="genres-label">장르 (하나 이상)<span class="req">*</span></span>
-        <div class="m-checks" id="genres" role="group" aria-labelledby="genres-label"></div>
-      </div>
+      <section class="f-sec">
+        <h2>플레이 정보</h2>
+        <div class="m-card m-form">
+          <div class="f-stats">
+            <div>
+              <span class="lbl">난이도<span class="req">*</span></span>
+              <div id="difficulty-box"></div>
+            </div>
+            <div>
+              <label class="lbl" for="playMinutes">시간<span class="req">*</span></label>
+              <div class="f-unit"><input class="w3 num" type="text" inputmode="numeric" maxlength="3" id="playMinutes" placeholder="70">분</div>
+            </div>
+            <div>
+              <span class="lbl">인원<span class="req">*</span></span>
+              <div class="f-unit"><input class="w2 num" type="text" inputmode="numeric" maxlength="2" id="minPeople" placeholder="2" aria-label="최소 인원">~<input class="w2 num" type="text" inputmode="numeric" maxlength="2" id="maxPeople" placeholder="4" aria-label="최대 인원">인</div>
+            </div>
+            <div>
+              <label class="lbl" for="price">가격<span class="req">*</span></label>
+              <div class="f-unit"><input class="w6" type="text" inputmode="numeric" maxlength="9" id="price" placeholder="25,000">원 / 1인</div>
+            </div>
+          </div>
+          <div class="m-field">
+            <label for="bookingUrl">예약 링크<span class="req">*</span></label>
+            <input type="url" id="bookingUrl" maxlength="500" placeholder="https://">
+          </div>
+        </div>
+      </section>
 
-      <div class="m-field">
-        <label for="bookingUrl">예약 링크<span class="req">*</span></label>
-        <input type="url" id="bookingUrl" maxlength="500" required pattern="https?://.+" placeholder="https:// 로 시작">
-        <p class="hint">테마 상세의 "예약하러 가기" 버튼이 이 링크를 열어요.</p>
-      </div>
+      <section class="f-sec">
+        <h2>포스터 · 소개</h2>
+        <div class="m-card m-form">
+          <div class="f-pair">
+            <div class="f-col">
+              <span class="lbl">포스터</span>
+              <label class="f-drop poster" id="poster-drop"><span><b>포스터 올리기</b>세로 2:3</span><input type="file" id="poster" accept="image/jpeg,image/png,image/webp" aria-label="포스터"></label>
+            </div>
+            <div class="f-col">
+              <label for="description">소개</label>
+              <div class="f-ta">
+                <textarea id="description" maxlength="1300" placeholder="손님이 테마 상세에서 읽는 이야기예요."></textarea>
+                <p class="hint m-count" id="description-count"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <div class="m-field">
-        <label for="poster">테마 사진 (선택)</label>
-        <input type="file" id="poster" accept="image/jpeg,image/png,image/webp">
-        <p class="hint" id="poster-hint">jpg·png·webp, 5MB 이하. 관리자가 승인할 때 같이 봐요.</p>
-        <div class="m-preview wide" id="poster-preview"></div>
-      </div>
-
-      <div class="m-submit">
-        <button class="btn btn-accent" type="submit" id="submit">승인 요청</button>
+      <div class="f-submit">
+        <span class="note" id="submit-note">승인 전에는 손님에게 보이지 않아요.</span>
         <a class="btn btn-line" id="cancel">취소</a>
+        <button class="btn btn-accent" type="submit" id="submit">승인 요청</button>
       </div>
     </form>
 
-    <!-- [시간표] 탭 -->
+    <!-- [시간표] 탭 (관리자 개편 11/23: 시간은 직접 치거나(1315 → 13:15) 시·분을 골라 넣음, 회차 겹침 허용) -->
     <section id="slots-panel" role="tabpanel" aria-labelledby="tab-slots" hidden>
-      <p class="muted" style="margin:0 0 16px">주중·주말에 시작하는 시간만 정하면 매주 같은 시간표로 보여요. 공휴일은 주말 시간표를 따라요. 끝나는 시간은 제한 시간 <span id="slot-play"></span>분으로 계산해요.</p>
+      <p class="muted" style="margin:0 0 16px">시작 시간만 넣으면 끝나는 시간은 제한 시간 <b id="slot-play"></b>분으로 계산해요.</p>
       <div class="m-error" id="slot-error" role="alert" hidden></div>
       <div id="slot-editor" hidden>
         <div class="week-grid">
           <div class="m-card week-col" data-kind="weekday">
-            <h2>주중 <small>월 ~ 금</small></h2>
+            <div class="wc-head"><h2>주중 <small>월 ~ 금</small></h2><span class="wc-n"></span></div>
             <ul class="times"></ul>
-            <div class="add-row m-form">
-              <input type="time" aria-label="주중에 추가할 시작 시간" value="13:00">
+            <div class="wc-foot">
+              <div class="tin">
+                <span class="ico" aria-hidden="true"></span>
+                <input type="text" inputmode="numeric" maxlength="5" placeholder="13:00" aria-label="주중에 넣을 시작 시간">
+                <div class="tp" hidden></div>
+              </div>
               <button class="btn btn-accent small add" type="button">추가</button>
+              <button class="btn btn-line small copy" type="button" data-to="weekend">주말에도 똑같이</button>
+              <div class="warn-line" role="alert"></div>
             </div>
-            <div class="warn-line" role="alert"></div>
-            <button class="btn btn-line small copy" type="button" data-to="weekend">주말에도 똑같이</button>
           </div>
-
           <div class="m-card week-col weekend" data-kind="weekend">
-            <h2>주말 <small>토 · 일 · 공휴일</small></h2>
+            <div class="wc-head"><h2>주말 <small>토 · 일 · 공휴일</small></h2><span class="wc-n"></span></div>
             <ul class="times"></ul>
-            <div class="add-row m-form">
-              <input type="time" aria-label="주말에 추가할 시작 시간" value="10:00">
+            <div class="wc-foot">
+              <div class="tin">
+                <span class="ico" aria-hidden="true"></span>
+                <input type="text" inputmode="numeric" maxlength="5" placeholder="13:00" aria-label="주말에 넣을 시작 시간">
+                <div class="tp" hidden></div>
+              </div>
               <button class="btn btn-accent small add" type="button">추가</button>
+              <button class="btn btn-line small copy" type="button" data-to="weekday">주중에도 똑같이</button>
+              <div class="warn-line" role="alert"></div>
             </div>
-            <div class="warn-line" role="alert"></div>
-            <button class="btn btn-line small copy" type="button" data-to="weekday">주중에도 똑같이</button>
           </div>
         </div>
-        <div class="save-bar">
-          <span class="muted" id="slot-summary"></span>
+        <div class="slot-bar">
+          <span id="slot-summary"></span>
           <button class="btn btn-accent" type="button" id="slot-save">시간표 저장</button>
         </div>
       </div>
