@@ -120,6 +120,9 @@ a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
 }
 .m-tabs a:hover, .m-tabs button:hover { color: #fff; }
 .m-tabs [aria-current="page"], .m-tabs [aria-selected="true"] { color: #fff; border-bottom-color: var(--accent); }
+/* 탭 옆 숫자: 괄호 없이 작고 흐리게 "매장 1" · "전체 1,000" (Manage.tabCount) */
+.m-tab-n { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 2px; font-variant-numeric: tabular-nums; }
+.m-tabs [aria-current="page"] .m-tab-n, .m-tabs [aria-selected="true"] .m-tab-n { color: var(--ink2); }
 
 /* ---------- 폼 ---------- */
 .m-form { display: grid; gap: 16px; }

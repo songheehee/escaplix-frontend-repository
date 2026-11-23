@@ -63,12 +63,13 @@
     return btns;
   }
 
-  // 탭 글자에 전체 수 붙이기 (전체 = 손님 + 사장 + 관리자)
+  // 탭 글자 옆에 전체 수 (전체 = 손님 + 사장 + 관리자). 괄호 없이 작고 흐리게: "전체 1,000"
+  //   메인 검색 결과 탭(테마 12 · 매장 3)과 같은 모양. 검색어와 상관없이 전체 수
   function paintTabCounts(c) {
     const all = (c.USER || 0) + (c.OWNER || 0) + (c.ADMIN || 0);
-    tabs[""].textContent = "전체 (" + all + ")";
-    tabs.USER.textContent = "손님 (" + (c.USER || 0) + ")";
-    tabs.OWNER.textContent = "사장 (" + (c.OWNER || 0) + ")";
+    Manage.tabCount(tabs[""], "전체", all);
+    Manage.tabCount(tabs.USER, "손님", c.USER || 0);
+    Manage.tabCount(tabs.OWNER, "사장", c.OWNER || 0);
   }
 
   async function load() {
@@ -92,9 +93,8 @@
     paintTabCounts(res.countByRole || {});
 
     const what = role ? ROLE_BADGE[role][0] : "회원";
-    $("count").textContent = keyword
-      ? "「" + keyword + "」 검색 결과 " + what + " " + res.total + "명"
-      : what + " " + res.total + "명";
+    // 검색했을 때만 검색창 옆에 결과 수 (검색어가 없으면 탭 숫자와 같아서 안 보임)
+    $("count").textContent = keyword ? Number(res.total).toLocaleString("ko-KR") + "명" : "";
 
     box.textContent = "";
     if (!res.members.length) {

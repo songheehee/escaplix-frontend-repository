@@ -253,10 +253,16 @@ const Manage = (function () {
       links[t[0]] = a;
       box.append(a);
     });
+    // 탭 옆 숫자 = 승인 대기 수. 괄호 없이 작고 흐리게 "매장 1" (회원 관리 탭과 같은 모양)
     api.get("/api/admin/summary").then(function (s) {
-      links.stores.textContent = "매장 (" + s.pendingStores + ")";
-      links.themes.textContent = "테마 (" + s.pendingThemes + ")";
+      tabCount(links.stores, "매장", s.pendingStores);
+      tabCount(links.themes, "테마", s.pendingThemes);
     }).catch(function () { /* 숫자만 못 보여 줌 */ });
+  }
+  // 탭 글자 + 작은 숫자: "매장 1", "전체 1,000"
+  function tabCount(tab, name, n) {
+    tab.textContent = "";
+    tab.append(name + " ", el("span", "m-tab-n", Number(n || 0).toLocaleString("ko-KR")));
   }
 
   // 상태 고르기 칩. list 한 칸은 상태("PENDING") 또는 [상태, 글자] (승인 요청 화면은 "대기" · "반려")
@@ -408,7 +414,7 @@ const Manage = (function () {
   }
 
   return {
-    guard: guard, isAdmin: isAdmin, stop: stop, pager: pager,
+    guard: guard, isAdmin: isAdmin, stop: stop, pager: pager, tabCount: tabCount,
     metaRow: metaRow, dlRows: dlRows, webLink: webLink, section: section, storePublic: storePublic, storeDocs: storeDocs,
     badge: badge, rejectNote: rejectNote,
     md: md, ymd: ymd, dateTime: dateTime,
