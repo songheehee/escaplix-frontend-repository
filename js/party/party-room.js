@@ -7,7 +7,6 @@
   const el = UI.el;
   const POLL_MS = 3000;
   const NOTICE = { JOIN: "님이 들어왔어요", LEAVE: "님이 나갔어요", KICK: "님이 강퇴됐어요" };
-  const STATUS = { RECRUITING: "모집 중", FULL: "정원 참", CLOSED: "모집 마감" };
 
   // ---------- 상태 (아래 함수들이 쓰므로 맨 위에 선언) ----------
   let room = null;          // A-13 응답
@@ -76,10 +75,11 @@
     $("ri-title").textContent = room.title;
     const st = $("ri-status");
     const ended = isEnded();
-    st.textContent = ended ? "끝난 파티" : STATUS[room.status] || room.status;
-    st.className = "badge st-" + (ended ? "closed" : room.status.toLowerCase());   // 끝난 파티는 회색
+    const s = UI.partyStatus(room.status, ended);
+    st.textContent = s.label;
+    st.className = s.cls;
     $("ri-meta").textContent = room.theme.title + " · " + room.theme.storeName + " · 📅 " + md(play) + " " + hm(play) + " (" + room.theme.playMinutes + "분)";
-    $("ri-deadline").textContent = ended ? "플레이 시간이 지난 파티예요" : room.status === "CLOSED" ? "모집이 끝났어요" : "⏰ " + md(deadline) + " " + hm(deadline) + " 모집 마감";
+    $("ri-deadline").textContent = ended ? "플레이 시간이 지난 파티예요" : room.status === "CLOSED" ? "모집이 마감됐어요" : "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집";
     $("ri-intro").textContent = "👑 방장 한마디 · “" + room.intro + "”";
 
     $("rm-count").textContent = room.currentPeople + " / " + room.maxPeople + "명";

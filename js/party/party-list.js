@@ -197,7 +197,7 @@
 
     const foot = el("div", "pb-foot");
     if (p.kicked) foot.append(el("div", "kicked-note", "강퇴된 파티라 다시 참여할 수 없어요"));
-    else foot.append(el("div", "pb-deadline", "⏰ " + md(deadline) + " " + hm(deadline) + " 모집 마감"));
+    else foot.append(el("div", "pb-deadline", "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집"));
     foot.append(el("div", "muted", "👑 방장 " + p.leaderNickname));
     body.append(foot);
     c.append(body);

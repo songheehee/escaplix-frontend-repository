@@ -599,6 +599,15 @@ const UI = (function () {
     };
   }
 
+  // ---------- 파티 상태 (화면에 보이는 이름은 여기서만 정함) ----------
+  //   DB 상태 4개(DELETED 는 화면에 안 나옴) + "끝난 파티"(플레이 시간이 지남, 서버의 ended 와 같은 기준)
+  //   UI.partyStatus(status, ended) → { label: "모집 중", cls: "badge st-recruiting" }
+  const PARTY_STATUS = { RECRUITING: "모집 중", FULL: "모집 완료", CLOSED: "모집 마감" };
+  function partyStatus(status, ended) {
+    if (ended) return { label: "끝난 파티", cls: "badge st-closed" };   // 끝난 파티는 회색
+    return { label: PARTY_STATUS[status] || status, cls: "badge st-" + String(status).toLowerCase() };
+  }
+
   // 큰 제목 한 줄 맞추기용: 글자 몇 개 너비인지 (한글 1, 띄어쓰기·영문·숫자는 대략 0.55)
   //   제목에 style --len 으로 넣으면 CSS 가 "줄 너비 ÷ --len" 으로 글자 크기를 정함 (home.css .hero-title, detail.css .d-title)
   function textWidth(s) {
@@ -828,7 +837,7 @@ const UI = (function () {
     storeCard: storeCard,
     el: el, $: $, poster: poster, posterBg: posterBg, genreGradient: genreGradient,
     rating: rating, won: won, people: people, genresText: genresText, genreName: genreName,
-    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, selectPicker: selectPicker, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
+    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, partyStatus: partyStatus, selectPicker: selectPicker, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
     toast: toast, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
     skeletonRow: skeletonRow, emptyBox: emptyBox,
   };
