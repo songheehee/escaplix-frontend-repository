@@ -66,6 +66,8 @@
 
   // ---------- 파티 정보 · 참여자 ----------
   function isLeader() { return room.myRole === "LEADER"; }
+  // 끝난 파티: 플레이 시간이 지남 (내 채팅의 "끝난 파티"와 같은 기준). 지난 대화만 보고 새 메시지는 못 보냄
+  function isEnded() { return new Date(room.playAt) <= new Date(); }
 
   function paintRoom() {
     const play = new Date(room.playAt);
@@ -73,10 +75,11 @@
     document.title = room.title + " · 파티 방 · Escaplix";
     $("ri-title").textContent = room.title;
     const st = $("ri-status");
-    st.textContent = STATUS[room.status] || room.status;
-    st.className = "badge st-" + room.status.toLowerCase();
+    const ended = isEnded();
+    st.textContent = ended ? "끝난 파티" : STATUS[room.status] || room.status;
+    st.className = "badge st-" + (ended ? "closed" : room.status.toLowerCase());   // 끝난 파티는 회색
     $("ri-meta").textContent = room.theme.title + " · " + room.theme.storeName + " · 📅 " + md(play) + " " + hm(play) + " (" + room.theme.playMinutes + "분)";
-    $("ri-deadline").textContent = room.status === "CLOSED" ? "모집이 끝났어요" : "⏰ " + md(deadline) + " " + hm(deadline) + " 모집 마감";
+    $("ri-deadline").textContent = ended ? "플레이 시간이 지난 파티예요" : room.status === "CLOSED" ? "모집이 끝났어요" : "⏰ " + md(deadline) + " " + hm(deadline) + " 모집 마감";
     $("ri-intro").textContent = "👑 방장 한마디 · “" + room.intro + "”";
 
     $("rm-count").textContent = room.currentPeople + " / " + room.maxPeople + "명";
@@ -88,7 +91,7 @@
       name.append(m.leader ? "👑 " : "", el("b", null, m.nickname));
       if (m.memberId === me.memberId) name.append(el("span", "me", "(나)"));
       li.append(name);
-      if (isLeader() && !m.leader) {
+      if (isLeader() && !m.leader && !ended) {   // 끝난 파티는 강퇴할 일이 없음
         const kick = el("button", "btn danger small", "강퇴");
         kick.type = "button";
         kick.setAttribute("aria-label", m.nickname + " 강퇴");
@@ -102,12 +105,48 @@
     const actions = $("member-actions");
     actions.textContent = "";
     if (isLeader()) {
-      if (room.status !== "CLOSED") actions.append(actionBtn("모집 마감", "btn btn-line small", doClose));
+      if (room.status !== "CLOSED" && !ended) actions.append(actionBtn("모집 마감", "btn btn-line small", doClose));
       actions.append(actionBtn("파티 삭제", "btn danger small", doDelete));
       $("rm-note").textContent = "방장은 나갈 수 없어요. 대신 강퇴하거나 파티를 삭제할 수 있어요.";
     } else {
       actions.append(actionBtn("나가기", "btn btn-line small", doLeave));
       $("rm-note").textContent = "나가면 파티와 채팅방에서 함께 빠져요. 모집 중이면 다시 참여할 수 있어요.";
+    }
+    if (ended) paintEnded();
+  }
+
+  // 끝난 파티: 입력칸 대신 안내 + 후기 쓰기 (한 번만 바꿈)
+  function paintEnded() {
+    const form = $("chat-form");
+    if (!form || form.hidden) return;
+    form.hidden = true;
+    const live = document.querySelector(".rc-live");
+    if (live) live.textContent = "지난 대화";
+    const bar = el("div", "chat-ended");
+    bar.append(el("span", null, "끝난 파티예요. 지난 대화만 볼 수 있어요."));
+    const btn = el("button", "btn btn-line small", "후기 쓰기");
+    btn.type = "button";
+    btn.addEventListener("click", function () { writeReview(btn); });
+    bar.append(btn);
+    form.after(bar);
+    const empty = document.querySelector("#chat .chat-empty");
+    if (empty) empty.textContent = "주고받은 메시지가 없어요.";
+  }
+
+  // 후기 쓰기: D 담당 후기 팝업(window.openReviewModal)이 있으면 열고, 없으면 테마 상세로 (chats.js 와 같음)
+  async function writeReview(btn) {
+    if (typeof window.openReviewModal !== "function") {
+      location.href = Routes.url("theme", { id: room.theme.themeId });
+      return;
+    }
+    btn.disabled = true;
+    try {
+      const t = await api.get("/api/themes/" + room.theme.themeId);
+      window.openReviewModal({ themeId: t.themeId, title: t.title, storeName: t.store.name, playMinutes: t.playMinutes });
+    } catch (e) {
+      UI.toast(e.message, "err");   // 운영 종료된 테마 등
+    } finally {
+      btn.disabled = false;
     }
   }
 
@@ -217,6 +256,8 @@
         addMessage(m);
         scrollToBottom();
       } catch (err) {
+        // 409: 방을 열어 둔 사이 플레이 시간이 지남 → 끝난 파티 화면으로
+        if (err.status === 409) { UI.toast(err.message, "err"); paintRoom(); return; }
         handleGone(err);
       } finally {
         send.disabled = false;
@@ -264,6 +305,7 @@
         else $("chat-new").hidden = false;
       }
       if (notice && !first) reloadRoom();   // 누가 들어오거나 나가면 참여자 명단도 새로 (처음엔 방금 받았으니 생략)
+      if (isEnded() && !$("chat-form").hidden) paintRoom();   // 방을 열어 둔 사이 플레이 시간이 지나면 끝난 파티 화면으로
     } catch (e) {
       // 403·404 는 방에서 나감. 서버가 잠깐 안 될 때는 알림을 한 번만 (3초마다 쌓이지 않게)
       if (e.status === 403 || e.status === 404) handleGone(e);
@@ -302,7 +344,7 @@
     return true;
   }
 
-  function showEmptyChat() { $("chat").append(el("div", "chat-empty", "아직 메시지가 없어요. 먼저 인사해 보세요!")); }
+  function showEmptyChat() { $("chat").append(el("div", "chat-empty", isEnded() ? "주고받은 메시지가 없어요." : "아직 메시지가 없어요. 먼저 인사해 보세요!")); }
   function nearBottom() { const c = $("chat"); return !c || c.scrollHeight - c.scrollTop - c.clientHeight < 60; }
   function scrollToBottom() { const c = $("chat"); if (c) c.scrollTop = c.scrollHeight; $("chat-new").hidden = true; }
 
