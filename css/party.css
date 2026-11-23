@@ -57,6 +57,10 @@
 .badge.mine { background: rgba(139, 92, 246, .25); color: var(--accent-ink); }
 .badge.bad { background: rgba(255, 92, 108, .18); color: #ff9aa5; }
 .badge.soon { background: rgba(242, 184, 75, .18); color: var(--gold); }
+/* 정원 마감 파티: 보이기만 하고 참여는 못 함 → 살짝 흐리게 */
+.party-card.full { opacity: .72; }
+.party-card.full:hover { opacity: .9; }
+.pb-deadline.full { color: var(--gold); }
 .pb-title { font-weight: 800; line-height: 1.35; }
 .pb-intro { font-size: 13px; color: var(--ink2); background: var(--surface2); border-left: 3px solid var(--accent); padding: 6px 9px; border-radius: 4px; }
 .pb-seats { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
