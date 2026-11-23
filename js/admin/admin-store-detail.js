@@ -1,8 +1,10 @@
 // S23 매장 승인 상세 (pages/admin/admin-store-detail.html?id=) · C 담당
 //   C-14 상세, C-15 사업장등록증, A-11 사장 사업자등록증 (둘 다 토큰이 필요한 이미지 → api.blob)
 //   C-16 승인·반려. PENDING 매장만 처리, 반려는 사유 필수 1~300자 → 사장 홈에 보임 (결정 S4)
+//   관리자 개편 11/23: 맨 위 한 줄(이름·상태 / 신청자·신청일 / 승인·반려 버튼, 스크롤해도 위에 붙음)
+//     매장 (작은 사진 + 지역·주소·전화·영업시간·웹사이트·소개)
+//     서류 (사업장등록증 · 사업자등록증 나란히. 관리자 직접 등록이면 사업장등록증만)
 (function () {
-  const el = UI.el;
   const $ = UI.$;
   if (!Manage.guard(["ADMIN"])) return;
   const storeId = Manage.numParam("id");
@@ -10,7 +12,7 @@
 
   $("back").href = Routes.url("adminStores");
   if (!storeId) {
-    Manage.stop("매장 번호가 없어요.", "매장 승인 목록", Routes.url("adminStores"));
+    Manage.stop("매장 번호가 없어요.", "승인 요청", Routes.url("adminStores"));
     return;
   }
   $("approve").addEventListener("click", approve);
@@ -21,77 +23,39 @@
     try {
       store = await api.get("/api/admin/stores/" + storeId);
     } catch (e) {
-      Manage.stop(e.status === 404 ? "없는 매장이에요." : e.message, "매장 승인 목록", Routes.url("adminStores"));
+      Manage.stop(e.status === 404 ? "없는 매장이에요." : e.message, "승인 요청", Routes.url("adminStores"));
       return;
     }
     render();
-    loadDocs();
   }
 
   function render() {
     const s = store;
-    document.title = s.name + " 승인 · Escaplix";
+    document.title = s.name + " · 매장 승인 · Escaplix";
     $("name").textContent = s.name;
     paintStatus();
 
-    const photo = $("photo");
-    photo.textContent = "";
-    photo.append(UI.poster({ posterUrl: s.photoUrl, title: s.name, genres: [] }));
-    if (!s.photoUrl) photo.title = "매장 사진 없음";
-
-    const dl = $("info");
-    dl.textContent = "";
-    const site = UI.safeUrl(s.websiteUrl);
-    const rows = [
-      ["지역", s.area], ["주소", s.address], ["전화", s.phone],
-      ["웹사이트", site ? link(site) : s.websiteUrl],
-      ["영업시간", s.hours], ["소개", s.intro],
-      ["사업장 등록번호", s.bizPlaceNo],
-      ["사장 사업자번호", s.owner ? s.owner.bizNo : "-"],
-      ["신청한 사장", s.owner ? s.owner.loginId + " (" + s.owner.nickname + ")" : "관리자 직접 등록"],
-      ["신청일", Manage.dateTime(s.createdAt)],
-    ];
-    rows.forEach(function (r) {
-      const dd = el("dd");
-      if (r[1] instanceof Node) dd.append(r[1]);
-      else dd.textContent = r[1] === null || r[1] === undefined || r[1] === "" ? "-" : r[1];
-      dl.append(el("dt", null, r[0]), dd);
-    });
-  }
-
-  function link(href) {
-    const a = el("a", null, href + " ↗");
-    a.href = href;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    return a;
+    const body = $("body");
+    body.textContent = "";
+    const pub = Manage.section("①", "매장");
+    pub.append(Manage.storePublic(s));
+    const docs = Manage.section("②", "서류");
+    docs.append(Manage.storeDocs(s));
+    body.append(pub, docs);
   }
 
   function paintStatus() {
+    const s = store;
     const st = $("status");
     st.textContent = "";
-    st.append(Manage.badge(store.status));
+    st.append(Manage.badge(s.status));
+    Manage.metaRow($("meta"), s.owner
+      ? [["신청자", s.owner.loginId + " (" + s.owner.nickname + ")"], ["신청일", Manage.ymd(s.createdAt)],
+        ["승인일", s.status === "APPROVED" && s.approvedAt ? Manage.ymd(s.approvedAt) : null]]
+      : [["등록자", "관리자"], ["등록일", Manage.ymd(s.createdAt)]]);
     $("reject").textContent = "";
-    if (store.status === "REJECTED" && store.rejectReason) $("reject").append(Manage.rejectNote(store.rejectReason));
-    const pending = store.status === "PENDING";
-    $("decide").hidden = !pending;
-    $("decide-note").hidden = !pending;
-  }
-
-  function loadDocs() {
-    const s = store;
-    if (s.hasBizPlaceFile) {
-      Manage.privateImage("/api/admin/stores/" + s.storeId + "/biz-place-file", $("doc-place"), "사업장등록증");
-      $("doc-place-hint").textContent = "번호 " + s.bizPlaceNo + " · 상호와 주소가 맞는지 확인";
-    } else {
-      $("doc-place").textContent = "올린 사업장등록증이 없어요" + (s.owner ? "." : " (관리자 직접 등록).");
-    }
-    if (s.owner) {
-      Manage.privateImage("/api/admin/members/" + s.owner.memberId + "/biz-file", $("doc-owner"), "사장 사업자등록증");
-      $("doc-owner-hint").textContent = "번호 " + (s.owner.bizNo || "-") + " · 매장을 올린 사장과 같은 사람인지 확인";
-    } else {
-      $("doc-owner").textContent = "관리자가 직접 등록한 매장이라 사장 서류가 없어요.";
-    }
+    if (s.status === "REJECTED" && s.rejectReason) $("reject").append(Manage.rejectNote(s.rejectReason));
+    $("decide").hidden = s.status !== "PENDING";
   }
 
   async function decide(body, btn) {
@@ -100,6 +64,7 @@
       const r = await api.put("/api/admin/stores/" + storeId + "/approval", body);
       store.status = r.status;
       store.rejectReason = r.rejectReason;
+      if (r.status === "APPROVED") store.approvedAt = new Date().toISOString();
       paintStatus();
       UI.toast(r.status === "APPROVED" ? "승인했어요. 이제 손님에게 보여요." : "반려했어요. 사장 홈에 사유가 보여요.");
     } catch (e) {

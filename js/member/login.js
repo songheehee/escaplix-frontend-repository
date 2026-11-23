@@ -82,6 +82,8 @@
       const u = new URL(next, Routes.ROOT);
       if (u.origin !== location.origin || u.href.indexOf(Routes.ROOT) !== 0) return fallback;
       if (u.pathname === new URL(Routes.url("login")).pathname) return fallback;   // 로그인 화면으로 다시 오면 무한 반복
+      // 관리자는 손님 화면(메인 등)에서 할 일이 없어서, 돌아갈 곳이 관리자·매장 관리 화면이 아니면 관리자 홈으로
+      if (role === "ADMIN" && !/\/pages\/(admin|owner)\//.test(u.pathname)) return fallback;
       return u.href;
     } catch (e) {
       return fallback;

@@ -1,7 +1,9 @@
-// S24 테마 승인 상세 (pages/admin/admin-theme-detail.html?id=) · C 담당 · C-18 상세, C-19 승인·반려
-//   C-18 응답 = C-6 모양 + store { storeId, name, bizPlaceNo, phone, websiteUrl, status }
-//     (지금 백엔드는 { theme: {...}, store: {...} } 로 감싸서 줌 → 둘 다 읽는다)
-//   PENDING 테마만 처리. 매장이 APPROVED 가 아니면 승인 불가(409). 반려는 사유 필수 → 사장 홈에 보임
+// S24 테마 승인 상세 (pages/admin/admin-theme-detail.html?id=) · C 담당
+//   C-18 상세(테마 + 매장 정보), C-19 승인·반려. 매장이 승인 전이면 테마는 승인할 수 없음
+//   관리자 개편 11/23: 맨 위 한 줄(이름·상태 / 매장·신청자·신청일·수정일 + 승인/반려, 스크롤해도 위에 붙음)
+//     테마: 포스터 + 장르 + 4칸 숫자(손님 테마 상세와 같은 배치) + 예약 링크 + 소개
+//        소개는 오른쪽 칸의 남은 아래를 다 쓰고, 칸을 넘을 때만 "더 보기"
+//     매장: 이름·상태 + 지역·주소·전화·영업시간·웹사이트. 승인 전 매장이면 빨간 카드 + "매장 먼저 승인하기"
 (function () {
   const el = UI.el;
   const $ = UI.$;
@@ -12,7 +14,7 @@
 
   $("back").href = Routes.url("adminThemes");
   if (!themeId) {
-    Manage.stop("테마 번호가 없어요.", "테마 승인 목록", Routes.url("adminThemes"));
+    Manage.stop("테마 번호가 없어요.", "승인 요청", Routes.url("adminThemes"));
     return;
   }
   $("approve").addEventListener("click", approve);
@@ -24,7 +26,7 @@
     try {
       d = await api.get("/api/admin/themes/" + themeId);
     } catch (e) {
-      Manage.stop(e.status === 404 ? "없는 테마예요." : e.message, "테마 승인 목록", Routes.url("adminThemes"));
+      Manage.stop(e.status === 404 ? "없는 테마예요." : e.message, "승인 요청", Routes.url("adminThemes"));
       return;
     }
     theme = d.theme || d;
@@ -32,78 +34,108 @@
     render();
   }
 
-  function link(href) {
-    const safe = UI.safeUrl(href);
-    if (!safe) return href || "-";
-    const a = el("a", null, safe + " ↗");
-    a.href = safe;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    return a;
-  }
-
-  function fillDl(dl, rows) {
-    dl.textContent = "";
-    rows.forEach(function (r) {
-      const dd = el("dd");
-      if (r[1] instanceof Node) dd.append(r[1]);
-      else dd.textContent = r[1] === null || r[1] === undefined || r[1] === "" ? "-" : r[1];
-      dl.append(el("dt", null, r[0]), dd);
-    });
-  }
-
   function render() {
     const t = theme;
-    document.title = t.title + " 승인 · Escaplix";
+    document.title = t.title + " · 테마 승인 · Escaplix";
     $("name").textContent = t.title;
 
-    const photo = $("photo");
-    photo.textContent = "";
-    photo.append(UI.poster(t));
-
-    fillDl($("info"), [
-      ["장르", UI.genresText(t.genres)],
-      ["난이도", t.difficulty + " / 5"],
-      ["제한 시간", t.playMinutes + "분"],
-      ["인원", UI.people(t.minPeople, t.maxPeople)],
-      ["가격", "1인 " + UI.won(t.price) + " (고정)"],
-      ["예약 링크", link(t.bookingUrl)],
-      ["등록한 곳", t.source === "ADMIN" ? "관리자" : "사장"],
-      ["신청일", Manage.dateTime(t.createdAt)],
-      ["수정일", Manage.dateTime(t.updatedAt)],
-    ]);
-
-    $("desc").textContent = t.description || "-";
-
-    fillDl($("store-info"), [
-      ["이름", store.name],
-      ["사업장 등록번호", store.bizPlaceNo],
-      ["전화", store.phone],
-      ["웹사이트", link(store.websiteUrl)],
-    ]);
-    const ss = $("store-status");
-    ss.textContent = "";
-    if (store.status) ss.append(Manage.badge(store.status));
-    if (store.storeId && store.status !== "APPROVED") {
-      const a = el("a", "btn btn-line small", "매장 승인 상세");
-      a.href = Routes.url("adminStoreDetail", { id: store.storeId });
-      a.style.marginLeft = "8px";
-      ss.append(a);
-    }
+    const body = $("body");
+    body.textContent = "";
+    const pub = Manage.section("①", "테마");
+    pub.append(publicCard(t));
+    const st = Manage.section("②", "매장");
+    st.append(storeCard());
+    body.append(pub, st);
     paintStatus();
+    fitIntro();
+  }
+
+  // ① 포스터 + 정보. 오른쪽 칸 높이는 포스터에 맞추고 소개가 남은 아래를 다 씀
+  let pubBox = null;
+  function publicCard(t) {
+    const card = el("div", "m-card ad-tpub");
+    pubBox = card;
+    const photo = el("div", "m-photo poster");
+    photo.append(UI.poster(t));
+    const info = el("div", "ad-tinfo");
+
+    const tags = el("div", "ad-tags");
+    (t.genres || []).forEach(function (g) { tags.append(el("span", "tag", g)); });
+
+    const stats = el("div", "ad-stats");
+    function cell(label, big, unit) {
+      const c = el("div");
+      const b = el("b", null, big);
+      if (unit) b.append(" ", el("small", null, unit));
+      c.append(el("span", null, label), b);
+      stats.append(c);
+    }
+    cell("난이도", String(t.difficulty), "/ 5");
+    cell("시간", String(t.playMinutes), "분");
+    cell("인원", t.minPeople === t.maxPeople ? String(t.minPeople) : t.minPeople + "~" + t.maxPeople, "인");
+    cell("가격", Number(t.price).toLocaleString("ko-KR"), "원 / 1인");
+
+    const intro = el("div", "ad-intro");
+    const text = el("p", "m-text", t.description || "소개가 없어요.");
+    const more = el("button", "ad-more", "더 보기");
+    more.type = "button";
+    more.hidden = true;
+    more.addEventListener("click", function () {
+      const open = card.classList.toggle("open");
+      more.textContent = open ? "접기" : "더 보기";
+    });
+    intro.append(el("span", "lbl", "소개"), text, more);
+
+    info.append(tags, stats, Manage.dlRows([["예약 링크", Manage.webLink(t.bookingUrl)]]), intro);
+    card.append(photo, info);
+    return card;
+  }
+  // 소개 글이 칸을 넘을 때만 "더 보기"
+  function fitIntro() {
+    if (!pubBox || pubBox.classList.contains("open")) return;
+    const text = pubBox.querySelector(".ad-intro .m-text");
+    const more = pubBox.querySelector(".ad-more");
+    more.hidden = text.scrollHeight <= text.clientHeight + 1;
+  }
+  window.addEventListener("resize", fitIntro);
+
+  // ② 매장 카드
+  function storeCard() {
+    const ok = !store.status || store.status === "APPROVED";
+    const card = el("div", "m-card ad-store" + (ok ? "" : " bad"));
+    const top = el("div", "ad-store-top");
+    top.append(el("b", null, store.name || "-"));
+    if (store.status) top.append(Manage.badge(store.status));
+    if (!ok && store.storeId) {
+      const go = el("a", "go", "매장 먼저 승인하기 →");
+      go.href = Routes.url("adminStoreDetail", { id: store.storeId });
+      top.append(go);
+    }
+    card.append(top, Manage.dlRows([
+      ["지역", store.area], ["주소", store.address], ["전화", store.phone],
+      ["영업시간", store.hours], ["웹사이트", Manage.webLink(store.websiteUrl)],
+    ]));
+    return card;
   }
 
   function paintStatus() {
+    const t = theme;
     const st = $("status");
     st.textContent = "";
-    st.append(Manage.badge(theme.status));
+    st.append(Manage.badge(t.status));
+    const updated = t.updatedAt && Manage.ymd(t.updatedAt) !== Manage.ymd(t.createdAt) ? Manage.ymd(t.updatedAt) : null;
+    Manage.metaRow($("meta"), [
+      ["매장", store.name],
+      [t.source === "ADMIN" ? "등록자" : "신청자", t.source === "ADMIN" ? "관리자" : store.ownerLoginId],
+      ["신청일", Manage.ymd(t.createdAt)],
+      ["수정일", updated],
+    ]);
     $("reject").textContent = "";
-    if (theme.status === "REJECTED" && theme.rejectReason) $("reject").append(Manage.rejectNote(theme.rejectReason));
-    const pending = theme.status === "PENDING";
+    if (t.status === "REJECTED" && t.rejectReason) $("reject").append(Manage.rejectNote(t.rejectReason));
+    const pending = t.status === "PENDING";
     const storeOk = !store.status || store.status === "APPROVED";
     $("decide").hidden = !pending;
-    $("decide-note").hidden = !pending;
-    $("store-warn").hidden = !pending || storeOk;
+    $("lock").hidden = storeOk;
     $("approve").disabled = !storeOk;
   }
 

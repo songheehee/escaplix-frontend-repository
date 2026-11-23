@@ -512,12 +512,14 @@ const UI = (function () {
     let list = options.slice();
     let pop = null;
 
+    // 목록 한 칸: [값, 글자]. [null, "서울", "group"] 은 고를 수 없는 묶음 제목 (매장 지역처럼)
+    function isGroup(x) { return x[2] === "group"; }
     function labelOf(v) {
-      const o = list.find(function (x) { return x[0] === v; });
+      const o = list.find(function (x) { return !isGroup(x) && x[0] === v; });
       return o ? o[1] : (list[0] ? list[0][1] : "");
     }
     function setValue(v) {
-      const has = list.some(function (x) { return x[0] === v; });
+      const has = list.some(function (x) { return !isGroup(x) && x[0] === v; });
       input.value = has ? v : (list[0] ? list[0][0] : "");
       text.textContent = labelOf(input.value);
       btn.classList.toggle("dp-none", input.value === "" );   // "인원 무관"처럼 빈 값은 흐린 글씨
@@ -530,6 +532,7 @@ const UI = (function () {
       pop.setAttribute("role", "listbox");
       pop.setAttribute("aria-label", opts.label || name);
       list.forEach(function (o) {
+        if (isGroup(o)) { pop.append(el("div", "sel-grp", o[1])); return; }
         const b = el("button", "sel-opt" + (o[0] === input.value ? " on" : ""), o[1]);
         b.type = "button";
         b.setAttribute("role", "option");

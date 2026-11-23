@@ -8,17 +8,30 @@
   <link rel="stylesheet" href="../../css/manage.css">
 </head>
 <body>
-  <!-- S25 관리자 홈 · C-12 숫자 요약, C-13·C-17 지금 처리할 것 -->
+  <!-- S25 관리자 홈 · C-12 숫자 요약, C-13 · C-17 승인 대기 (관리자 개편 11/23: 매장·테마 칸을 나눠 위아래로) -->
   <main class="page m-page" id="main">
     <h1 class="page-title">관리자 홈</h1>
-    <p class="muted" style="margin-bottom:20px">승인 대기부터 처리해 주세요. 오래 기다린 순서로 보여요.</p>
 
-    <div class="stat-grid" id="stats">
+    <div class="ah-stats" id="stats">
       <div class="sk sk-block"></div><div class="sk sk-block"></div><div class="sk sk-block"></div><div class="sk sk-block"></div>
     </div>
 
-    <h2 class="m-sec-title">지금 처리할 것</h2>
-    <div class="m-card" id="todo-box"><div class="sk sk-line"></div><div class="sk sk-line"></div></div>
+    <div class="ah-queues">
+      <section class="m-card ah-q" aria-labelledby="q-store-h">
+        <div class="ah-q-head">
+          <h2 id="q-store-h">매장 승인 대기 <span class="ah-cnt" id="c-store">-</span></h2>
+          <a class="ah-all" id="all-store">전체 보기 →</a>
+        </div>
+        <ul id="l-store"><li class="ah-empty">불러오는 중…</li></ul>
+      </section>
+      <section class="m-card ah-q" aria-labelledby="q-theme-h">
+        <div class="ah-q-head">
+          <h2 id="q-theme-h">테마 승인 대기 <span class="ah-cnt" id="c-theme">-</span></h2>
+          <a class="ah-all" id="all-theme">전체 보기 →</a>
+        </div>
+        <ul id="l-theme"><li class="ah-empty">불러오는 중…</li></ul>
+      </section>
+    </div>
   </main>
 
   <script src="../../js/common/routes.js"></script>

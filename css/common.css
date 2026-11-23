@@ -214,6 +214,7 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
 .sel-opt:hover, .sel-opt:focus-visible { background: var(--surface2); color: #fff; outline: none; }
 .sel-opt.on { color: var(--accent-ink); font-weight: 700; }
 .sel-opt.on::after { content: "✓"; float: right; margin-left: 14px; }
+.sel-grp { padding: 8px 10px 4px; font-size: 12px; font-weight: 700; color: var(--muted); }   /* 고를 수 없는 묶음 제목 (서울·경기…) */
 .dp-pop {
   position: fixed; z-index: 70; width: 284px; padding: 12px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 14px 40px rgba(0,0,0,.6);

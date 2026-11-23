@@ -8,14 +8,22 @@
   <link rel="stylesheet" href="../../css/manage.css">
 </head>
 <body>
-  <!-- S12 사장 홈 ① 내 매장 · C-1 (관리자가 열면 직접 등록한 매장)
+  <!-- S12 사장 홈 ① 내 매장 · C-1. 관리자가 열면 "매장 관리" = 승인된 매장 전체 (관리자 개편 11/23)
        매장 카드만 나열. 카드를 누르면 ② 매장 화면(owner-store.html) -->
   <main class="page m-page" id="main">
     <div class="m-head">
       <h1 class="page-title" id="title">내 매장</h1>
-      <div class="m-actions">
+      <div class="m-actions" id="owner-actions">
         <a class="btn btn-accent" id="add-store">매장 등록</a>
       </div>
+    </div>
+    <!-- 관리자: 매장 이름으로 찾기 + 매장 등록 -->
+    <div class="mg-tools" id="admin-tools" hidden>
+      <label class="mg-search">
+        <span class="sr-only">매장 이름 검색</span>
+        <input id="find" type="search" maxlength="30" placeholder="매장 이름 검색 (예: 홍대)" autocomplete="off">
+      </label>
+      <a class="btn btn-accent" id="add-store-admin">+ 매장 등록</a>
     </div>
 
     <div class="m-list" id="stores">

@@ -1,10 +1,14 @@
 // S25 관리자 홈 (pages/admin/admin.html) · C 담당
-//   C-12 숫자 요약 (회원 수까지 한 번에), C-13 · C-17 승인 대기 → "지금 처리할 것" (오래된 순으로 합침)
+//   C-12 숫자 요약 (회원 수까지 한 번에), C-13 · C-17 승인 대기 → 매장 칸 · 테마 칸 (위아래)
+//   관리자 개편 11/23: 카드 아래 작은 글씨 없앰, "지금 처리할 것" 을 매장·테마로 나눔, 줄 전체가 링크
 (function () {
   const el = UI.el;
   const $ = UI.$;
   if (!Manage.guard(["ADMIN"])) return;
 
+  const MAX_ROWS = 5;   // 칸마다 오래 기다린 순서로 최대 5개
+  $("all-store").href = Routes.url("adminStores");
+  $("all-theme").href = Routes.url("adminThemes");
   load();
 
   async function load() {
@@ -23,13 +27,21 @@
       return;
     }
     renderStats(sum);
-    renderTodo(stores, themes);
+    // C-13·C-17 은 오래된 순으로 옴
+    renderQueue("store", stores, "승인을 기다리는 매장이 없어요.", function (s) {
+      return { name: s.name, sub: (s.owner ? s.owner.loginId : "관리자") + " · " + Manage.ymd(s.createdAt) + " 신청",
+        href: Routes.url("adminStoreDetail", { id: s.storeId }) };
+    });
+    renderQueue("theme", themes, "승인을 기다리는 테마가 없어요.", function (t) {
+      return { name: t.title, sub: t.storeName + " · " + Manage.ymd(t.updatedAt || t.createdAt) + " 신청",
+        href: Routes.url("adminThemeDetail", { id: t.themeId }) };
+    });
   }
 
-  // 숫자 칸은 보여 주기만 한다 (누르는 곳은 위쪽 메뉴와 "지금 처리할 것")
-  function stat(label, num, sub, alert) {
+  // 숫자 칸은 보여 주기만 한다. 대기가 있으면 주황
+  function stat(label, num, alert) {
     const box = el("div", "m-card stat" + (alert ? " alert" : ""));
-    box.append(el("div", "lbl", label), el("div", "num", num), el("div", "lbl", sub));
+    box.append(el("div", "lbl", label), el("div", "num", String(num)));
     return box;
   }
 
@@ -39,40 +51,35 @@
     const box = $("stats");
     box.textContent = "";
     box.append(
-      stat("매장 승인 대기", s.pendingStores,
-        s.oldestPendingStoreAt ? "가장 오래된 것 " + Manage.md(s.oldestPendingStoreAt) : "밀린 일 없음", s.pendingStores > 0),
-      stat("테마 승인 대기", s.pendingThemes,
-        s.oldestPendingThemeAt ? "가장 오래된 것 " + Manage.md(s.oldestPendingThemeAt) : "밀린 일 없음", s.pendingThemes > 0),
-      stat("전체 회원", total, "손님 " + (m.USER || 0) + " · 사장 " + (m.OWNER || 0)),
-      stat("공개 중 매장 / 테마", s.approvedStores + " / " + s.openThemes, "손님에게 보이는 수")
+      stat("매장 승인 대기", s.pendingStores, s.pendingStores > 0),
+      stat("테마 승인 대기", s.pendingThemes, s.pendingThemes > 0),
+      stat("전체 회원", total, false),
+      stat("공개 중 매장 / 테마", s.approvedStores + " / " + s.openThemes, false)
     );
   }
 
-  function renderTodo(stores, themes) {
-    const items = stores.map(function (s) {
-      return { kind: "매장", name: s.name, who: s.owner ? s.owner.loginId : "관리자 등록", at: s.createdAt,
-        href: Routes.url("adminStoreDetail", { id: s.storeId }) };
-    }).concat(themes.map(function (t) {
-      return { kind: "테마", name: t.title, who: t.storeName, at: t.updatedAt || t.createdAt,
-        href: Routes.url("adminThemeDetail", { id: t.themeId }) };
-    })).sort(function (a, b) { return new Date(a.at) - new Date(b.at); });
-
-    const box = $("todo-box");
-    box.textContent = "";
-    if (!items.length) {
-      box.append(el("p", "muted", "승인을 기다리는 매장·테마가 없어요."));
+  function renderQueue(kind, list, emptyText, toRow) {
+    const cnt = $("c-" + kind);
+    cnt.textContent = String(list.length);
+    cnt.classList.toggle("zero", !list.length);
+    const ul = $("l-" + kind);
+    ul.textContent = "";
+    if (!list.length) {
+      ul.append(el("li", "ah-empty", emptyText));
       return;
     }
-    const ul = el("ul", "todo");
-    items.forEach(function (it) {
+    list.slice(0, MAX_ROWS).forEach(function (item) {
+      const r = toRow(item);
       const li = el("li");
-      const what = el("span", "what");
-      what.append(el("span", "kind", it.kind), el("b", null, it.name), el("span", "muted", " · " + it.who + " · " + Manage.md(it.at)));
-      const go = el("a", "btn btn-accent small", "검토");
-      go.href = it.href;
-      li.append(what, go);
+      const a = el("a");
+      a.href = r.href;
+      const what = el("div", "what");
+      const b = el("b", null, r.name);
+      b.title = r.name;
+      what.append(b, el("span", null, r.sub));
+      a.append(what, el("span", "go-btn", "검토"));
+      li.append(a);
       ul.append(li);
     });
-    box.append(ul);
   }
 })();
