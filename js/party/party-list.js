@@ -141,11 +141,11 @@
       });
       if (seq !== loadSeq) return;
       grid.textContent = "";
-      $("count").textContent = "모집 중 " + list.length + "개";
+      $("count").textContent = "파티 " + list.length + "개";
       if (!list.length) {
         grid.append(canCreate
-          ? UI.emptyBox("조건에 맞는 모집 중인 파티가 없어요.", "직접 파티 만들기", Routes.url("partyForm", { themeId: state.themeId }))
-          : UI.emptyBox("조건에 맞는 모집 중인 파티가 없어요."));
+          ? UI.emptyBox("조건에 맞는 파티가 없어요.", "직접 파티 만들기", Routes.url("partyForm", { themeId: state.themeId }))
+          : UI.emptyBox("조건에 맞는 파티가 없어요."));
         return;
       }
       list.forEach(function (p) { grid.append(card(p)); });
@@ -165,7 +165,8 @@
   function card(p) {
     const play = at(p.playAt);
     const deadline = at(p.deadlineAt);
-    const c = el(p.kicked ? "div" : "button", "party-card" + (p.kicked ? " kicked" : ""));
+    const full = p.status === "FULL";   // 정원 마감: 목록엔 보이지만 참여는 못 함 (참여 중이면 방으로)
+    const c = el(p.kicked ? "div" : "button", "party-card" + (p.kicked ? " kicked" : "") + (full && !p.joined ? " full" : ""));
     if (p.kicked) c.setAttribute("aria-disabled", "true");
     else c.type = "button";
 
@@ -183,7 +184,10 @@
     const badges = el("div", "pb-badges");
     if (p.joined) badges.append(el("span", "badge mine", "참여 중"));
     if (p.kicked) badges.append(el("span", "badge bad", "강퇴됨"));
-    if (!p.kicked && deadline - Date.now() < 24 * 3600 * 1000) badges.append(el("span", "badge soon", "곧 마감"));
+    if (full) {
+      const st = UI.partyStatus("FULL");
+      badges.append(el("span", st.cls, st.label));
+    } else if (!p.kicked && deadline - Date.now() < 24 * 3600 * 1000) badges.append(el("span", "badge soon", "곧 마감"));
     body.append(badges);
     body.append(el("div", "pb-title", p.title));
     body.append(el("div", "pb-intro", "“" + p.intro + "”"));
@@ -197,13 +201,14 @@
 
     const foot = el("div", "pb-foot");
     if (p.kicked) foot.append(el("div", "kicked-note", "강퇴된 파티라 다시 참여할 수 없어요"));
-    else foot.append(el("div", "pb-deadline", "⏰ " + md(deadline) + " " + hm(deadline) + " 모집 마감"));
+    else if (full) foot.append(el("div", "pb-deadline full", "인원이 다 찼어요"));
+    else foot.append(el("div", "pb-deadline", "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집"));
     foot.append(el("div", "muted", "👑 방장 " + p.leaderNickname));
     body.append(foot);
     c.append(body);
 
     c.setAttribute("aria-label", p.themeTitle + ", " + md(play) + " " + hm(play) + ", " + p.title + ", "
-      + p.currentPeople + "/" + p.maxPeople + "명" + (p.joined ? ", 참여 중" : "") + (p.kicked ? ", 강퇴되어 참여 불가" : ""));
+      + p.currentPeople + "/" + p.maxPeople + "명" + (full ? ", 정원 마감" : "") + (p.joined ? ", 참여 중" : "") + (p.kicked ? ", 강퇴되어 참여 불가" : ""));
     c.addEventListener("click", function () { onPick(p); });
     return c;
   }
@@ -211,6 +216,7 @@
   function onPick(p) {
     if (p.kicked) { UI.toast("강퇴된 파티에는 다시 참여할 수 없어요.", "err"); return; }
     if (p.joined) { location.href = Routes.url("partyRoom", { id: p.partyId }); return; }   // 팝업 없이 바로 방
+    if (p.status === "FULL") { UI.toast("정원이 다 찬 파티예요. 자리가 나면 다시 참여할 수 있어요.", "err"); return; }
     if (!me) { openJoin(p); return; }   // 비회원: 같은 팝업으로 파티를 보여 주고 "로그인하고 참여하기"
     if (!isUser) { UI.toast("손님 계정만 파티에 참여할 수 있어요.", "err"); return; }
     openJoin(p);

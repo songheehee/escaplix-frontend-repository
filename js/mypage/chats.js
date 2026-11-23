@@ -1,11 +1,10 @@
 // S20 내 채팅 (pages/mypage/chats.html) · A 담당 · A-22
-//   내가 참여 중인 파티 (모집 중 · 정원 참 · 마감 포함, 강퇴·삭제는 빠짐), 마지막 메시지 최신순 → 누르면 파티 방
+//   내가 참여 중인 파티 (모집 중 · 모집 완료 · 모집 마감 포함, 강퇴·삭제는 빠짐), 마지막 메시지 최신순 → 누르면 파티 방
 //   끝난 파티(ended)는 "후기 쓰기": D 담당 후기 팝업(window.openReviewModal)이 있으면 열고, 아직 없으면 테마 상세로
 (function () {
   const $ = UI.$;
   const el = UI.el;
   const NOTICE = { JOIN: "님이 들어왔어요", LEAVE: "님이 나갔어요", KICK: "님이 강퇴됐어요" };
-  const STATUS = { RECRUITING: "모집 중", FULL: "정원 참", CLOSED: "모집 마감" };
 
   const me = Auth.me();
   if (!me) { Auth.goLogin(); return; }
@@ -52,7 +51,8 @@
     top.append(el("strong", "cr-title", p.title));
     const tags = el("span", "cr-tags");
     if (p.myRole === "LEADER") tags.append(el("span", "tag", "👑 방장"));
-    tags.append(el("span", "badge st-" + p.status.toLowerCase(), p.ended ? "끝난 파티" : (STATUS[p.status] || p.status)));
+    const st = UI.partyStatus(p.status, p.ended);
+    tags.append(el("span", st.cls, st.label));
     top.append(tags);
     link.append(top);
 
@@ -67,11 +67,11 @@
       last.append(el("span", "cr-text", text), el("span", "cr-when", when(new Date(lm.createdAt))));
     }
     link.append(last);
-    link.setAttribute("aria-label", p.title + " 파티 방 열기" + (p.ended ? " (끝난 파티)" : ""));
+    link.setAttribute("aria-label", p.title + " 파티 방 열기" + (p.ended ? " (파티 종료)" : ""));
     item.append(link);
 
     if (p.ended) {
-      const btn = el("button", "btn btn-line small cr-review", "끝난 파티 · 후기 쓰기");
+      const btn = el("button", "btn btn-line small cr-review", "파티 종료 · 후기 쓰기");
       btn.type = "button";
       btn.addEventListener("click", function () { writeReview(p, btn); });
       item.append(btn);
