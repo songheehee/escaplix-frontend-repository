@@ -21,6 +21,7 @@
 .m-back:hover { color: #fff; }
 .m-sec-title { margin: 36px 0 12px; font-size: 20px; font-weight: 800; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .m-sec-title small { font-size: 13px; font-weight: 400; color: var(--muted); }
+.m-sec-title .m-actions { margin-left: auto; }
 .m-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .m-actions.end { justify-content: flex-end; }
 
@@ -43,20 +44,58 @@
 }
 .m-notice + * { margin-top: 16px; }
 
-/* ---------- 매장 카드 (사장 홈) ---------- */
-.store-row { display: flex; gap: 16px; align-items: flex-start; }
+/* ---------- 경로 (내 매장 › 홍대점 › 사라진 탐정) ---------- */
+.m-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 14px; color: var(--muted); }
+.m-crumbs a { color: var(--muted); text-decoration: none; }
+.m-crumbs a:hover { color: #fff; text-decoration: underline; }
+.m-crumbs .here { color: var(--ink); font-weight: 700; }
+
+/* ---------- ① 내 매장: 매장 카드 (카드 전체가 링크) ---------- */
+.store-row { display: flex; gap: 16px; align-items: flex-start; color: inherit; text-decoration: none; transition: border-color .15s, background .15s; }
+a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
 .store-row .thumb { flex: 0 0 120px; aspect-ratio: 4 / 3; border-radius: var(--radius); overflow: hidden; background: var(--surface2); }
 .store-row .thumb img { width: 100%; height: 100%; object-fit: cover; }
 .store-row .info { flex: 1; min-width: 0; }
 .store-row .name { font-size: 16px; font-weight: 800; margin-right: 6px; }
 .store-row .sub { margin-top: 4px; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
-.store-row .m-actions { flex: 0 0 auto; }
-.store-row.selected { outline: 2px solid var(--accent); outline-offset: -1px; }
-@media (max-width: 640px) {
-  .store-row { flex-wrap: wrap; }
-  .store-row .thumb { flex-basis: 96px; }
-  .store-row .m-actions { flex-basis: 100%; }
+.store-row .sub.note { color: var(--warn); }
+.store-row .go, .m-row .go { align-self: center; font-size: 20px; color: var(--muted); }
+@media (max-width: 640px) { .store-row .thumb { flex-basis: 88px; } }
+
+/* ---------- ② 매장 화면 ---------- */
+.store-sum { display: flex; gap: 20px; align-items: flex-start; }
+.store-sum .thumb { flex: 0 0 200px; aspect-ratio: 4 / 3; border-radius: var(--radius); overflow: hidden; background: var(--surface2); }
+.store-sum .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.store-sum .info { flex: 1; min-width: 0; }
+.store-sum .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.store-sum .name { margin: 0; font-size: 20px; font-weight: 800; }
+.store-sum .m-dl { grid-template-columns: 80px minmax(0, 1fr); gap: 6px 14px; }
+.store-sum .m-notice, .store-sum .reject-note { margin-top: 14px; }
+.store-sum .m-actions { flex: 0 0 auto; }
+@media (max-width: 760px) {
+  .store-sum { flex-wrap: wrap; }
+  .store-sum .thumb { flex-basis: 140px; }
+  .store-sum .info { flex-basis: 100%; order: 2; }
 }
+/* 테마 줄 (줄 전체가 링크 → ③ 테마 화면) */
+.m-rows { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+.m-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 90px 90px 170px 16px; gap: 16px; align-items: center;
+  padding: 14px 18px; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; transition: background .15s;
+}
+.m-row:last-child { border-bottom: 0; }
+.m-row:hover { background: var(--surface2); }
+.m-row .sub { margin-top: 2px; font-size: 13px; color: var(--muted); }
+.m-row .r-rate, .m-row .r-slots { font-size: 14px; white-space: nowrap; }
+.m-row .r-slots.warn { color: var(--warn); font-weight: 700; }
+.m-row .reject-note { margin-top: 8px; padding: 6px 10px; font-size: 13px; }
+@media (max-width: 640px) {
+  .m-row { grid-template-columns: auto auto 1fr; gap: 6px 12px; }
+  .m-row .r-main { grid-column: 1 / -1; }
+  .m-row .go { display: none; }
+}
+.m-empty { color: var(--muted); font-size: 14px; }
+.m-empty a { color: var(--accent-ink); }
 
 /* ---------- 표 ---------- */
 .m-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
@@ -172,17 +211,16 @@
 
 /* ---------- 시간표 ---------- */
 .week-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-.week-col h2 { margin: 0; font-size: 16px; display: flex; align-items: baseline; gap: 8px; }
+.week-col h2 { margin: 0 0 12px; font-size: 16px; display: flex; align-items: baseline; gap: 8px; }
 .week-col h2 small { font-size: 13px; color: var(--muted); font-weight: 400; }
-.days { display: flex; gap: 4px; margin: 10px 0 14px; }
-.days span { min-width: 28px; height: 28px; padding: 0 6px; border-radius: 99px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: rgba(139, 92, 246, .16); color: var(--accent-ink); }
-.week-col.weekend .days span { background: rgba(242, 184, 75, .14); color: var(--warn); }
-.times { list-style: none; margin: 0; padding: 0; min-height: 40px; }
-.times li { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 6px; background: var(--surface2); }
-.times li.none { border: 0; background: none; color: var(--muted); font-size: 13px; padding: 8px 0; }
-.times .t { font-weight: 800; font-size: 16px; }
-.times .end { color: var(--muted); font-size: 13px; margin-left: 6px; }
-.times button { border: 0; background: none; color: var(--bad); cursor: pointer; font-size: 16px; padding: 0 4px; }
+/* 시작 시간 칩: "13:00 ~ 14:10 ✕" */
+.times { list-style: none; margin: 0; padding: 0; min-height: 34px; display: flex; flex-wrap: wrap; gap: 6px; }
+.times li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 4px 4px 12px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface2); }
+.times li.none { border: 0; background: none; color: var(--muted); font-size: 13px; padding: 6px 0; }
+.times .t { font-weight: 700; font-size: 14px; }
+.times .end { color: var(--muted); font-size: 13px; }
+.times button { width: 24px; height: 24px; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; font-size: 13px; line-height: 1; }
+.times button:hover { background: rgba(255, 92, 108, .15); color: var(--bad); }
 .add-row { display: flex; gap: 6px; margin-top: 8px; }
 .add-row input { flex: 1; min-width: 0; }
 .warn-line { color: var(--bad); font-size: 13px; min-height: 20px; margin-top: 4px; }

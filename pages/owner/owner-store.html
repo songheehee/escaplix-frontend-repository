@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>매장 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/manage.css">
+</head>
+<body>
+  <!-- S12 사장 홈 ② 매장 화면 · C-1 매장 정보, C-5 테마 목록, C-10 테마별 회차 수
+       테마 줄을 누르면 ③ 테마 화면(owner-theme.html, [기본 정보]·[시간표] 탭) -->
+  <main class="page m-page" id="main">
+    <nav class="m-crumbs" id="crumbs" aria-label="경로"></nav>
+
+    <section class="m-card store-sum" id="store"><div class="sk sk-block"></div></section>
+
+    <h2 class="m-sec-title">
+      <span>테마</span>
+      <span class="m-actions"><a class="btn btn-accent small" id="add-theme" hidden>새 테마</a></span>
+    </h2>
+    <div id="themes"><div class="sk sk-block"></div></div>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/owner/manage.js"></script>
+  <script src="../../js/owner/owner-store.js"></script>
+</body>
+</html>

@@ -37,10 +37,11 @@ const Routes = (function () {
     profile: "pages/mypage/profile.html",
 
     // C · 사장
+    //   내 매장(owner) → 매장(ownerStore) → 테마(ownerTheme, [기본 정보]·[시간표] 탭)
     owner: "pages/owner/owner.html",
+    ownerStore: "pages/owner/owner-store.html",
     storeForm: "pages/owner/store-form.html",
     ownerTheme: "pages/owner/owner-theme.html",
-    ownerSlots: "pages/owner/owner-slots.html",
 
     // C · 관리자
     admin: "pages/admin/admin.html",
