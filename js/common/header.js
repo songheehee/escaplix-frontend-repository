@@ -27,7 +27,7 @@
       search: true,
     },
     OWNER: {
-      home: "owner",
+      home: "home",       // 로고는 손님과 같은 메인으로. 사장 홈은 메뉴의 "사장 홈"
       links: [["owner", "사장 홈"], ["storeForm", "매장 등록"], ["ownerTheme", "테마 등록"], ["ownerSlots", "시간표 관리"]],
       my: [["profile", "내 정보"]],
       search: false,
