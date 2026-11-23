@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="../../css/common.css">
   <link rel="stylesheet" href="../../css/stores.css">
   <link rel="stylesheet" href="../../css/review.css">
+  <!-- 로그인 정보(Auth)를 화면 그리기 전에 읽으려고 이 두 개는 위에서 먼저 불러옴 (제목 깜빡임 방지) -->
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
 </head>
 <body>
   <!-- S18 마이페이지 내 기록 · D 담당
@@ -16,6 +19,8 @@
        API: D-10 통계, D-5 내 기록, D-3 삭제, 후기 팝업(D-1·D-2·D-6) -->
   <main class="page rec-page">
     <h1 class="page-title" id="m-title">마이페이지</h1>
+    <!-- 닉네임 제목을 처음부터 그려 둠 (JS 가 나중에 바꾸면 글자가 깜빡여서) -->
+    <script>(function () { var m = Auth.me(); if (m && m.role === "USER") { document.getElementById("m-title").textContent = m.nickname + " 님의 마이페이지"; } })();</script>
     <nav class="my-tabs" aria-label="마이페이지 탭">
       <a href="mypage.html" aria-current="page" id="m-tab">내 기록</a>
       <a href="wishes.html">찜 목록</a>
@@ -112,8 +117,6 @@
     </div>
   </dialog>
 
-  <script src="../../js/common/routes.js"></script>
-  <script src="../../js/common/api.js"></script>
   <script src="../../js/common/ui.js"></script>
   <script src="../../js/common/header.js"></script>
   <script src="../../js/common/footer.js"></script>
