@@ -151,7 +151,6 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
   border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font-size: 14px; cursor: pointer; text-align: left;
 }
 .dp-btn:hover, .dp-btn[aria-expanded="true"] { border-color: var(--accent); }
-.dp-btn.dp-none .dp-text { color: var(--ink2); }
 .dp-icon {
   width: 16px; height: 16px; flex: 0 0 auto; background: var(--ink2);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1h1.5v2h5V1H12v2h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2zM2.5 6.5v7h11v-7z'/%3E%3C/svg%3E") center / contain no-repeat;
@@ -192,6 +191,19 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
 .ap-chip.on, .ap-chip.on:hover { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
 .ap-all { margin: 2px 2px 0; }
 @media (prefers-reduced-motion: reduce) { .ap-body, .ap-chev { transition: none; } }
+/* 사이트 모양 선택 칸 (UI.selectPicker): 버튼은 날짜·지역 칸과 같은 dp-btn, 펼친 목록은 아래 */
+.sel-btn { min-width: 0; }
+/* 검색 칸(지역·날짜·인원·장르·정렬)은 모두 같은 폭 (상단 검색 패널 · 결과 화면 조건 막대) */
+.fb-field .dp-btn, .sp-field .dp-btn { width: 140px; min-width: 0; }
+.dp-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 칸 글은 한 줄 */
+.dp-pop.sel-pop { width: auto; max-height: min(232px, calc(100vh - 80px)); overflow-y: auto; scrollbar-width: thin; scrollbar-color: #4a4356 transparent; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.sel-opt {
+  display: block; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: none;
+  color: var(--ink2); font: inherit; font-size: 14px; text-align: left; white-space: nowrap; cursor: pointer;
+}
+.sel-opt:hover, .sel-opt:focus-visible { background: var(--surface2); color: #fff; outline: none; }
+.sel-opt.on { color: var(--accent-ink); font-weight: 700; }
+.sel-opt.on::after { content: "✓"; float: right; margin-left: 14px; }
 .dp-pop {
   position: fixed; z-index: 70; width: 284px; padding: 12px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 14px 40px rgba(0,0,0,.6);
