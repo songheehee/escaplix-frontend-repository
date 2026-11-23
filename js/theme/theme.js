@@ -1,7 +1,7 @@
 // S09 테마 상세 (pages/theme/theme.html?id=) · B 담당
 //   B-2 상세 → B-3 그날 시간표(날짜 고르기) → D-4 후기 → B-10 같은 매장의 다른 테마
-//   후기 쓰기·신고 팝업은 D 담당(review-modal.js). 그 파일이 window.openReviewModal / window.openReportModal 을
-//   만들어 두면 여기 버튼이 그걸 부른다. 저장 뒤 document 에 "review-saved" 이벤트를 쏘면 후기를 다시 불러온다.
+//   후기 쓰기·수정 팝업은 D 담당(js/mypage/review-modal.js, theme.html 에서 불러옴) 의 window.openReviewModal.
+//   저장 뒤 document 에 "review-saved" 이벤트를 쏘면 후기를 다시 불러온다. 후기 신고 버튼은 뺌
 (function () {
   const el = UI.el;
   const $ = UI.$;
@@ -48,13 +48,13 @@
     // 별점 · 매장 (한 줄)
     const sub = el("div", "d-meta");
     const r = UI.rating(t.avgRating);
-    sub.append(el("span", "match", r ? "★ " + r + " (후기 " + t.reviewCount + ")" : "아직 후기 없음"));
+    sub.append(el("span", "match", r ? "★ " + r + " (" + t.reviewCount + ")" : "아직 후기 없음"));
     const store = el("a", "d-store", t.store.name + " ›");
     store.href = Routes.url("store", { id: t.store.storeId });
     sub.append(store);
     box.append(sub);
 
-    // 고를 때 제일 많이 보는 네 가지를 크게 (난이도 · 시간 · 인원 · 가격)
+    // 고를 때 제일 많이 보는 것을 크게 (지역 · 난이도 · 시간 · 인원 · 가격)
     //   숫자는 크게, 단위는 작게. 칸 사이는 얇은 세로줄
     const stats = el("dl", "d-stats");
     function stat(label, nodes) {
@@ -68,7 +68,9 @@
     function big(text) { return el("b", "ds-num", text); }
     function unit(text) { return el("span", "ds-unit", text); }
     const LEVEL = ["", "아주 쉬움", "쉬움", "보통", "어려움", "아주 어려움"];
-    stat("난이도", [big(String(t.difficulty)), unit("/ 5"), el("span", "ds-level", LEVEL[t.difficulty] || "")]);
+    // 화면에는 "4 / 5"만. "어려움" 같은 말은 화면 읽기 프로그램용으로만 (보이는 배지는 뺌)
+    if (t.store.area) stat("지역", [big(t.store.area)]);   // 매장 세부 지역 (홍대·강남…)
+    stat("난이도", [big(String(t.difficulty)), unit("/ 5"), el("span", "sr-only", ", " + (LEVEL[t.difficulty] || ""))]);
     stat("시간", [big(String(t.playMinutes)), unit("분")]);
     stat("인원", [big(t.minPeople === t.maxPeople ? String(t.minPeople) : t.minPeople + "~" + t.maxPeople), unit("명")]);
     // 인원별 가격은 매장마다 달라서 정확한 건 예약 페이지에서. 여기는 1인 기준
@@ -199,7 +201,6 @@
         c.setAttribute("aria-selected", String(on));
       });
       const box = $("slots");
-      const note = $("slot-note");
       box.textContent = "";
       box.append(el("div", "sk", null));
       box.firstChild.style.cssText = "height:40px;width:100%";
@@ -207,13 +208,10 @@
         const res = await api.get("/api/themes/" + t.themeId + "/slots", { date: btn.dataset.date });
         if (current !== btn) return; // 그사이 다른 날짜를 눌렀으면 버림
         box.textContent = "";
-        const dateLabel = btn.dataset.date.slice(5).replace("-", "/");
+        // 공휴일은 날짜 칸을 주말 색으로 칠하고 이름은 마우스를 올리면 보이게 (제목 옆 안내 글은 뺌)
         if (res.holidayName) {
           btn.classList.add("weekend");
           btn.title = res.holidayName;
-          note.textContent = dateLabel + " · " + res.holidayName + "이라 주말 시간표";
-        } else {
-          note.textContent = dateLabel + " · " + (res.dayType === "WEEKEND" ? "주말" : "주중") + " 시간표";
         }
         if (!res.slots.length) {
           box.append(el("p", "muted", "이 날은 남은 회차가 없어요."));
@@ -243,21 +241,17 @@
   }
 
   // ---------- 후기 (D-4) ----------
+  let reviewTheme = null;   // 내 후기 카드의 [수정] 이 팝업에 넘길 테마 정보
+  function canEditReview() { return isUser && typeof window.openReviewModal === "function"; }
+
   async function loadReviews(t) {
+    reviewTheme = t;
     const sum = $("review-summary");
     const list = $("reviews");
     const writeBtn = $("write-review");
 
-    if (isUser) {
-      writeBtn.hidden = false;
-      writeBtn.onclick = function () {
-        if (typeof window.openReviewModal === "function") {
-          window.openReviewModal({ themeId: t.themeId, title: t.title, storeName: t.store.name, playMinutes: t.playMinutes });
-        } else {
-          UI.toast("후기 쓰기는 곧 열려요");
-        }
-      };
-    }
+    // 후기 쓰기 버튼은 후기를 받은 뒤 정함 (이미 썼으면 숨기고, 내 후기 카드의 [수정] 으로)
+    writeBtn.hidden = true;
 
     let res;
     try {
@@ -275,10 +269,17 @@
     const r = UI.rating(res.avgRating);
     const big = el("div", "rs-score", r || "-");
     const right = el("div");
-    right.append(el("div", "rs-stars", stars(res.avgRating || 0)));
+    right.append(avgStars(res.avgRating || 0));
     right.append(el("div", "muted small", "후기 " + res.reviewCount + "개"));
     const mine = res.reviews.find(function (x) { return x.mine; });
-    if (mine) writeBtn.hidden = true; // 이미 썼으면 내 기록에서 수정
+    // 손님만, 아직 안 썼을 때만 "후기 쓰기" (팝업은 D 의 review-modal.js)
+    //   테마당 후기는 한 사람 하나라서, 이미 썼으면 맨 위 내 후기 카드의 [수정] 으로 고침
+    if (canEditReview() && !mine) {
+      writeBtn.hidden = false;
+      writeBtn.onclick = function () {
+        window.openReviewModal({ themeId: t.themeId, title: t.title, storeName: t.store.name, playMinutes: t.playMinutes });
+      };
+    }
     if (res.reviews.length) {
       const escaped = res.reviews.filter(function (x) { return x.escaped; }).length;
       right.append(el("div", "small", "탈출 성공률 " + Math.round(escaped / res.reviews.length * 100) + "%"));
@@ -289,7 +290,9 @@
       list.append(el("p", "muted", "아직 후기가 없어요. 첫 후기를 남겨 주세요!"));
       return;
     }
-    showReviewPage(res.reviews, res.playMinutes, 1, false);
+    // 내 후기를 맨 앞에, 나머지는 받은 순서(최신순) 그대로
+    const ordered = mine ? [mine].concat(res.reviews.filter(function (x) { return x !== mine; })) : res.reviews;
+    showReviewPage(ordered, res.playMinutes, 1, false);
   }
 
   // 후기 페이지 나누기 (한 쪽에 5개). D-4 가 후기를 한 번에 다 주므로 화면에서 나눠 보여 줌
@@ -333,18 +336,31 @@
     if (v.mine) who.append(el("span", "tag", "내 후기"));
     who.append(el("span", "rv-date", v.playedDate));   // 플레이한 날 (이름 옆 작게)
     head.append(who);
+    // 내 후기: 이름 줄 오른쪽에 [수정] (D-2 팝업에 이 한 줄 + 테마 정보를 넘김)
+    if (v.mine && canEditReview() && reviewTheme) {
+      const t = reviewTheme;
+      const edit = el("button", "btn btn-line small rv-edit", "수정");
+      edit.type = "button";
+      edit.setAttribute("aria-label", "내 후기 수정");
+      edit.addEventListener("click", function () {
+        window.openReviewModal({ review: Object.assign({}, v, {
+          themeId: t.themeId, themeTitle: t.title, storeName: t.store.name, playMinutes: t.playMinutes,
+        }) });
+      });
+      head.append(edit);
+    }
     c.append(head);
 
-    // 결과 칩 (마이페이지 후기와 같은 모양): [탈출 성공] [⏱️ 12:34] [노힌트] [2인]
+    // 결과 칩: [탈출 성공] [2분 3초] [노힌트] [2인]. 색은 성공·실패 칩만
     const facts = el("div", "rv-facts");
     facts.append(fact(v.escaped ? "탈출 성공" : "탈출 실패", v.escaped ? "is-good" : "is-bad"));
     if (v.escaped) {
       // 남은 시간은 분(remainMinutes)·초(remainSeconds 0~59) 두 칸으로 옴 (D-4)
-      const remain = fact("⏱️ " + mmss(v.remainMinutes, v.remainSeconds), "");
-      remain.setAttribute("aria-label", "남은 시간 " + (v.remainMinutes || 0) + "분 " + (v.remainSeconds || 0) + "초");
+      const remain = fact(remainText(v.remainMinutes, v.remainSeconds), "");
+      remain.setAttribute("aria-label", "남은 시간 " + remainText(v.remainMinutes, v.remainSeconds));
       facts.append(remain);
     }
-    facts.append(fact(v.hintCount === 0 ? "노힌트" : "힌트 " + v.hintCount + "개", v.escaped && v.hintCount === 0 ? "is-nohint" : ""));
+    facts.append(fact(v.hintCount === 0 ? "노힌트" : "힌트 " + v.hintCount + "개", ""));
     facts.append(fact(v.playerCount + "인", ""));
     c.append(facts);
 
@@ -353,19 +369,22 @@
     starLine.setAttribute("aria-label", "별점 " + v.rating + "점");
     c.append(starLine);
     if (v.content) c.append(el("p", "rv-text", v.content));
-
-    // 신고: 손님·사장만, 내 후기는 빼고 (D-11)
-    if (me && (me.role === "USER" || me.role === "OWNER") && !v.mine) {
-      const rep = el("button", "rv-report", v.reportedByMe ? "신고함" : "🚩 신고");
-      rep.type = "button";
-      rep.disabled = v.reportedByMe;
-      rep.addEventListener("click", function () {
-        if (typeof window.openReportModal === "function") window.openReportModal(v);
-        else UI.toast("신고하기는 곧 열려요");
-      });
-      c.append(rep);
-    }
     return c;
+  }
+
+  // 평균 별점: 3.6 이면 별 3개 + 네 번째 별 60% 만 금색 (별마다 왼쪽부터 채우는 그라데이션)
+  function avgStars(avg) {
+    const box = el("div", "rs-stars");
+    box.setAttribute("role", "img");
+    box.setAttribute("aria-label", "평균 별점 " + (UI.rating(avg) || 0) + "점");
+    for (let i = 0; i < 5; i++) {
+      const fill = Math.max(0, Math.min(1, avg - i));   // 이 별을 얼마나 채울지 0~1
+      const s = el("span", "rs-star", "★");
+      s.style.setProperty("--fill", Math.round(fill * 100) + "%");
+      s.setAttribute("aria-hidden", "true");
+      box.append(s);
+    }
+    return box;
   }
 
   function stars(n) {
@@ -374,8 +393,13 @@
   }
   // 후기 결과 칩 한 개
   function fact(text, cls) { return el("span", "rv-fact" + (cls ? " " + cls : ""), text); }
-  // 남은 시간 12:34 (마이페이지와 같은 표기)
-  function mmss(min, sec) { return String(min || 0).padStart(2, "0") + ":" + String(sec || 0).padStart(2, "0"); }
+  // 남은 시간: 2분 3초 / 12분 / 35초
+  function remainText(min, sec) {
+    min = min || 0; sec = sec || 0;
+    if (min && sec) return min + "분 " + sec + "초";
+    if (min) return min + "분";
+    return sec + "초";
+  }
 
   // 후기 팝업(D)이 저장을 마치면 다시 불러오기
   document.addEventListener("review-saved", function () {

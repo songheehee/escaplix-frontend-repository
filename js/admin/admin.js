@@ -1,6 +1,5 @@
 // S25 관리자 홈 (pages/admin/admin.html) · C 담당
 //   C-12 숫자 요약 (회원 수까지 한 번에), C-13 · C-17 승인 대기 → "지금 처리할 것" (오래된 순으로 합침)
-//   신고 처리 화면은 이번 범위 밖이라 숫자만 보여 준다 (명세 C-12 waitReports)
 (function () {
   const el = UI.el;
   const $ = UI.$;

@@ -742,7 +742,7 @@ const UI = (function () {
     meta.append(el("span", null, people(t.minPeople, t.maxPeople)));
     info.append(meta);
     info.append(el("div", "tcard-genres", genresText(t.genres)));
-    if (t.storeName) info.append(el("div", "tcard-store", t.storeName + (t.area ? " · " + t.area : "")));
+    if (t.storeName) info.append(el("div", "tcard-store", t.storeName));   // 지역은 뺌 (매장 이름에 대부분 들어 있고, 좁은 칸에서 이름이 더 잘려서)
     card.append(info);
     return card;
   }

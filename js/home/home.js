@@ -75,9 +75,10 @@
       main.append(errorBox(e.message));
       return;
     }
-    const [genres, recs] = await Promise.all([
+    const [genres, recs, myGenres] = await Promise.all([
       api.get("/api/genres").catch(function () { return null; }),
       isUser ? api.get("/api/my/recommendations").catch(function () { return null; }) : Promise.resolve(null),
+      isUser ? api.get("/api/my/genres").catch(function () { return null; }) : Promise.resolve(null),   // D-7 선호 장르
     ]);
 
     main.textContent = "";
@@ -88,18 +89,17 @@
     }
 
     renderHero(themes, recs);
-    renderRows(themes, genres);
+    renderRows(themes, genres, myGenres);
   }
 
-  function renderRows(themes, genres) {
+  // 메인 줄은 많아야 8개: TOP 5 · 파티 모집 중 · 새 테마 · 장르 3줄 · 난이도 2줄
+  const GENRE_ROWS = 3;
+
+  function renderRows(themes, genres, myGenres) {
     const rows = [];
     // 이번 주 인기 TOP 5: 최근 7일 새 파티×3 + 새 찜×2 + 새 후기×1 (B-1 sort=popular, 같으면 평점순)
     rows.push({ title: "이번 주 인기 TOP 5", note: "최근 7일 파티·찜·후기 기준", list: themes.slice(0, 5), rank: true });
-
-    if (isUser) {
-      const wished = themes.filter(function (t) { return t.wished; });
-      if (wished.length) rows.push({ title: "내가 찜한 테마", list: wished, id: "row-wished" });
-    }
+    // 찜한 테마 줄은 두지 않음 (찜 목록은 프로필 ▾ → 찜 목록)
 
     const party = themes.filter(function (t) { return t.recruitingPartyCount > 0; })
       .sort(function (a, b) { return b.recruitingPartyCount - a.recruitingPartyCount; });
@@ -109,12 +109,24 @@
       .sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
     rows.push({ title: "새로 문을 연 테마", note: "최근 14일", list: fresh });
 
-    // 장르 줄: B-7 순서대로. B-7을 못 받으면 테마에 붙은 장르로
+    // 장르 줄은 3개만: 로그인 손님은 선호 장르(D-7)부터, 남는 자리(비회원·선호 없음 포함)는 테마가 많은 장르로
+    //   나머지 장르는 검색의 장르 고르기로
     const names = genres ? genres.map(function (g) { return g.name; })
       : Array.from(new Set(themes.flatMap(function (t) { return t.genres; })));
+    const byGenre = {};
     names.forEach(function (name) {
-      const list = themes.filter(function (t) { return t.genres.indexOf(name) !== -1; });
-      rows.push({ title: GENRE_ROW[name] || name + " 테마", list: list });
+      byGenre[name] = themes.filter(function (t) { return t.genres.indexOf(name) !== -1; });
+    });
+    const picked = [];
+    (myGenres || []).forEach(function (g) {
+      if (picked.length < GENRE_ROWS && byGenre[g.name] && byGenre[g.name].length) picked.push(g.name);
+    });
+    names.slice().sort(function (a, b) { return byGenre[b].length - byGenre[a].length; })   // 테마 많은 순 (같으면 B-7 순서)
+      .forEach(function (name) {
+        if (picked.length < GENRE_ROWS && picked.indexOf(name) === -1 && byGenre[name].length) picked.push(name);
+      });
+    picked.forEach(function (name) {
+      rows.push({ title: GENRE_ROW[name] || name + " 테마", list: byGenre[name] });
     });
 
     rows.push({ title: "방탈출이 처음이라면", note: "난이도 2 이하", list: themes.filter(function (t) { return t.difficulty <= 2; }) });

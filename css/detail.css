@@ -44,7 +44,6 @@
 .ds-cell dd { margin: 0; display: flex; align-items: baseline; gap: 4px; white-space: nowrap; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
 .ds-num { font-size: 28px; font-weight: 800; line-height: 1; letter-spacing: -.5px; }
 .ds-unit { font-size: 14px; color: rgba(255,255,255,.7); }
-.ds-level { margin-left: 6px; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; color: var(--accent-ink); background: rgba(139, 92, 246, .18); align-self: center; }
 .d-btns .icon-btn { width: 46px; height: 46px; font-size: 19px; }
 .d-store:hover { border-color: #fff; }
 .d-desc { margin: 0; font-size: 16px; color: #e6e1ee; line-height: 1.7; white-space: pre-line; max-width: 72ch; }
@@ -127,7 +126,12 @@ a.slot:hover { border-color: var(--accent); background: rgba(139, 92, 246, .15);
 /* 후기 */
 .review-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
 .rs-score { font-size: 48px; font-weight: 900; line-height: 1; }
-.rs-stars { color: var(--gold); font-size: 18px; letter-spacing: 2px; }
+.rs-stars { display: flex; gap: 2px; font-size: 18px; line-height: 1; }
+/* 별 하나를 왼쪽부터 --fill 만큼 금색, 나머지는 흐린 색 (글자 모양대로 칠함) */
+.rs-star {
+  background: linear-gradient(90deg, var(--gold) var(--fill, 0%), rgba(255, 255, 255, .18) var(--fill, 0%));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 /* 후기 목록: 한 후기가 한 줄 전체, 사이를 가는 줄로 나눔 */
 .reviews { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
 .review { padding: 18px 4px; border-bottom: 1px solid var(--line); position: relative; }
@@ -146,6 +150,7 @@ a.slot:hover { border-color: var(--accent); background: rgba(139, 92, 246, .15);
 .rv-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .rv-who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rv-who .tag { margin: 0; }
+.rv-edit { flex: 0 0 auto; padding: 4px 12px; font-size: 12px; }   /* 내 후기 카드의 [수정] */
 .rv-date { flex: none; font-size: 12px; color: var(--muted); }
 .avatar.small { width: 26px; height: 26px; font-size: 12px; border-radius: 50%; }
 .rv-stars { display: block; margin-top: 10px; color: var(--gold); font-size: 15px; letter-spacing: 2px; }   /* 칩 아래 한 줄 */
@@ -154,11 +159,7 @@ a.slot:hover { border-color: var(--accent); background: rgba(139, 92, 246, .15);
 .rv-fact { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--ink2); background: rgba(255, 255, 255, .06); }
 .rv-fact.is-good { color: var(--good); background: rgba(70, 214, 140, .12); }
 .rv-fact.is-bad { color: var(--danger); background: rgba(255, 92, 108, .12); }
-.rv-fact.is-nohint { color: #77bdff; background: rgba(73, 158, 255, .14); }
 .rv-text { margin: 6px 0 0; font-size: 15px; line-height: 1.6; max-width: 90ch; white-space: pre-line; overflow-wrap: anywhere; }
-.rv-report { margin-top: 8px; background: none; border: 0; padding: 0; color: var(--muted); font-size: 12px; cursor: pointer; }
-.rv-report:hover:not(:disabled) { color: var(--danger); }
-.rv-report:disabled { cursor: default; opacity: .7; }
 
 #more-rows { padding-bottom: 20px; }
 /* "○○의 다른 테마" 줄 위에도 본문 섹션과 같은 가는 줄 (본문 폭에 맞춤) */

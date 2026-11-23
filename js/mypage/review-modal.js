@@ -1,17 +1,15 @@
-// 후기 팝업 · D 담당 · D-1 쓰기 · D-2 수정 · D-6 테마 고르기 · D-11 신고
+// 후기 팝업 · D 담당 · D-1 쓰기 · D-2 수정 · D-6 테마 고르기 (신고 기능은 뺌)
 //
 // 다른 화면과의 약속 (theme.js · chats.js · mypage.js 가 부른다)
 //   window.openReviewModal({ themeId, title, storeName, playMinutes })  → 그 테마로 후기 쓰기
 //   window.openReviewModal({ review })                                  → 내 후기 수정 (D-5 한 줄을 그대로 넘김)
 //   window.openReviewModal()                                            → 테마 골라서 쓰기: 파티로 다녀온 테마(D-6) + 이름 검색(B-1)
-//   window.openReportModal(review)                                      → 후기 신고 (D-4 한 줄을 그대로 넘김)
-//   끝나면 document 에 "review-saved" 이벤트를 쏜다. detail: { type: "create"|"edit"|"report", reviewId, themeId }
+//   끝나면 document 에 "review-saved" 이벤트를 쏜다. detail: { type: "create"|"edit", reviewId, themeId }
 //
 // 규칙: 사용자가 쓴 글은 textContent 로만 넣는다 (명세 1-7)
 (function () {
   const el = UI.el;
   const CONTENT_MAX = 200;   // 한 줄 후기 (ReviewCreateRequest @Size)
-  const REASON_MAX = 300;    // 신고 사유 (ReportRequest @Size)
   const SEARCH_MAX = 8;      // 테마 검색 결과를 몇 개까지 보여 줄지
 
   let dlg = null;   // <dialog> 하나를 만들어 계속 씀
@@ -220,7 +218,9 @@
     form.noValidate = true;
 
     const themeLine = el("div", "rm-theme");
-    themeLine.append(el("b", null, t.title));
+    const tName = el("b", null, t.title);
+    tName.title = t.title;   // 긴 이름은 한 줄에서 … 로 자르고, 전체는 마우스를 올리면
+    themeLine.append(tName);
     if (t.storeName) themeLine.append(el("span", "muted small", t.storeName));
     form.append(themeLine);
 
@@ -253,35 +253,86 @@
     const seg = el("div", "rm-seg");
     seg.append(ok.label, ng.label);
     (isEdit && !r.escaped ? ng : ok).input.checked = true;
-    field(form, "탈출 여부").append(seg);
+    // 고른 칸에 .on (성공은 초록, 실패는 빨강). CSS :has(:checked) 는 바꿔도 다시 칠해지지 않는 경우가 있어서 클래스로
+    function paintSeg() {
+      ok.label.classList.toggle("on", ok.input.checked);
+      ng.label.classList.toggle("on", ng.input.checked);
+    }
+    seg.addEventListener("change", paintSeg);
+    paintSeg();
+    const result = field(form, "탈출 결과");
+    result.append(seg);
 
-    // 남은 시간 (분·초 두 칸, 실패면 둘 다 0). 직접 입력하거나 칸 옆 ▲▼ 로 1씩
+    // 남은 시간: 성공 바로 아래 상자. 실패면 상자가 사라지고 분·초는 0 으로 보냄
     const min = numInput(0, t.playMinutes, r.remainMinutes ?? 0, "남은 분");
     const sec = numInput(0, 59, r.remainSeconds ?? 0, "남은 초");
-    const time = el("div", "rm-time");
-    time.append(min, el("span", null, "분"), sec, el("span", null, "초"));
-    field(form, "남은 시간").append(time);
+    const time = el("div", "rm-remain");
+    time.append(el("span", "rm-remain-label", "남은 시간"), min, el("span", null, "분"), sec, el("span", null, "초"));
+    result.append(time);
     function syncEscaped() {
       const fail = ng.input.checked;
-      min.disabled = sec.disabled = fail;
+      time.hidden = fail;
       if (fail) { min.value = "0"; sec.value = "0"; }
-      time.classList.toggle("off", fail);
     }
     seg.addEventListener("change", syncEscaped);
     syncEscaped();
 
-    // 힌트 · 인원 · 플레이한 날
-    //   인원 칸의 범위는 테마의 최소~최대 인원 (B-2 테마 상세에서 받아 옴. 못 받으면 1~20)
-    const hint = numInput(0, 99, r.hintCount ?? 0, "힌트 수");
-    const players = numInput(1, 20, r.playerCount ?? ctx.playerCount ?? 2, "플레이 인원");
-    loadPeopleRange(t.themeId, players);
+    // 힌트 · 인원 · 플레이한 날: 한 상자 안에 줄로. 이름은 왼쪽, 고르는 칸은 오른쪽
+    //   숫자를 치는 칸은 남은 시간 두 개만 남기고, 힌트는 − + 버튼, 인원은 칩으로 고름
+    const list = el("div", "rm-list");
+
+    // 힌트: − 노힌트 +
+    let hints = Number.isInteger(r.hintCount) ? r.hintCount : 0;
+    const hintVal = el("b", "rm-step-v");
+    hintVal.setAttribute("aria-live", "polite");
+    const minus = stepBtn("−", "힌트 하나 빼기", function () { hints = Math.max(0, hints - 1); paintHint(); });
+    const plus = stepBtn("+", "힌트 하나 더", function () { hints = Math.min(99, hints + 1); paintHint(); });
+    function paintHint() {
+      hintVal.textContent = hints === 0 ? "노힌트" : hints + "개";
+      minus.disabled = hints === 0;
+      plus.disabled = hints === 99;
+    }
+    paintHint();
+    const step = el("div", "rm-step");
+    step.setAttribute("role", "group");
+    step.setAttribute("aria-label", "힌트 수");
+    step.append(minus, hintVal, plus);
+    list.append(listRow("힌트", null, step));
+
+    // 인원: 테마의 최소~최대 인원을 칩으로 (B-2 에서 받아 옴). 이미 있는 값이 범위 밖이면 범위를 넓혀서 지킴
+    let people = r.playerCount ?? ctx.playerCount ?? null;
+    const chips = el("div", "rm-people");
+    chips.setAttribute("role", "group");
+    chips.setAttribute("aria-label", "플레이 인원");
+    const peopleSub = el("small", null, "");
+    function paintPeople(lo, hi) {
+      if (people !== null) { lo = Math.min(lo, people); hi = Math.max(hi, people); }
+      chips.textContent = "";
+      for (let n = lo; n <= hi; n++) {
+        const b = el("button", "rm-pp" + (n === people ? " on" : ""), n + "인");
+        b.type = "button";
+        b.setAttribute("aria-pressed", String(n === people));
+        b.addEventListener("click", function () { people = n; paintPeople(lo, hi); });
+        chips.append(b);
+      }
+    }
+    paintPeople(2, 4);   // 테마 정보를 받기 전 잠깐
+    loadPeopleRange(t.themeId).then(function (range) {
+      if (!range) { paintPeople(1, 8); return; }   // 못 받으면 1~8
+      peopleSub.textContent = "이 테마 " + (range.lo === range.hi ? range.lo : range.lo + "~" + range.hi) + "인";
+      if (people === null && range.lo <= 2 && range.hi >= 2) people = 2;   // 처음 값: 2인 (가능하면)
+      paintPeople(range.lo, range.hi);
+    });
+    list.append(listRow("인원", peopleSub, chips));
+
+    // 플레이한 날 (처음 값은 오늘)
     const date = el("input", "rm-date");
     date.type = "date";
     date.max = UI.today();
-    date.value = r.playedDate || ctx.playedDate || UI.today();   // 처음 값은 오늘
-    const grid = el("div", "rm-grid");
-    grid.append(mini("힌트", hint, "개"), mini("인원", players, "인"), mini("플레이한 날", date, null));
-    form.append(grid);
+    date.value = r.playedDate || ctx.playedDate || UI.today();
+    date.setAttribute("aria-label", "플레이한 날");
+    list.append(listRow("플레이한 날", null, date));
+    form.append(list);
 
     // 한 줄 후기 (선택)
     const ta = el("textarea", "rm-text");
@@ -313,8 +364,8 @@
       const body = {
         rating: rating,
         escaped: escaped,
-        hintCount: toInt(hint.value),
-        playerCount: toInt(players.value),
+        hintCount: hints,
+        playerCount: people,
         remainMinutes: escaped ? toInt(min.value) : 0,
         remainSeconds: escaped ? toInt(sec.value) : 0,
         playedDate: date.value || null,
@@ -351,84 +402,10 @@
     if (!isInt(b.remainMinutes, 0, 999) || !isInt(b.remainSeconds, 0, 59)) return "남은 시간을 확인해 주세요. 초는 0~59입니다.";
     if (b.remainMinutes * 60 + b.remainSeconds > playMinutes * 60) return "남은 시간은 제한 시간(" + playMinutes + "분)보다 길 수 없습니다.";
     if (!isInt(b.hintCount, 0, 99)) return "힌트 수는 0~99입니다.";
-    if (!isInt(b.playerCount, 1, 20)) return "플레이 인원은 1~20명입니다.";
+    if (!isInt(b.playerCount, 1, 20)) return "플레이 인원을 골라 주세요.";
     if (b.playedDate && b.playedDate > UI.today()) return "플레이한 날은 오늘이거나 그 이전이어야 합니다.";
     return null;
   }
-
-  // ---------------------------------------------------------------- 신고 (D-11)
-
-  window.openReportModal = function (review) {
-    if (!Auth.me()) { Auth.goLogin(); return; }
-
-    const form = el("form", "rm-body rm-form");
-    form.noValidate = true;
-
-    const quote = el("blockquote", "rm-quote");
-    quote.append(el("b", null, review.nickname + " 님의 후기"));
-    if (review.content) quote.append(el("p", null, review.content));
-    form.append(quote);
-
-    const ta = el("textarea", "rm-text");
-    ta.rows = 4;
-    ta.maxLength = REASON_MAX;
-    ta.placeholder = "어떤 점이 문제인지 적어 주세요";
-    const count = el("div", "rm-count muted small");
-    function paintCount() { count.textContent = ta.value.length + " / " + REASON_MAX; }
-    ta.addEventListener("input", paintCount);
-
-    // 자주 쓰는 사유를 눌러 칸에 넣기 (서버에는 글 한 칸으로만 감, 결정 R3)
-    const quick = el("div", "rm-quick");
-    ["사실과 다른 내용이에요", "욕설이나 비방이 있어요", "광고·도배예요"].forEach(function (q) {
-      const b = el("button", "rm-chip", q);
-      b.type = "button";
-      b.addEventListener("click", function () {
-        if (ta.value.indexOf(q) < 0) ta.value = (q + " " + ta.value).trim();
-        paintCount();
-        ta.focus();
-      });
-      quick.append(b);
-    });
-
-    const box = field(form, "신고 사유");
-    box.append(quick, ta, count);
-    paintCount();
-
-    const msg = el("p", "rm-msg");
-    msg.setAttribute("role", "alert");
-    const btns = el("div", "rm-btns");
-    const cancel = el("button", "btn btn-dim", "취소");
-    cancel.type = "button";
-    cancel.addEventListener("click", function () { dlg.close(); });
-    const send = el("button", "btn btn-light", "신고하기");
-    send.type = "submit";
-    btns.append(cancel, send);
-    form.append(msg, btns);
-
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const reason = ta.value.trim();
-      if (!reason) { msg.textContent = "신고 사유를 입력해 주세요."; ta.focus(); return; }
-      send.disabled = true;
-      try {
-        await api.post("/api/reviews/" + review.reviewId + "/report", { reason: reason });
-        UI.toast("신고를 접수했어요");
-        finish("report", { reviewId: review.reviewId });
-      } catch (err) {
-        if (err.status === 409) {               // 이미 신고함 → 버튼을 "신고함"으로 맞추려고 다시 불러오게
-          UI.toast(err.message);
-          finish("report", { reviewId: review.reviewId });
-        } else {
-          msg.textContent = err.message;
-        }
-      } finally {
-        send.disabled = false;
-      }
-    });
-
-    open("후기 신고", form);
-    ta.focus();
-  };
 
   // ---------------------------------------------------------------- 도우미
 
@@ -439,7 +416,7 @@
     return f;
   }
   function radio(name, value, text) {
-    const label = el("label", "rm-opt");
+    const label = el("label", "rm-opt rm-opt-" + value);   // rm-opt-Y 성공 / rm-opt-N 실패
     const input = el("input");
     input.type = "radio";
     input.name = name + "-" + uid;
@@ -458,28 +435,30 @@
     i.setAttribute("aria-label", aria);
     return i;
   }
-  function mini(text, input, unit) {
-    const l = el("label", "rm-mini");
-    l.append(el("span", "rm-label", text));
-    const row = el("span", "rm-mini-row");
-    row.append(input);
-    if (unit) row.append(el("span", null, unit));
-    l.append(row);
-    return l;
+  // 상자 안 한 줄: 왼쪽 이름(+ 작은 설명), 오른쪽 고르는 칸
+  function listRow(text, sub, control) {
+    const row = el("div", "rm-li");
+    const k = el("span", "rm-li-k", text);
+    if (sub) k.append(sub);
+    row.append(k, control);
+    return row;
+  }
+  function stepBtn(text, aria, onClick) {
+    const b = el("button", "rm-step-b", text);
+    b.type = "button";
+    b.setAttribute("aria-label", aria);
+    b.addEventListener("click", onClick);
+    return b;
   }
 
-  // 인원 칸의 min·max 를 테마의 최소~최대 인원으로. 이미 들어 있는 값(파티 인원 등)이 밖이면 범위를 넓혀서 그 값을 지킴
-  async function loadPeopleRange(themeId, players) {
-    let theme;
+  // 테마의 최소~최대 인원 (B-2). 못 받으면 null (비공개가 된 테마 등)
+  async function loadPeopleRange(themeId) {
     try {
-      theme = await api.get("/api/themes/" + themeId);
+      const theme = await api.get("/api/themes/" + themeId);
+      return { lo: theme.minPeople, hi: theme.maxPeople };
     } catch (e) {
-      return;   // 비공개가 된 테마 등: 1~20 그대로
+      return null;
     }
-    const now = Number(players.value);
-    const ok = Number.isInteger(now) && players.value !== "";
-    players.min = String(ok ? Math.min(theme.minPeople, now) : theme.minPeople);
-    players.max = String(ok ? Math.max(theme.maxPeople, now) : theme.maxPeople);
   }
   function toInt(v) { return v === "" ? NaN : Number(v); }
   function isInt(n, lo, hi) { return Number.isInteger(n) && n >= lo && n <= hi; }
