@@ -1,6 +1,6 @@
 // S04 파티 목록 (pages/party/party-list.html) · A 담당
-//   A-12 모집 중인 파티 (장르 여러 개 · 테마 이름 검색 · 테마) · A-16 참여 · B-7 장르 · B-2 테마 이름
-//   주소 ?themeId=&keyword=&genreIds=1,2 → 홈·테마 상세의 "모집 중인 파티" 버튼이 ?themeId= 로 들어온다
+//   A-12 파티 목록 (장르 여러 개 · 테마 이름 검색 · 지역 · 테마) · A-16 참여 · B-7 장르 · B-2 테마 이름 · B-8·B-12 지역
+//   주소 ?themeId=&keyword=&area=홍대(또는 region=서울)&genreIds=1,2 → 홈·테마 상세의 "모집 중인 파티" 버튼이 ?themeId= 로 들어온다
 //   배너를 누르면: 참여 중 → 바로 방 / 강퇴됨 → 못 들어감 / 나머지 → 참여 확인 팝업 → 참여 → 방
 (function () {
   const $ = UI.$;
@@ -16,6 +16,8 @@
     themeId: q.get("themeId") || null,
     keyword: q.get("keyword") || "",
     genreIds: new Set((q.get("genreIds") || "").split(",").filter(Boolean)),
+    area: q.get("area") || "",                        // 세부 지역 (홍대…)
+    region: q.get("area") ? "" : q.get("region") || "", // 큰 지역 (서울 전체…). 세부 지역이 있으면 그게 우선
   };
 
   const grid = $("grid");
@@ -29,6 +31,7 @@
 
   setupThemeFilter();
   setupKeyword();
+  setupArea();
   setupGenres();
   load();
   // 파티 방에서 나가기·삭제 뒤 뒤로가기로 돌아오면 브라우저가 예전 화면을 그대로 보여 줄 수 있다 → 다시 불러오기
@@ -120,10 +123,24 @@
     }
   }
 
+  // ---------- 지역 (검색 패널과 같은 칸: 큰 지역 → 펼쳐서 세부 지역) ----------
+  function setupArea() {
+    const picker = UI.areaPicker({ area: state.area, region: state.region }, { label: "지역" });
+    picker.el.classList.add("pl-area");
+    document.querySelector(".pl-search").after(picker.el);
+    picker.el.addEventListener("change", function () {
+      const v = picker.value();
+      state.area = v.area;
+      state.region = v.region;
+      changed();
+    });
+  }
+
   // 조건이 바뀌면 주소를 고치고 다시 불러온다 (뒤로가기 기록은 늘리지 않음)
   function changed() {
     const url = Routes.url("partyList", {
-      themeId: state.themeId, keyword: state.keyword, genreIds: Array.from(state.genreIds).join(","),
+      themeId: state.themeId, keyword: state.keyword, area: state.area, region: state.region,
+      genreIds: Array.from(state.genreIds).join(","),
     });
     history.replaceState(null, "", url);
     load();
@@ -137,7 +154,8 @@
     $("count").textContent = "";
     try {
       const list = await api.get("/api/parties", {
-        themeId: state.themeId, keyword: state.keyword, genreIds: Array.from(state.genreIds).join(","),
+        themeId: state.themeId, keyword: state.keyword, area: state.area, region: state.region,
+        genreIds: Array.from(state.genreIds).join(","),
       });
       if (seq !== loadSeq) return;
       grid.textContent = "";
