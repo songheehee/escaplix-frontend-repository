@@ -5,8 +5,8 @@
 /* 지역 고르기 버튼 + 패널 (왼쪽 큰 지역 · 오른쪽 세부 지역) */
 .stores-head { flex-direction: column; align-items: flex-start; gap: 14px; margin-bottom: 24px; }   /* 지역 버튼은 제목 바로 아래 */
 .stores-head .page-title { margin: 0; }
-/* 제목 아래 한 줄: 왼쪽 지역 버튼 · 오른쪽 정렬 */
-.stores-tools { align-self: stretch; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+/* 제목 아래 한 줄: 지역 버튼 바로 옆에 정렬 (멀리 떨어져 있으면 따로 노는 것처럼 보여서) */
+.stores-tools { align-self: stretch; display: flex; justify-content: flex-start; align-items: center; gap: 8px; flex-wrap: wrap; }
 .sort-box select {
   height: 40px; padding: 0 34px 0 14px; border-radius: 99px; border: 1px solid var(--line); background-color: var(--surface);
   color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; color-scheme: dark;
