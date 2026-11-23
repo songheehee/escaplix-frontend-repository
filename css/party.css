@@ -110,7 +110,8 @@
 .ri-intro { margin-top: 10px; font-size: 14px; }
 .badge.st-recruiting { background: rgba(70, 214, 140, .15); color: var(--good); }
 .badge.st-full { background: rgba(242, 184, 75, .18); color: var(--gold); }
-.badge.st-closed { background: #3a3542; color: var(--ink2); }
+.badge.st-closed { background: rgba(255, 92, 108, .15); color: var(--danger); }   /* 모집 마감: 빨강 */
+.badge.st-ended { background: #3a3542; color: var(--ink2); }                        /* 파티 종료: 회색 */
 
 .room-split { display: grid; grid-template-columns: 280px 1fr; gap: 14px; align-items: start; }
 .room-members, .room-chat { padding: 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }

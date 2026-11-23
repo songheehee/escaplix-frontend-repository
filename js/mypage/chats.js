@@ -67,11 +67,11 @@
       last.append(el("span", "cr-text", text), el("span", "cr-when", when(new Date(lm.createdAt))));
     }
     link.append(last);
-    link.setAttribute("aria-label", p.title + " 파티 방 열기" + (p.ended ? " (끝난 파티)" : ""));
+    link.setAttribute("aria-label", p.title + " 파티 방 열기" + (p.ended ? " (파티 종료)" : ""));
     item.append(link);
 
     if (p.ended) {
-      const btn = el("button", "btn btn-line small cr-review", "끝난 파티 · 후기 쓰기");
+      const btn = el("button", "btn btn-line small cr-review", "파티 종료 · 후기 쓰기");
       btn.type = "button";
       btn.addEventListener("click", function () { writeReview(p, btn); });
       item.append(btn);

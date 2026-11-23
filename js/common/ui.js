@@ -600,11 +600,12 @@ const UI = (function () {
   }
 
   // ---------- 파티 상태 (화면에 보이는 이름은 여기서만 정함) ----------
-  //   DB 상태 4개(DELETED 는 화면에 안 나옴) + "끝난 파티"(플레이 시간이 지남, 서버의 ended 와 같은 기준)
+  //   모집 중(초록) · 정원 마감(노랑, 인원이 다 참) · 모집 마감(빨강, 방장이 마감했거나 기한이 지남)
+  //   · 파티 종료(회색, 플레이 시간이 지남 = 서버의 ended). DELETED 는 화면에 안 나옴
   //   UI.partyStatus(status, ended) → { label: "모집 중", cls: "badge st-recruiting" }
-  const PARTY_STATUS = { RECRUITING: "모집 중", FULL: "모집 완료", CLOSED: "모집 마감" };
+  const PARTY_STATUS = { RECRUITING: "모집 중", FULL: "정원 마감", CLOSED: "모집 마감" };
   function partyStatus(status, ended) {
-    if (ended) return { label: "끝난 파티", cls: "badge st-closed" };   // 끝난 파티는 회색
+    if (ended) return { label: "파티 종료", cls: "badge st-ended" };   // 상태와 상관없이 시간이 지나면 종료
     return { label: PARTY_STATUS[status] || status, cls: "badge st-" + String(status).toLowerCase() };
   }
 

@@ -79,7 +79,7 @@
     st.textContent = s.label;
     st.className = s.cls;
     $("ri-meta").textContent = room.theme.title + " · " + room.theme.storeName + " · 📅 " + md(play) + " " + hm(play) + " (" + room.theme.playMinutes + "분)";
-    $("ri-deadline").textContent = ended ? "플레이 시간이 지난 파티예요" : room.status === "CLOSED" ? "모집이 마감됐어요" : "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집";
+    $("ri-deadline").textContent = ended ? "예정된 플레이 시간이 지나 파티가 종료됐어요" : room.status === "CLOSED" ? "모집이 마감됐어요" : "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집";
     $("ri-intro").textContent = "👑 방장 한마디 · “" + room.intro + "”";
 
     $("rm-count").textContent = room.currentPeople + " / " + room.maxPeople + "명";
@@ -123,7 +123,7 @@
     const live = document.querySelector(".rc-live");
     if (live) live.textContent = "지난 대화";
     const bar = el("div", "chat-ended");
-    bar.append(el("span", null, "끝난 파티예요. 지난 대화만 볼 수 있어요."));
+    bar.append(el("span", null, "종료된 파티예요. 지난 대화만 볼 수 있어요."));
     const btn = el("button", "btn btn-line small", "후기 쓰기");
     btn.type = "button";
     btn.addEventListener("click", function () { writeReview(btn); });
