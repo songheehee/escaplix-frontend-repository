@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 기록 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/stores.css">
+  <link rel="stylesheet" href="../../css/review.css">
+</head>
+<body>
+  <!-- S18 마이페이지 내 기록 · D 담당
+       한 파일에 화면 두 개. 주소 ?view= 로 고른다 (routes.js 를 안 고치려고)
+         mypage.html              요약: 통계(탈출·노힌트·전국 제패율, 전국 제패율 카드를 누르면 지역별 제패율) · 플레이 캘린더 · 플레이 후기 3개
+         mypage.html?view=reviews 전체 후기 (20개씩 더보기)
+       API: D-10 통계, D-5 내 기록, D-3 삭제, 후기 팝업(D-1·D-2·D-6) -->
+  <main class="page rec-page">
+    <h1 class="page-title" id="m-title">마이페이지</h1>
+    <nav class="my-tabs" aria-label="마이페이지 탭">
+      <a href="mypage.html" aria-current="page" id="m-tab">내 기록</a>
+      <a href="wishes.html">찜 목록</a>
+      <a href="chats.html">내 채팅</a>
+      <a href="profile.html">내 정보</a>
+    </nav>
+
+    <!-- ================= 요약 (기본) ================= -->
+    <div class="rec-view" id="view-home" hidden>
+      <section class="rec-section" aria-labelledby="sum-stats-heading">
+        <h2 id="sum-stats-heading">플레이 통계</h2>
+        <div class="rate-cards" id="sum-stats" aria-live="polite">
+          <div class="sk rate-sk"></div>
+        </div>
+        <!-- 전국 제패율 카드를 누르면 펼쳐짐 -->
+        <div class="region-panel" id="region-panel" hidden>
+          <h3 class="region-heading" id="region-heading">지역별 제패율</h3>
+          <ul class="region-grid" id="region-grid" aria-labelledby="region-heading"></ul>
+        </div>
+      </section>
+
+      <section class="rec-section" aria-labelledby="calendar-heading">
+        <div class="rec-head">
+          <h2 id="calendar-heading">플레이 캘린더</h2>
+          <div class="calendar-nav">
+            <button class="calendar-month-btn" id="month-prev" type="button" aria-label="이전 달">‹</button>
+            <h3 id="calendar-month" aria-live="polite"></h3>
+            <button class="calendar-month-btn" id="month-next" type="button" aria-label="다음 달">›</button>
+          </div>
+        </div>
+        <div class="calendar-scroll">
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+      </section>
+
+      <section class="rec-section" aria-labelledby="recent-heading">
+        <div class="rec-head">
+          <h2 id="recent-heading">플레이 후기</h2>
+          <div class="rec-head-actions">
+            <button class="btn btn-line small" id="write-home" type="button">+ 후기 쓰기</button>
+            <a class="rec-more" id="link-reviews">전체 보기 →</a>
+          </div>
+        </div>
+        <ul class="rv-list" id="recent-list" aria-live="polite"></ul>
+      </section>
+    </div>
+
+    <!-- ================= 전체 후기 ================= -->
+    <div class="rec-view" id="view-reviews" hidden>
+      <a class="rec-back" id="back-reviews">← 내 기록</a>
+      <div class="rec-head">
+        <h2 id="reviews-heading">전체 후기</h2>
+        <button class="btn btn-line small" id="write-reviews" type="button">+ 후기 쓰기</button>
+      </div>
+      <div class="rv-tools">
+        <label class="rv-tool">
+          <span class="sr-only">정렬</span>
+          <select id="rv-sort">
+            <option value="new">최신순</option>
+            <option value="old">오래된순</option>
+            <option value="rating">별점순</option>
+          </select>
+        </label>
+        <label class="rv-tool rv-search">
+          <span class="sr-only">테마·매장 이름 검색</span>
+          <input type="search" id="rv-q" placeholder="테마·매장 이름 검색" maxlength="50">
+        </label>
+      </div>
+      <ul class="rv-list" id="all-list" aria-live="polite"></ul>
+      <button class="btn btn-line small rv-more" id="all-more" type="button" hidden>더보기</button>
+    </div>
+
+  </main>
+
+  <!-- 후기 상세 (캘린더 날짜 · 후기 줄을 누르면) -->
+  <dialog class="review-detail-dialog" id="review-detail-dialog" aria-labelledby="review-detail-title">
+    <div class="review-detail-box">
+      <header class="review-detail-header">
+        <div>
+          <h2 id="review-detail-title"></h2>
+          <p id="review-detail-summary"></p>
+        </div>
+        <button class="review-detail-close" id="review-detail-close" type="button" aria-label="닫기">×</button>
+      </header>
+      <div class="calendar-day-list" id="calendar-day-list"></div>
+    </div>
+  </dialog>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/mypage/review-modal.js"></script>
+  <script src="../../js/mypage/mypage.js"></script>
+</body>
+</html>
