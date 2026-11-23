@@ -13,6 +13,14 @@
   color: var(--ink); background: var(--surface); border: 1px solid var(--line);
 }
 .pl-search input:focus { outline: none; border-color: var(--accent); }
+/* 지역 칸 (UI.areaPicker): 옆 장르 버튼(.btn-line.small)과 같은 크기·모양 */
+.pl-area .ap-btn {
+  height: 34px; min-width: 0; gap: 8px; padding: 0 12px; background: transparent;
+  font-size: 13px; font-weight: 700; color: var(--ink);
+}
+.pl-area .ap-btn:hover { border-color: var(--ink2); }
+.pl-area .ap-btn[aria-expanded="true"] { border-color: var(--accent); }
+.pl-area .ap-btn.dp-none .dp-text { color: var(--ink); }
 .pl-genre { position: relative; }
 .pl-genre .btn[aria-expanded="true"] { border-color: var(--accent); }
 .pl-panel {
