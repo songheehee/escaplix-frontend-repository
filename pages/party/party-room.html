@@ -32,16 +32,15 @@
           <div class="rm-head"><h2 id="rm-h">참여자</h2><span class="muted" id="rm-count"></span></div>
           <ul class="member-list" id="member-list"></ul>
           <div class="member-actions" id="member-actions"></div>
-          <p class="muted rm-note" id="rm-note"></p>
         </section>
 
         <section class="room-chat" aria-labelledby="rc-h">
-          <div class="rm-head"><h2 id="rc-h">파티 채팅</h2><span class="muted rc-live">3초마다 새 메시지</span></div>
+          <div class="rm-head"><h2 id="rc-h">파티 채팅</h2></div>
           <div class="chat" id="chat" role="log" aria-live="polite" aria-label="채팅 메시지" tabindex="0"></div>
           <button class="chat-new" id="chat-new" type="button" hidden>새 메시지 ↓</button>
           <form class="chat-form" id="chat-form" autocomplete="off">
             <label class="sr-only" for="chat-input">메시지</label>
-            <input class="chat-input" id="chat-input" maxlength="500" placeholder="메시지 입력 (500자까지)">
+            <input class="chat-input" id="chat-input" maxlength="500" placeholder="메시지 입력 (최대 500자)">
             <button class="btn btn-accent" id="chat-send" type="submit">보내기</button>
           </form>
         </section>

@@ -135,9 +135,13 @@
 .member-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 4px 10px; border-radius: 6px; background: var(--bg); font-size: 14px; }
 .member-list li.empty { color: var(--muted); border: 1px dashed var(--line); background: transparent; }
 .member-list .me { color: var(--muted); font-size: 12px; margin-left: 4px; }
-.btn.danger { background: transparent; color: #ff9aa5; border-color: rgba(255, 92, 108, .45); }
-.btn.danger:hover { background: rgba(255, 92, 108, .12); }
+/* 빨간 버튼 (파티 삭제 · 강퇴): 바탕을 옅은 빨강으로 채워 어두운 카드 위에서도 버튼으로 보이게 */
+.btn.danger { background: rgba(255, 92, 108, .14); color: #ff9aa5; border-color: rgba(255, 92, 108, .6); }
+.btn.danger:hover { background: rgba(255, 92, 108, .24); color: #ffc2c8; }
 .member-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+/* 나가기 · 모집 마감: 투명 바탕 + 어두운 테두리는 카드와 구분이 안 돼서, 바탕을 채우고 테두리를 밝게 */
+.member-actions .btn-line { background: var(--surface2); border-color: #4a4356; color: var(--ink); }
+.member-actions .btn-line:hover { background: #2e2938; border-color: var(--ink2); }
 .rm-note { margin: 8px 0 0; font-size: 12px; }
 
 .room-chat { position: relative; display: flex; flex-direction: column; }
@@ -157,11 +161,9 @@
 .chat-new { position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); padding: 6px 14px; border-radius: 99px; border: 0; font: inherit; font-size: 13px; font-weight: 700; color: #fff; background: var(--accent); cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
 .chat-new[hidden] { display: none; }
 .chat-form { display: flex; gap: 8px; margin-top: 10px; }
-/* 끝난 파티: 입력칸 자리에 안내 + 후기 쓰기 */
-.chat-ended {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px;
-  padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; color: var(--ink2); font-size: 14px;
-}
+/* 끝난 파티: 입력칸 자리에 후기 쓰기 버튼 (보내기 버튼 자리, 오른쪽) */
+.chat-ended { display: flex; justify-content: flex-end; margin-top: 10px; }
+.ri-deadline[hidden] { display: none; }
 .chat-input { flex: 1; min-width: 0; padding: 10px 12px; font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
 .chat-input:focus { outline: none; border-color: var(--accent); }
 .room-gone { padding: 40px 20px; text-align: center; }
