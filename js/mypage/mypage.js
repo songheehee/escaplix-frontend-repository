@@ -22,6 +22,7 @@
   let reviewRows = [];       // D-5 내 후기 전부 (최근 플레이순)
   let viewMonth = firstOfMonth(new Date());
   let shownCount = PAGE_SIZE;
+  let sortKey = "new";       // 전체 후기 정렬: new 최신순 · old 오래된순 · rating 별점순
   let detail = null;         // 열려 있는 상세: { date } 또는 { reviewId }
   let regionOpen = false;    // 지역별 제패율 펼침 (다시 불러와도 유지)
 
@@ -38,7 +39,61 @@
   $("write-home").addEventListener("click", function () { window.openReviewModal(); });
   $("write-reviews").addEventListener("click", function () { window.openReviewModal(); });
 
-  $("rv-sort").addEventListener("change", resetAndRenderAll);
+  // ---------- 정렬 드롭다운 (브라우저 기본 선택칸 대신 직접 만든 것) ----------
+  //   버튼을 누르면 목록이 열림. 마우스로 고르거나 ↑↓ 로 옮기고 Enter, Esc 로 닫기. 바깥을 누르면 닫힘
+  (function sortMenu() {
+    const btn = $("rv-sort-btn");
+    const menu = $("rv-sort-menu");
+    const options = Array.prototype.slice.call(menu.querySelectorAll("[role=option]"));
+
+    function paint() {
+      options.forEach(function (o) {
+        const on = o.dataset.v === sortKey;
+        o.setAttribute("aria-selected", String(on));
+        if (on) $("rv-sort-label").textContent = o.textContent;
+      });
+    }
+    function open() {
+      menu.hidden = false;
+      btn.setAttribute("aria-expanded", "true");
+      const cur = options.find(function (o) { return o.dataset.v === sortKey; }) || options[0];
+      cur.focus();
+      document.addEventListener("pointerdown", outside);
+    }
+    function close(refocus) {
+      if (menu.hidden) return;
+      menu.hidden = true;
+      btn.setAttribute("aria-expanded", "false");
+      document.removeEventListener("pointerdown", outside);
+      if (refocus) btn.focus();
+    }
+    function outside(e) { if (!$("rv-sort").contains(e.target)) close(false); }
+    function pick(o) {
+      close(true);
+      if (o.dataset.v === sortKey) return;
+      sortKey = o.dataset.v;
+      paint();
+      resetAndRenderAll();
+    }
+
+    btn.addEventListener("click", function () { menu.hidden ? open() : close(true); });
+    btn.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); open(); }
+    });
+    options.forEach(function (o, i) {
+      o.tabIndex = -1;
+      o.addEventListener("click", function () { pick(o); });
+      o.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowDown") { e.preventDefault(); options[Math.min(i + 1, options.length - 1)].focus(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); options[Math.max(i - 1, 0)].focus(); }
+        else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(o); }
+        else if (e.key === "Escape") { e.preventDefault(); close(true); }
+        else if (e.key === "Tab") { close(false); }
+      });
+    });
+    paint();
+  })();
+
   let searchTimer = null;
   $("rv-q").addEventListener("input", function () {
     clearTimeout(searchTimer);
@@ -247,7 +302,7 @@
     list.textContent = "";
 
     const q = $("rv-q").value.trim().toLowerCase();
-    const sort = $("rv-sort").value;
+    const sort = sortKey;
     const rows = reviewRows.filter(function (r) {
       if (!q) return true;
       return (r.themeTitle || "").toLowerCase().indexOf(q) >= 0 ||
@@ -442,9 +497,7 @@
     const starLine = el("span", "rd-stars", stars(r.rating));
     starLine.setAttribute("aria-label", "별점 " + r.rating + "점");
     body.append(starLine);
-    body.append(r.content
-      ? el("p", "rd-content", r.content)
-      : el("p", "rd-content muted", "후기 내용을 남기지 않았어요."));
+    if (r.content) body.append(el("p", "rd-content", r.content));   // 글이 없으면 별점만
     info.append(body);
 
     const actions = el("div", "rd-actions");
