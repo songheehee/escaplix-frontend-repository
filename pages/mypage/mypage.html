@@ -74,14 +74,19 @@
         <button class="btn btn-line small" id="write-reviews" type="button">+ 후기 쓰기</button>
       </div>
       <div class="rv-tools">
-        <label class="rv-tool">
-          <span class="sr-only">정렬</span>
-          <select id="rv-sort">
-            <option value="new">최신순</option>
-            <option value="old">오래된순</option>
-            <option value="rating">별점순</option>
-          </select>
-        </label>
+        <div class="rv-sort" id="rv-sort">
+          <button class="rv-sort-btn" id="rv-sort-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="rv-sort-menu">
+            <span class="rv-sort-icon" aria-hidden="true">⇅</span>
+            <span class="sr-only">정렬:</span>
+            <span id="rv-sort-label">최신순</span>
+            <span class="rv-sort-caret" aria-hidden="true"></span>
+          </button>
+          <ul class="rv-sort-menu" id="rv-sort-menu" role="listbox" aria-label="정렬" hidden>
+            <li role="option" data-v="new">최신순</li>
+            <li role="option" data-v="old">오래된순</li>
+            <li role="option" data-v="rating">별점순</li>
+          </ul>
+        </div>
         <label class="rv-tool rv-search">
           <span class="sr-only">테마·매장 이름 검색</span>
           <input type="search" id="rv-q" placeholder="테마·매장 이름 검색" maxlength="50">
