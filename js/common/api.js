@@ -11,7 +11,11 @@
 //   api.upload("/api/owner/stores/3", form, "PUT") → 수정(C-4·C-8)처럼 PUT 으로 올릴 때
 //   api.blob("/api/admin/members/2/biz-file")     → 토큰이 필요한 이미지 (A-11·C-15). URL.createObjectURL(blob) 로 보여 주기
 
-const API_BASE = "http://localhost:8081";
+// 백엔드 주소: 지금 화면을 연 컴퓨터의 8081
+//   localhost·127.0.0.1 로 열면 내 컴퓨터, 같은 와이파이에서 10.10.0.11:5500 처럼 IP 로 열면 그 컴퓨터로 간다
+//   (그 IP 로 연 화면은 백엔드 app.cors.allowed-origins 에도 있어야 함 → application-local.properties)
+//   파일을 직접 연 경우(file://)처럼 호스트가 없으면 localhost
+const API_BASE = (location.protocol === "https:" ? "https:" : "http:") + "//" + (location.hostname || "localhost") + ":8081";
 
 const Auth = (function () {
   const KEY = "token";
