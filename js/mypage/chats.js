@@ -17,7 +17,7 @@
   $("tab-profile").href = Routes.url("profile");
 
   const list = $("chat-list");
-  load();
+  load().finally(function () { document.body.classList.add("my-ready"); });   // 다 불러오면 탭 아래 내용을 한 번에 보여 줌 (깜빡임 방지, common.css)
   // 파티 방에서 나가기·삭제 뒤 뒤로가기로 돌아오면 브라우저가 예전 화면을 그대로 보여 줄 수 있다 → 다시 불러오기
   window.addEventListener("pageshow", function (e) { if (e.persisted) load(); });
 
@@ -27,7 +27,6 @@
     try {
       const parties = await api.get("/api/my/parties");
       list.textContent = "";
-      $("tab-chats").textContent = "내 채팅 (" + parties.length + ")";
       if (!parties.length) {
         list.append(UI.emptyBox("아직 참여한 파티가 없어요. 같이 갈 사람을 찾아보세요.", "파티 둘러보기", Routes.url("partyList")));
         return;

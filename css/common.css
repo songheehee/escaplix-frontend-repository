@@ -38,6 +38,16 @@ button { font: inherit; }
 :focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .muted { color: var(--muted); }
+/* 마이페이지 탭 화면 (내 기록 · 찜 목록 · 내 채팅 · 내 정보): 깜빡임 방지
+   - 탭 아래 내용은 데이터를 다 받은 뒤(body.my-ready) 한 번에 부드럽게 보여 줌
+   - 혹시 JS 가 멈춰도 2초 뒤에는 그냥 보이게 함
+   - 내용이 짧아도 아래 footer 가 위로 올라왔다 밀려나지 않게 본문 높이를 화면만큼 잡아 둠 */
+main.page:has(> .my-tabs) { min-height: 100vh; }
+.my-tabs ~ * { opacity: 0; animation: my-show .2s ease-out 2s forwards; }
+.my-ready .my-tabs ~ * { opacity: 1; animation: my-in .18s ease-out; }
+@keyframes my-show { from { opacity: 0; } to { opacity: 1; } }
+@keyframes my-in { from { opacity: 0; } to { opacity: 1; } }   /* 이름이 같으면 이어서 돌아 페이드가 안 보임 → 따로 */
+@media (prefers-reduced-motion: reduce) { .my-ready .my-tabs ~ * { animation: none; } }
 
 /* 화면 본문 (헤더 아래) */
 .page { padding: calc(var(--topbar-h) + 24px) var(--gutter) 80px; max-width: 1600px; margin: 0 auto; }

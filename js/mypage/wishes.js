@@ -12,7 +12,7 @@
   const grid = $("wish-grid");
   let count = 0;
 
-  load();
+  load().finally(function () { document.body.classList.add("my-ready"); });   // 다 불러오면 탭 아래 내용을 한 번에 보여 줌 (깜빡임 방지, common.css)
 
   async function load() {
     for (let i = 0; i < 6; i++) {
@@ -24,7 +24,6 @@
       const list = await api.get("/api/my/wishes");
       grid.textContent = "";
       count = list.length;
-      paintCount();
       if (!list.length) { showEmpty(); return; }
       list.forEach(function (w) { grid.append(wishCard(w)); });
     } catch (e) {
@@ -33,7 +32,6 @@
     }
   }
 
-  function paintCount() { $("w-tab").textContent = "찜 목록 (" + count + ")"; }
   function showEmpty() { grid.append(UI.emptyBox("아직 찜한 테마가 없어요. 마음에 드는 테마에 ♡를 눌러 보세요.", "테마 둘러보기", Routes.url("home"))); }
 
   function wishCard(w) {
@@ -68,7 +66,6 @@
       setTimeout(function () {
         c.remove();
         count--;
-        paintCount();
         if (!count) showEmpty();
       }, 300);
       UI.toast("찜 목록에서 뺐어요");

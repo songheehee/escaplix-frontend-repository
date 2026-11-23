@@ -7,11 +7,16 @@
   <link rel="stylesheet" href="../../css/common.css">
   <link rel="stylesheet" href="../../css/stores.css">
   <link rel="stylesheet" href="../../css/party.css">
+  <!-- 로그인 정보(Auth)를 화면 그리기 전에 읽으려고 이 두 개는 위에서 먼저 불러옴 (제목 깜빡임 방지) -->
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
 </head>
 <body>
   <!-- S20 내 채팅 탭 (마이페이지) · A-22 내 파티 목록 -->
   <main class="page">
     <h1 class="page-title" id="c-title">마이페이지</h1>
+    <!-- 닉네임 제목을 처음부터 그려 둠 (JS 가 나중에 바꾸면 글자가 깜빡여서) -->
+    <script>(function () { var m = Auth.me(); if (m && m.role === "USER") { document.getElementById("c-title").textContent = m.nickname + " 님의 마이페이지"; } })();</script>
     <nav class="my-tabs" aria-label="마이페이지 탭">
       <a id="tab-mypage" href="#">내 기록</a>
       <a id="tab-wishes" href="#">찜 목록</a>
@@ -21,8 +26,6 @@
     <div class="chat-list" id="chat-list" aria-live="polite"></div>
   </main>
 
-  <script src="../../js/common/routes.js"></script>
-  <script src="../../js/common/api.js"></script>
   <script src="../../js/common/ui.js"></script>
   <script src="../../js/common/header.js"></script>
   <script src="../../js/common/footer.js"></script>
