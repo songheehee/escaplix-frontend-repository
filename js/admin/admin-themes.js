@@ -59,7 +59,7 @@
       tr.append(el("td", "num", Manage.ymd(th.createdAt)));
       tr.append(el("td", "num", Manage.ymd(th.updatedAt)));
       const go = el("td", "go");
-      const a = el("a", "btn " + (status === "PENDING" ? "btn-accent" : "btn-line") + " small", status === "PENDING" ? "검토하기 →" : "상세 보기 →");
+      const a = el("a", "btn " + (status === "PENDING" ? "btn-accent" : "btn-line") + " small", status === "PENDING" ? "검토" : "보기");
       a.href = Routes.url("adminThemeDetail", { id: th.themeId });
       go.append(a);
       tr.append(go);

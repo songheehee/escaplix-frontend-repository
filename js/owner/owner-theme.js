@@ -1,5 +1,7 @@
-// S13 테마 등록·수정 (pages/owner/owner-theme.html?id=테마 | ?storeId=매장) · C 담당
-//   C-1 매장 고르기(승인된 매장만), B-7 장르, C-6 수정용 상세, C-7 등록, C-8 수정 (multipart), C-9 운영 종료·재개
+// S12 ③ 테마 화면 (pages/owner/owner-theme.html?id=테마[&tab=slots] | ?storeId=매장) · C 담당
+//   [기본 정보] 탭 = S13 테마 등록·수정: B-7 장르, C-6 수정용 상세, C-7 등록, C-8 수정 (multipart), C-9 운영 종료·재개
+//   [시간표] 탭 = S14 (theme-slots.js). 새 테마는 [기본 정보]만 → 승인 요청하면 ?id=새번호&tab=slots 로 다시 열림
+//   매장은 ② 매장 화면에서 정해져 들어오므로 고르는 칸이 없다 (등록: ?storeId=, 수정: C-6 의 매장)
 //   사장: 등록·수정하면 PENDING → 관리자 승인. 관리자: 바로 OPEN (결정 S3)
 (function () {
   const el = UI.el;
@@ -10,7 +12,7 @@
   const themeId = Manage.numParam("id");
   const form = $("form");
 
-  let stores = [];
+  let store = null; // 이 테마의 매장 (C-1 한 줄)
   let theme = null; // 수정 중인 테마 (C-6)
 
   setup();
@@ -20,37 +22,41 @@
     let genres;
     try {
       const r = await Promise.all([
-        api.get("/api/owner/stores"),
         api.get("/api/genres"),
         themeId ? api.get("/api/owner/themes/" + themeId) : Promise.resolve(null),
       ]);
-      stores = r[0];
-      genres = r[1];
-      theme = r[2];
+      genres = r[0];
+      theme = r[1];
+      const storeId = theme ? storeIdOf(theme) : Manage.numParam("storeId");
+      store = storeId ? await Manage.myStore(storeId) : null;
     } catch (e) {
       Manage.stop(e.status === 403 || e.status === 404 ? "내 테마가 아니거나 없는 테마예요." : e.message,
         "내 매장으로", Routes.url("owner"));
       return;
     }
-
-    const storeId = theme ? storeIdOf(theme) : Manage.numParam("storeId");
-    const back = Routes.url("owner", { storeId: storeId });
-    $("back").href = back;
-    $("cancel").href = back;
-    if (admin) $("back").textContent = "← 직접 등록한 매장";
-
-    renderGenres(genres);
-    renderStores(storeId);
-    if (!theme && !$("storeId").options.length) {
-      Manage.stop("승인된 매장이 있어야 테마를 등록할 수 있어요.", "내 매장으로", Routes.url("owner"));
+    if (!store) {
+      Manage.stop("내 매장이 아니거나 없는 매장이에요.", "내 매장으로", Routes.url("owner"));
+      return;
+    }
+    const storeUrl = Routes.url("ownerStore", { id: store.storeId });
+    if (!theme && store.status !== "APPROVED") {
+      Manage.stop("승인된 매장에만 테마를 등록할 수 있어요.", "매장으로", storeUrl);
       return;
     }
 
-    document.title = (theme ? "테마 수정" : "테마 등록") + " · Escaplix";
-    $("title").textContent = theme ? "테마 수정" : (admin ? "테마 직접 등록" : "테마 등록");
-    $("lead").textContent = admin ? "관리자가 등록·수정한 테마는 승인 없이 바로 손님에게 보여요." : "관리자가 승인하면 손님 메인에 나타나요.";
+    $("storeId").value = store.storeId;
+    $("cancel").href = storeUrl;
+    Manage.crumbs($("crumbs"), [[store.name, storeUrl], [theme ? theme.title : "새 테마"]]);
+    document.title = (theme ? theme.title : "새 테마") + " · Escaplix";
+    $("title").textContent = theme ? theme.title : "새 테마";
     $("submit").textContent = admin ? "저장" : (theme ? "수정하고 다시 승인 요청" : "승인 요청");
-    if (theme) fill(theme);
+
+    renderGenres(genres);
+    if (theme) {
+      fill(theme);
+      // 반려된 테마는 시간표를 다루지 않음 (고쳐서 다시 신청이 먼저)
+      if (theme.status !== "REJECTED") setupTabs();
+    }
 
     Manage.bindImageInput($("poster"), $("poster-preview"), $("poster-hint"),
       theme && theme.posterUrl, "사진이 없으면 장르 색으로 대신 보여요");
@@ -73,33 +79,22 @@
     });
   }
 
-  // 등록: 승인된 매장만 고를 수 있음 (명세 C-1·C-7). 수정: 매장은 바꿀 수 없음 (C-8)
-  function renderStores(selected) {
-    const sel = $("storeId");
-    if (theme) {
-      const s = stores.find(function (x) { return x.storeId === selected; });
-      const o = el("option", null, s ? s.name : "매장 #" + selected);
-      o.value = selected;
-      sel.append(o);
-      sel.disabled = true;
-      showStoreInfo(s, "매장은 바꿀 수 없어요.");
-      return;
-    }
-    stores.filter(function (s) { return s.status === "APPROVED"; }).forEach(function (s) {
-      const o = el("option", null, s.name);
-      o.value = s.storeId;
-      if (s.storeId === selected) o.selected = true;
-      sel.append(o);
-    });
-    sel.addEventListener("change", function () { showStoreInfo(current()); });
-    showStoreInfo(current());
-    function current() {
-      return stores.find(function (x) { return x.storeId === Number(sel.value); });
-    }
+  // ---------- 탭 ([기본 정보] · [시간표]) ----------
+  //   ?tab=slots 면 시간표부터. 탭을 바꾸면 주소도 바꿔서 새로고침해도 그 탭
+  function setupTabs() {
+    $("tabs").hidden = false;
+    $("tab-info").addEventListener("click", function () { showTab("info"); });
+    $("tab-slots").addEventListener("click", function () { showTab("slots"); });
+    showTab(Manage.param("tab") === "slots" ? "slots" : "info");
   }
-  // 고른 매장의 사업장 번호·전화 (회의 v2-4)
-  function showStoreInfo(s, extra) {
-    $("store-info").textContent = s ? "사업장 " + s.bizPlaceNo + " · ☎ " + s.phone + (extra ? " · " + extra : "") : (extra || "");
+  function showTab(name) {
+    const slots = name === "slots";
+    $("tab-info").setAttribute("aria-selected", String(!slots));
+    $("tab-slots").setAttribute("aria-selected", String(slots));
+    form.hidden = slots;
+    $("slots-panel").hidden = !slots;
+    history.replaceState(null, "", Routes.url("ownerTheme", { id: theme.themeId, tab: slots ? "slots" : null }));
+    if (slots) ThemeSlots.open(theme.themeId);
   }
 
   function fill(t) {
@@ -118,9 +113,8 @@
     $("re-approve").hidden = admin;
     if (t.status === "REJECTED" && t.rejectReason) form.prepend(Manage.rejectNote(t.rejectReason, "지난번 반려 사유"));
 
-    // 위쪽: 상태 · 시간표 · 운영 종료/재개
+    // 위쪽: 상태 · 운영 종료/재개
     $("theme-actions").hidden = false;
-    $("go-slots").href = Routes.url("ownerSlots", { themeId: t.themeId });
     paintStatus(t.status);
     $("toggle-status").addEventListener("click", toggleStatus);
   }
@@ -196,7 +190,7 @@
         !confirm("수정하면 다시 승인을 받을 때까지 이 테마가 손님에게 보이지 않아요. 저장할까요?")) return;
 
     const f = new FormData();
-    // 수정(C-8)할 때도 storeId 칸은 보낸다 (서버는 무시하지만 필수 칸)
+    // 수정(C-8)할 때도 storeId 칸은 보낸다 (서버는 무시하지만 필수 칸). 값은 ② 에서 정해진 매장
     f.append("storeId", $("storeId").value);
     f.append("title", $("title-input").value.trim());
     f.append("description", $("description").value.trim());
@@ -212,7 +206,11 @@
         ? await api.upload("/api/owner/themes/" + theme.themeId, f, "PUT")
         : await api.upload("/api/owner/themes", f);
       UI.toast(r.status === "OPEN" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
-      setTimeout(function () { location.href = Routes.url("owner", { storeId: $("storeId").value }); }, 900);
+      // 새 테마 → 바로 [시간표] 탭. 수정 → ② 매장 화면
+      const next = theme
+        ? Routes.url("ownerStore", { id: store.storeId })
+        : r.themeId ? Routes.url("ownerTheme", { id: r.themeId, tab: "slots" }) : Routes.url("ownerStore", { id: store.storeId });
+      setTimeout(function () { location.href = next; }, 900);
     } catch (e2) {
       Manage.busy(btn, false);
       Manage.showError($("error"), e2.message);

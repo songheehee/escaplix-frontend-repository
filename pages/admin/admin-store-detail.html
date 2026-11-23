@@ -10,11 +10,11 @@
 <body>
   <!-- S23 매장 승인 상세 · C-14 상세, C-15 사업장등록증, A-11 사장 사업자등록증, C-16 승인·반려 -->
   <main class="page m-page" id="main">
-    <a class="m-back" id="back">← 매장 승인 목록</a>
+    <a class="m-back" id="back">← 승인 목록</a>
     <h1 class="page-title"><span id="name">매장</span> <span id="status"></span></h1>
     <div id="reject"></div>
 
-    <div class="m-detail" style="margin-top:18px">
+    <div class="m-detail" style="margin-top:20px">
       <div>
         <div class="m-photo" id="photo"></div>
         <div class="m-card" style="margin-top:12px">
@@ -23,12 +23,12 @@
       </div>
       <div class="m-docs">
         <section class="m-card m-doc">
-          <h3>🏪 사업장등록증 <small class="muted">(매장 등록 때 첨부)</small></h3>
+          <h3>사업장등록증 <small class="muted">(매장 등록 때 첨부)</small></h3>
           <div class="m-preview" id="doc-place">불러오는 중…</div>
           <p class="hint" id="doc-place-hint" style="margin-top:6px"></p>
         </section>
         <section class="m-card m-doc">
-          <h3>👤 사장 사업자등록증 <small class="muted">(가입 때 첨부)</small></h3>
+          <h3>사장 사업자등록증 <small class="muted">(가입 때 첨부)</small></h3>
           <div class="m-preview" id="doc-owner">불러오는 중…</div>
           <p class="hint" id="doc-owner-hint" style="margin-top:6px"></p>
         </section>
@@ -36,8 +36,8 @@
     </div>
 
     <div class="m-decide" id="decide" hidden>
-      <button class="btn btn-ok" type="button" id="approve">승인 → 공개</button>
-      <button class="btn btn-danger" type="button" id="reject-btn">반려…</button>
+      <button class="btn btn-ok" type="button" id="approve">승인</button>
+      <button class="btn btn-danger" type="button" id="reject-btn">반려</button>
     </div>
     <p class="muted" id="decide-note" style="margin-top:10px">두 번호와 상호·주소가 등록증과 맞는지, 매장 사진이 손님에게 보여도 되는 사진인지 확인해 주세요.</p>
   </main>

@@ -18,10 +18,9 @@
   setup();
 
   async function setup() {
-    const backTo = Routes.url("owner", { storeId: storeId });
-    $("back").href = backTo;
-    $("cancel").href = backTo;
-    if (admin) $("back").textContent = "← 직접 등록한 매장";
+    // 취소: 수정이면 ② 그 매장 화면, 등록이면 ① 내 매장
+    $("cancel").href = storeId ? Routes.url("ownerStore", { id: storeId }) : Routes.url("owner", { list: 1 });
+    Manage.crumbs($("crumbs"), [[storeId ? "매장 수정" : "매장 등록"]]);
     Manage.counter($("intro"), $("intro-count"));
     const areasReady = loadAreas();   // 수정 화면에서 기존 지역을 고르려면 목록이 먼저 있어야 함
     if (me.role === "OWNER") loadMyBizNo();
@@ -40,6 +39,7 @@
       }
       await areasReady;
       fill(original);
+      Manage.crumbs($("crumbs"), [[original.name, Routes.url("ownerStore", { id: storeId })], ["매장 수정"]]);
     }
 
     document.title = (storeId ? "매장 수정" : "매장 등록") + " · Escaplix";
@@ -216,7 +216,7 @@
         ? await api.upload("/api/owner/stores/" + storeId, f, "PUT")
         : await api.upload("/api/owner/stores", f);
       UI.toast(r.status === "APPROVED" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
-      setTimeout(function () { location.href = Routes.url("owner", { storeId: r.storeId }); }, 900);
+      setTimeout(function () { location.href = Routes.url("ownerStore", { id: r.storeId || storeId }); }, 900);
     } catch (e2) {
       Manage.busy(btn, false);
       Manage.showError($("error"), e2.message);

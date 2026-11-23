@@ -10,7 +10,7 @@
 
   // 역할별 메뉴 (API 명세 3. 역할군별 보기)
   //   home  : 로고를 누르면 갈 곳
-  //   links : 위쪽 바 메뉴
+  //   links : 위쪽 바 메뉴. [화면, 글자, (같이 불을 켤 화면들)]
   //   my    : 오른쪽 프로필 ▾ 안의 메뉴
   //   search: 테마·매장 검색칸을 보여 줄지
   const MENU = {
@@ -28,13 +28,21 @@
     },
     OWNER: {
       home: "home",       // 로고는 손님과 같은 메인으로. 사장 홈은 메뉴의 "사장 홈"
-      links: [["owner", "사장 홈"], ["storeForm", "매장 등록"], ["ownerTheme", "테마 등록"], ["ownerSlots", "시간표 관리"]],
+      // 메뉴는 사장 홈 하나. 매장 등록·테마 등록·시간표는 각 화면 안의 버튼 (사장 화면 개편 11/23)
+      links: [["owner", "사장 홈", ["ownerStore", "ownerTheme", "storeForm"]]],
       my: [["profile", "내 정보"]],
-      search: false,
+      search: true,       // 사장도 손님 메인에서 테마를 찾아볼 수 있게
     },
     ADMIN: {
-      home: "admin",
-      links: [["admin", "관리자 홈"], ["adminStores", "매장 승인"], ["adminThemes", "테마 승인"], ["adminMembers", "회원 관리"]],
+      home: "home",       // 로고는 손님과 같은 메인으로. 관리자 홈은 메뉴의 "관리자 홈"
+      //   승인: 매장·테마는 승인 화면 안의 탭으로 나눔 (위쪽 메뉴에 둘 다 두면 겹침)
+      //   직접 등록: 사장 화면과 같은 매장 → 테마 → 시간표 화면 (등록 버튼은 화면 안에)
+      links: [
+        ["admin", "관리자 홈"],
+        ["adminStores", "승인", ["adminThemes", "adminStoreDetail", "adminThemeDetail"]],
+        ["owner", "직접 등록", ["ownerStore", "ownerTheme", "storeForm"]],
+        ["adminMembers", "회원 관리"],
+      ],
       my: [["profile", "내 정보"]],
       search: false,
     },
@@ -61,10 +69,13 @@
     const li = el("li");
     const a = el("a", null, l[1]);
     a.href = Routes.url(l[0]);
-    if (Routes.isHere(l[0]) && !location.search) a.setAttribute("aria-current", "page");
+    // 같이 켤 화면(l[2])이 있으면 주소 뒤 ?… 와 상관없이 켠다 (승인 → 매장·테마 목록과 상세)
+    const here = l[2] ? [l[0]].concat(l[2]).some(function (n) { return Routes.isHere(n); }) : Routes.isHere(l[0]) && !location.search;
+    if (here) a.setAttribute("aria-current", "page");
     li.append(a);
     list.append(li);
   });
+
   navToggle.addEventListener("click", function () {
     const open = !nav.classList.contains("open");
     nav.classList.toggle("open", open);

@@ -8,32 +8,31 @@
   <link rel="stylesheet" href="../../css/manage.css">
 </head>
 <body>
-  <!-- S13 테마 등록·수정 · C-1 매장 고르기, B-7 장르, C-6 수정용 상세, C-7 등록, C-8 수정, C-9 운영 종료·재개 -->
+  <!-- S12 사장 홈 ③ 테마 화면 (탭 2개)
+       [기본 정보] S13 테마 등록·수정: B-7 장르, C-6 수정용 상세, C-7 등록, C-8 수정, C-9 운영 종료·재개
+       [시간표]   S14: C-10 보기, C-11 통째 저장 (js/owner/theme-slots.js). 새 테마는 승인 요청 뒤에 열림 -->
   <main class="page m-page narrow" id="main">
-    <a class="m-back" id="back">← 내 매장</a>
+    <nav class="m-crumbs" id="crumbs" aria-label="경로"></nav>
     <div class="m-head">
-      <div>
-        <h1 class="page-title" id="title">테마 등록</h1>
-        <p class="muted" id="lead">관리자가 승인하면 손님 메인에 나타나요.</p>
-      </div>
+      <h1 class="page-title" id="title">새 테마</h1>
       <div class="m-actions" id="theme-actions" hidden>
         <span id="status"></span>
-        <a class="btn btn-line small" id="go-slots">시간표 관리</a>
-        <button class="btn btn-dim small" type="button" id="toggle-status" hidden></button>
+        <button class="btn btn-line small" type="button" id="toggle-status" hidden></button>
       </div>
     </div>
 
-    <form class="m-card m-form" id="form" novalidate>
+    <div class="m-tabs" id="tabs" role="tablist" aria-label="테마 화면" hidden>
+      <button type="button" role="tab" id="tab-info" aria-controls="form" aria-selected="true">기본 정보</button>
+      <button type="button" role="tab" id="tab-slots" aria-controls="slots-panel" aria-selected="false">시간표</button>
+    </div>
+
+    <form class="m-card m-form" id="form" role="tabpanel" aria-labelledby="tab-info" novalidate>
       <div class="m-notice" id="re-approve" hidden>
-        ⚠️ 테마를 수정하면 <b>다시 승인 대기</b>가 돼요. 관리자가 승인할 때까지 손님에게 보이지 않아요.
+        테마를 수정하면 <b>다시 승인 대기</b>가 돼요. 관리자가 승인할 때까지 손님에게 보이지 않아요.
       </div>
       <div class="m-error" id="error" role="alert" hidden></div>
 
-      <div class="m-field">
-        <label for="storeId">매장 (승인된 매장만)<span class="req">*</span></label>
-        <select id="storeId" required></select>
-        <p class="hint" id="store-info"></p>
-      </div>
+      <input type="hidden" id="storeId">
 
       <div class="m-field">
         <label for="title-input">테마 이름<span class="req">*</span></label>
@@ -100,6 +99,41 @@
         <a class="btn btn-line" id="cancel">취소</a>
       </div>
     </form>
+
+    <!-- [시간표] 탭 -->
+    <section id="slots-panel" role="tabpanel" aria-labelledby="tab-slots" hidden>
+      <p class="muted" style="margin:0 0 16px">주중·주말에 시작하는 시간만 정하면 매주 같은 시간표로 보여요. 공휴일은 주말 시간표를 따라요. 끝나는 시간은 제한 시간 <span id="slot-play"></span>분으로 계산해요.</p>
+      <div class="m-error" id="slot-error" role="alert" hidden></div>
+      <div id="slot-editor" hidden>
+        <div class="week-grid">
+          <div class="m-card week-col" data-kind="weekday">
+            <h2>주중 <small>월 ~ 금</small></h2>
+            <ul class="times"></ul>
+            <div class="add-row m-form">
+              <input type="time" aria-label="주중에 추가할 시작 시간" value="13:00">
+              <button class="btn btn-accent small add" type="button">추가</button>
+            </div>
+            <div class="warn-line" role="alert"></div>
+            <button class="btn btn-line small copy" type="button" data-to="weekend">주말에도 똑같이</button>
+          </div>
+
+          <div class="m-card week-col weekend" data-kind="weekend">
+            <h2>주말 <small>토 · 일 · 공휴일</small></h2>
+            <ul class="times"></ul>
+            <div class="add-row m-form">
+              <input type="time" aria-label="주말에 추가할 시작 시간" value="10:00">
+              <button class="btn btn-accent small add" type="button">추가</button>
+            </div>
+            <div class="warn-line" role="alert"></div>
+            <button class="btn btn-line small copy" type="button" data-to="weekday">주중에도 똑같이</button>
+          </div>
+        </div>
+        <div class="save-bar">
+          <span class="muted" id="slot-summary"></span>
+          <button class="btn btn-accent" type="button" id="slot-save">시간표 저장</button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="../../js/common/routes.js"></script>
@@ -108,6 +142,7 @@
   <script src="../../js/common/header.js"></script>
   <script src="../../js/common/footer.js"></script>
   <script src="../../js/owner/manage.js"></script>
+  <script src="../../js/owner/theme-slots.js"></script>
   <script src="../../js/owner/owner-theme.js"></script>
 </body>
 </html>

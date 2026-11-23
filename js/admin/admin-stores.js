@@ -55,7 +55,7 @@
       tr.append(el("td", "num", s.bizPlaceNo));
       tr.append(el("td", "num", Manage.ymd(s.createdAt)));
       const go = el("td", "go");
-      const a = el("a", "btn " + (status === "PENDING" ? "btn-accent" : "btn-line") + " small", status === "PENDING" ? "검토하기 →" : "상세 보기 →");
+      const a = el("a", "btn " + (status === "PENDING" ? "btn-accent" : "btn-line") + " small", status === "PENDING" ? "검토" : "보기");
       a.href = Routes.url("adminStoreDetail", { id: s.storeId });
       go.append(a);
       tr.append(go);

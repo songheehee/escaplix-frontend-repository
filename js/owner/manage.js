@@ -46,7 +46,7 @@ const Manage = (function () {
     return el("span", "st " + s[1], s[0]);
   }
   function rejectNote(reason, prefix) {
-    return el("div", "reject-note", "💬 " + (prefix || "반려 사유") + ": " + reason);
+    return el("div", "reject-note", (prefix || "반려 사유") + ": " + reason);
   }
 
   // ---------- 날짜 ("2026-11-17T10:00:00") ----------
@@ -186,7 +186,7 @@ const Manage = (function () {
       const actions = el("div", "m-actions");
       const cancel = el("button", "btn btn-line", "취소");
       cancel.type = "button";
-      const ok = el("button", "btn btn-danger", "반려하기");
+      const ok = el("button", "btn btn-danger", "반려");
       ok.type = "submit";
       actions.append(cancel, ok);
       form.append(h, el("p", null, help), ta, count, actions);
@@ -206,10 +206,45 @@ const Manage = (function () {
     });
   }
 
+  // ---------- 사장 화면 경로 (내 매장 › 홍대점 › 사라진 탐정) ----------
+  //   items: [[글자, 주소], ..., [글자]]. 마지막은 지금 화면이라 링크 없음
+  //   맨 앞 "내 매장"(관리자는 "직접 등록한 매장")은 자동으로 붙인다
+  //   ?list=1: 매장이 1개뿐이어도 목록을 보여 줌 (안 붙이면 바로 그 매장 화면으로 넘어감)
+  function crumbs(box, items) {
+    box.textContent = "";
+    const all = [[isAdmin() ? "직접 등록한 매장" : "내 매장", Routes.url("owner", { list: 1 })]].concat(items);
+    all.forEach(function (it, i) {
+      if (i) box.append(el("span", "sep", "›"));
+      if (it[1] && i < all.length - 1) {
+        const a = el("a", null, it[0]);
+        a.href = it[1];
+        box.append(a);
+      } else {
+        box.append(el("span", "here", it[0]));
+      }
+    });
+  }
+
+  // 매장 순서: 승인됨 → 승인 대기 → 반려, 같은 상태끼리는 최근 등록 순 (C-1 은 등록일 최신순으로만 줌)
+  const STORE_ORDER = { APPROVED: 0, PENDING: 1, REJECTED: 2 };
+  function sortStores(list) {
+    function rank(s) { return s.status in STORE_ORDER ? STORE_ORDER[s.status] : 9; }
+    return list.slice().sort(function (a, b) {
+      const d = rank(a) - rank(b);
+      return d || new Date(b.createdAt) - new Date(a.createdAt);
+    });
+  }
+
+  // 내 매장 하나 (매장 하나만 주는 API 가 없어서 C-1 목록에서 찾음). 없거나 남의 매장이면 null
+  async function myStore(storeId) {
+    const list = await api.get("/api/owner/stores");
+    return list.find(function (s) { return s.storeId === storeId; }) || null;
+  }
+
   // ---------- 승인 목록 위쪽 탭 (S22 매장 승인 · S15 테마 승인) ----------
   //   active: "stores" | "themes". 탭 옆 숫자는 승인 대기 수 (C-12)
   function approvalTabs(box, active) {
-    const tabs = [["stores", "adminStores", "매장 승인"], ["themes", "adminThemes", "테마 승인"]];
+    const tabs = [["stores", "adminStores", "매장"], ["themes", "adminThemes", "테마"]];
     const links = {};
     tabs.forEach(function (t) {
       const a = el("a", null, t[2]);
@@ -219,8 +254,8 @@ const Manage = (function () {
       box.append(a);
     });
     api.get("/api/admin/summary").then(function (s) {
-      links.stores.textContent = "매장 승인 (" + s.pendingStores + ")";
-      links.themes.textContent = "테마 승인 (" + s.pendingThemes + ")";
+      links.stores.textContent = "매장 (" + s.pendingStores + ")";
+      links.themes.textContent = "테마 (" + s.pendingThemes + ")";
     }).catch(function () { /* 숫자만 못 보여 줌 */ });
   }
 
@@ -273,6 +308,7 @@ const Manage = (function () {
     publicUrl: publicUrl, isWebUrl: isWebUrl, thumb: thumb,
     checkImage: checkImage, bindImageInput: bindImageInput, privateImage: privateImage,
     approvalTabs: approvalTabs, statusChips: statusChips, statusText: statusText,
+    crumbs: crumbs, sortStores: sortStores, myStore: myStore,
     askReason: askReason, busy: busy, showError: showError, counter: counter,
   };
 })();
