@@ -26,6 +26,8 @@
   const dlPk = UI.datePicker(null, "", { id: "deadline", placeholder: "날짜", clearable: false, disabled: true, label: "모집 기한 날짜" });
   const dlTime = $("deadline-time");
   $("deadline-box").prepend(dlPk.el);
+  // 테마 · 모집 인원 · 기한 시각: 기본 select 대신 사이트 모양 드롭다운 (select 는 숨겨서 그대로 씀, UI.enhanceSelect)
+  [themeSel, peopleSel, dlTime].forEach(function (s) { UI.enhanceSelect(s); });
   const submitBtn = $("submit-btn");
 
   let themes = [];
