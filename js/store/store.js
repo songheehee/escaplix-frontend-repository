@@ -41,10 +41,9 @@
     const meta = el("div", "d-meta");
     const r = UI.rating(s.avgRating);
     meta.append(el("span", "match", r ? "★ " + r : "아직 후기 없음"));   // 매장 별점 = 테마 평균의 평균
-    meta.append(el("span", null, "테마 " + s.themes.length + "개"));
+    // 테마 수·영업시간은 바로 아래(테마 N개 · 매장 정보)에 있어서 여기서는 뺌
     const parties = s.themes.reduce(function (n, t) { return n + t.recruitingPartyCount; }, 0);
     if (parties) meta.append(el("span", "party", "모집 중인 파티 " + parties + "개"));
-    if (s.hours) meta.append(el("span", null, "🕒 " + s.hours));
     box.append(meta);
 
     if (s.intro) box.append(el("p", "d-desc", s.intro));
@@ -68,7 +67,8 @@
 
   function renderInfo(s) {
     const dl = $("store-info");
-    [["주소", s.address], ["전화", s.phone], ["영업", s.hours], ["지역", s.area]].forEach(function (p) {
+    // 지역은 제목 위(d-kicker)에 있어서 뺌
+    [["주소", s.address], ["전화", s.phone], ["영업", s.hours]].forEach(function (p) {
       if (!p[1]) return;
       dl.append(el("dt", null, p[0]), el("dd", null, p[1]));
     });

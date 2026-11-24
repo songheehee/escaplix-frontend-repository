@@ -28,6 +28,7 @@
   const panel = $("region-panel");
   const sortSel = $("store-sort");
   sortSel.value = state.sort;
+  UI.enhanceSelect(sortSel);   // 기본 select 대신 사이트 모양 드롭다운 (select 는 숨겨서 그대로 씀)
   for (let i = 0; i < 6; i++) grid.append(el("div", "sk sk-store"));
 
   Promise.all([

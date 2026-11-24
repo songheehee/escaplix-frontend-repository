@@ -155,14 +155,16 @@
     body.append(head);
 
     const list = el("ul", "sinfo-list");
+    // 주소 · 전화 · 영업시간: 줄마다 아이콘 (세 줄 모두 있어야 칸이 맞음)
     function line(icon, label, text) {
       const li = el("li");
-      li.append(el("span", "si-icon", icon));
-      li.setAttribute("aria-label", label);
-      li.append(el("span", null, text));
+      const ic = el("span", "si-icon", icon);
+      ic.setAttribute("aria-hidden", "true");
+      li.append(ic, el("span", null, text));
+      li.setAttribute("aria-label", label + " " + text);
       list.append(li);
     }
-    if (s.address) line("", "주소", s.address);   // 주소는 아이콘 없이 (칸만 맞춤)
+    if (s.address) line("📍", "주소", s.address);
     if (s.phone) line("☎", "전화", s.phone);
     if (detail && detail.hours) line("🕒", "영업시간", detail.hours);
     body.append(list);

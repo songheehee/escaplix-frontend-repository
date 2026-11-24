@@ -496,6 +496,45 @@ const UI = (function () {
   // 사이트 모양 선택 칸 (기본 <select> 대신). 날짜·지역 칸과 같은 버튼 + 펼침 목록
   //   form 으로 보낼 값은 숨은 input(name)에 들어가고, 고르면 그 input 에서 change 가 올라간다
   //   options: [[값, 보이는 글], …]  opts.label: 화면 읽기용 칸 이름
+  // 기본 <select> 를 사이트 모양 드롭다운(selectPicker)으로 바꿔 보이게 (select 는 숨겨서 그대로 둠)
+  //   기존 코드가 select.value / select.append(new Option…) / select.disabled / "change" 이벤트를 그대로 써도 됨
+  //   옵션·disabled 가 바뀌면 MutationObserver 로, select.value = … 로 바꾸면 value 속성을 감싸서 다시 그림
+  function enhanceSelect(sel, opts) {
+    if (!sel || sel.dataset.enhanced) return null;
+    sel.dataset.enhanced = "1";
+    opts = opts || {};
+    function list() {
+      return Array.prototype.map.call(sel.options, function (o) { return [o.value, o.textContent]; });
+    }
+    const label = sel.id ? document.querySelector('label[for="' + sel.id + '"]') : null;
+    const name = opts.label || sel.getAttribute("aria-label") || (label ? label.textContent.replace("*", "").trim() : "");
+    const picker = selectPicker("", list(), sel.value, { label: name, matchWidth: true });
+    picker.el.classList.add("sel-enh");
+    if (sel.className) picker.button.classList.add.apply(picker.button.classList, sel.className.split(/\s+/).filter(Boolean));
+    sel.hidden = true;
+    sel.tabIndex = -1;
+    sel.after(picker.el);
+    function refresh() {
+      picker.setOptions(list(), sel.value);
+      picker.button.disabled = sel.disabled;
+    }
+    refresh();
+    picker.input.addEventListener("change", function () {
+      sel.value = picker.value();
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    new MutationObserver(refresh).observe(sel, { childList: true, subtree: true, attributes: true, attributeFilter: ["disabled"] });
+    const desc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value");
+    Object.defineProperty(sel, "value", {
+      configurable: true,
+      get: function () { return desc.get.call(sel); },
+      set: function (v) { desc.set.call(sel, v); picker.set(sel.value); },
+    });
+    if (label) label.addEventListener("click", function (e) { e.preventDefault(); picker.button.focus(); });
+    sel.focus = function () { picker.button.focus(); };   // 오류 때 select.focus() 하던 코드도 그대로 동작
+    return picker;
+  }
+
   function selectPicker(name, options, value, opts) {
     opts = opts || {};
     const wrap = el("div", "sel");
@@ -534,6 +573,7 @@ const UI = (function () {
       list.forEach(function (o) {
         if (isGroup(o)) { pop.append(el("div", "sel-grp", o[1])); return; }
         const b = el("button", "sel-opt" + (o[0] === input.value ? " on" : ""), o[1]);
+        if (opts.matchWidth) b.title = o[1];   // 칸 폭에 맞춰 잘리면 전체 글자는 마우스를 올리면
         b.type = "button";
         b.setAttribute("role", "option");
         b.setAttribute("aria-selected", String(o[0] === input.value));
@@ -541,6 +581,7 @@ const UI = (function () {
         pop.append(b);
       });
       pop.style.minWidth = btn.offsetWidth + "px";
+      if (opts.matchWidth) { pop.style.width = btn.offsetWidth + "px"; pop.classList.add("sel-fit"); }   // 목록 폭 = 칸 폭
       document.body.append(pop);
       place();
       btn.setAttribute("aria-expanded", "true");
@@ -824,10 +865,13 @@ const UI = (function () {
     const r = rating(s.avgRating);
     const line = el("div", "sc-line");
     line.append(el("span", "match", r ? "★ " + r : "후기 없음"));
-    line.append(el("span", null, "테마 " + s.themeCount + "개"));
+    // 테마 수: "테마 3" (숫자만 흐리게, "개" 없이)
+    const tc = el("span", "sc-tc", "테마 ");
+    tc.append(el("span", "sc-tc-n", String(s.themeCount)));
+    line.append(tc);
     body.append(line);
     if (s.address) body.append(el("div", "sc-addr", s.address));
-    if (s.hours) body.append(el("div", "muted small", "🕒 " + s.hours));
+    if (s.hours) body.append(el("div", "muted small", s.hours));   // 영업시간 (시계 이모지는 뺌)
     if (s.genres && s.genres.length) {
       const tags = el("div", "sc-tags");
       s.genres.forEach(function (g) { tags.append(el("span", "tag", g)); });
@@ -841,7 +885,7 @@ const UI = (function () {
     storeCard: storeCard,
     el: el, $: $, poster: poster, posterBg: posterBg, genreGradient: genreGradient,
     rating: rating, won: won, people: people, genresText: genresText, genreName: genreName,
-    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, partyStatus: partyStatus, selectPicker: selectPicker, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
+    safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, partyStatus: partyStatus, selectPicker: selectPicker, enhanceSelect: enhanceSelect, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
     toast: toast, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
     skeletonRow: skeletonRow, emptyBox: emptyBox,
   };
