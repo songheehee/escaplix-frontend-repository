@@ -8,6 +8,7 @@
 .auth-box { width: 100%; max-width: var(--auth-w, 400px); margin-top: clamp(8px, 6vh, 64px); word-break: keep-all; overflow-wrap: anywhere; }
 .auth-box h1 { font-size: clamp(24px, 3vw, 30px); margin: 0 0 6px; letter-spacing: -.5px; }
 .auth-box .lead { margin: 0 0 22px; color: var(--muted); font-size: 14px; }
+.auth-box h1 + .auth-card { margin-top: 16px; }   /* 안내 문구 없이 제목 바로 아래 폼이 올 때도 같은 간격 (6 + 16 = 22px) */
 .auth-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 26px 24px 22px; }
 
 /* 입력칸 */
