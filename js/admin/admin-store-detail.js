@@ -48,7 +48,7 @@
     const s = store;
     const st = $("status");
     st.textContent = "";
-    st.append(Manage.badge(s.status));
+    st.append(Manage.badge(s.status, "store"));
     Manage.metaRow($("meta"), s.owner
       ? [["신청자", s.owner.loginId + " (" + s.owner.nickname + ")"], ["신청일", Manage.ymd(s.createdAt)],
         ["승인일", s.status === "APPROVED" && s.approvedAt ? Manage.ymd(s.approvedAt) : null]]

@@ -41,8 +41,9 @@ const Manage = (function () {
     OPEN: ["공개 중", "ok"],
     CLOSED: ["운영 종료", "off"],
   };
-  function badge(status) {
-    const s = STATUS[status] || [status, "off"];
+  // kind "store": 매장의 CLOSED 는 "폐업" (테마의 CLOSED 는 "운영 종료")
+  function badge(status, kind) {
+    const s = kind === "store" && status === "CLOSED" ? ["폐업", "off"] : STATUS[status] || [status, "off"];
     return el("span", "st " + s[1], s[0]);
   }
   function rejectNote(reason) {
@@ -206,6 +207,47 @@ const Manage = (function () {
     });
   }
 
+  // 매장 폐업 확인. 되돌릴 수 없어서 매장 이름을 똑같이 쳐야 [폐업] 이 눌림. 확인하면 true
+  function askClose(storeName) {
+    return new Promise(function (resolve) {
+      const dlg = el("dialog", "m-dialog");
+      dlg.setAttribute("aria-labelledby", "m-dialog-title");
+      const form = el("form");
+      form.method = "dialog";
+      const h = el("h2", null, "매장 폐업");
+      h.id = "m-dialog-title";
+      const help = el("p", null, "폐업하면 되돌릴 수 없어요. 이 매장과 모든 테마가 손님 화면에서 사라지고, 다시 열려면 매장 등록부터 새로 신청해야 해요.");
+      const label = el("label", "m-close-label");
+      label.append("확인을 위해 ", el("b", null, storeName), " 을(를) 입력해 주세요.");
+      const input = el("input");
+      input.type = "text";
+      input.autocomplete = "off";
+      input.id = "m-close-name";
+      label.htmlFor = input.id;
+      const actions = el("div", "m-actions");
+      const cancel = el("button", "btn btn-line", "취소");
+      cancel.type = "button";
+      const ok = el("button", "btn btn-danger", "폐업");
+      ok.type = "submit";
+      ok.disabled = true;
+      actions.append(cancel, ok);
+      form.append(h, help, label, input, actions);
+      dlg.append(form);
+      document.body.append(dlg);
+
+      let result = false;
+      input.addEventListener("input", function () { ok.disabled = input.value.trim() !== storeName; });
+      cancel.addEventListener("click", function () { dlg.close(); });
+      form.addEventListener("submit", function (e) {
+        if (input.value.trim() !== storeName) { e.preventDefault(); return; }
+        result = true;
+      });
+      dlg.addEventListener("close", function () { dlg.remove(); resolve(result); });
+      dlg.showModal();
+      input.focus();
+    });
+  }
+
   // ---------- 사장 화면 경로 (내 매장 › 홍대점 › 사라진 탐정) ----------
   //   items: [[글자, 주소], ..., [글자]]. 마지막은 지금 화면이라 링크 없음
   //   맨 앞 "내 매장"(관리자는 "매장 관리")은 자동으로 붙인다
@@ -226,7 +268,7 @@ const Manage = (function () {
   }
 
   // 매장 순서: 승인됨 → 승인 대기 → 반려, 같은 상태끼리는 최근 등록 순 (C-1 은 등록일 최신순으로만 줌)
-  const STORE_ORDER = { APPROVED: 0, PENDING: 1, REJECTED: 2 };
+  const STORE_ORDER = { APPROVED: 0, PENDING: 1, REJECTED: 2, CLOSED: 3 };
   function sortStores(list) {
     function rank(s) { return s.status in STORE_ORDER ? STORE_ORDER[s.status] : 9; }
     return list.slice().sort(function (a, b) {
@@ -423,6 +465,6 @@ const Manage = (function () {
     checkImage: checkImage, bindImageInput: bindImageInput, privateImage: privateImage,
     approvalTabs: approvalTabs, statusChips: statusChips, statusText: statusText,
     crumbs: crumbs, sortStores: sortStores, myStore: myStore,
-    askReason: askReason, busy: busy, showError: showError, counter: counter,
+    askReason: askReason, askClose: askClose, busy: busy, showError: showError, counter: counter,
   };
 })();

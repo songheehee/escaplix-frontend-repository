@@ -3,6 +3,7 @@
 //   테마 한 줄: 이름 · 상태 · 평점 · 주중 N회 / 주말 N회. 시간표가 없으면 "시간표 없음"을 눈에 띄게
 //   회차 수는 C-5 에 없어서 테마마다 C-10 을 부른다 (매장 하나의 테마는 몇 개뿐이라 한꺼번에)
 //   줄을 누르면 ③ 테마 화면. 반려된 테마는 거기서 고쳐서 다시 신청
+//   매장 폐업: 사장·관리자 둘 다 (승인된 매장만, 되돌릴 수 없음 → 매장 이름을 쳐야 됨). 폐업 매장은 보기만
 //   운영 종료/재개(C-9)는 줄 끝 버튼. 테마 화면 상태 배지 옆에 두면 잘못 누르기 쉬워 여기로 옮김
 //   관리자(매장 관리, 관리자 개편 11/23): 승인 상세와 같은 틀 (C-14 상세 + C-15·A-11 서류)
 //     맨 위 한 줄(이름·승인됨 / 신청자·승인일, [매장 수정]) → 매장 → 서류 → 테마 (+ 테마 등록)
@@ -39,11 +40,13 @@
     $("owner-view").hidden = true;
     $("admin-view").hidden = false;
     $("a-name").textContent = s.name;
-    $("a-status").append(Manage.badge(s.status));
+    $("a-status").append(Manage.badge(s.status, "store"));
     Manage.metaRow($("a-meta"), s.owner
       ? [["신청자", s.owner.loginId + " (" + s.owner.nickname + ")"], ["승인일", s.approvedAt ? Manage.ymd(s.approvedAt) : null]]
       : [["등록자", "관리자"], ["등록일", Manage.ymd(s.approvedAt || s.createdAt)]]);
     $("a-edit").href = Routes.url("storeForm", { id: s.storeId });
+    $("a-edit").hidden = s.status === "CLOSED";
+    if (s.status === "APPROVED") $("a-edit").after(closeButton(s));
 
     const body = $("a-body");
     const pub = Manage.section("①", "매장");
@@ -91,7 +94,7 @@
     const info = el("div", "info");
     const head = el("div", "head");
     const h1 = el("h1", "name", s.name);
-    head.append(h1, Manage.badge(s.status));
+    head.append(h1, Manage.badge(s.status, "store"));
     info.append(head);
 
     const dl = el("dl", "m-dl");
@@ -102,11 +105,32 @@
     if (s.status === "REJECTED" && s.rejectReason) info.append(Manage.rejectNote(s.rejectReason));
     box.append(info);
 
+    if (s.status === "CLOSED") return;   // 폐업 매장은 보기만
     const edit = el("a", "btn small btn-edit", "매장 수정");
     edit.href = Routes.url("storeForm", { id: s.storeId });
     const acts = el("div", "m-actions");
     acts.append(edit);
+    if (s.status === "APPROVED") acts.append(closeButton(s, true));
     box.append(acts);
+  }
+
+  // [폐업] → 매장 이름 확인 → 폐업 → 새로고침 (매장·테마 상태가 다 바뀌어서)
+  function closeButton(s, small) {
+    const btn = el("button", "btn btn-no" + (small ? " small" : ""), "폐업");
+    btn.type = "button";
+    btn.addEventListener("click", async function () {
+      if (!(await Manage.askClose(s.name))) return;
+      Manage.busy(btn, true);
+      try {
+        await api.put("/api/owner/stores/" + s.storeId + "/close");
+        UI.toast("폐업 처리했어요.");
+        setTimeout(function () { location.reload(); }, 600);
+      } catch (e) {
+        Manage.busy(btn, false);
+        UI.toast(e.message, "err");
+      }
+    });
+    return btn;
   }
 
   // ---------- 테마 목록 ----------
@@ -123,7 +147,7 @@
       return;
     }
     if (!themes.length) {
-      const empty = el("div", "m-card m-empty", ok ? "아직 테마가 없어요. " : "매장이 승인되면 테마를 등록할 수 있어요.");
+      const empty = el("div", "m-card m-empty", ok ? "아직 테마가 없어요. " : s.status === "CLOSED" ? "테마가 없어요." : "매장이 승인되면 테마를 등록할 수 있어요.");
       if (ok) {
         const a = el("a", null, "첫 테마 등록");
         a.href = add.href;
@@ -135,21 +159,23 @@
 
     // 회차 수 (C-10). 반려된 테마는 시간표를 안 다루니 부르지 않음. 실패하면 "-"
     const counts = await Promise.all(themes.map(function (t) {
-      if (t.status === "REJECTED") return null;
+      if (t.status === "REJECTED" || s.status === "CLOSED") return null;
       return api.get("/api/owner/themes/" + t.themeId + "/slots").catch(function () { return null; });
     }));
 
     const list = el("div", "m-rows");
-    themes.forEach(function (t, i) { list.append(themeRow(t, counts[i])); });
+    const closed = s.status === "CLOSED";
+    themes.forEach(function (t, i) { list.append(themeRow(t, counts[i], closed)); });
     box.append(list);
   }
 
   // 줄 전체가 링크 (제목 링크를 줄 크기로 늘림). 운영 버튼만 그 위에 올라와 따로 눌림
-  function themeRow(t, slots) {
-    const row = el("div", "m-row");
+  //   폐업 매장: 테마를 고칠 수 없어 링크·운영 버튼 없이 보여 주기만
+  function themeRow(t, slots, closed) {
+    const row = el("div", "m-row" + (closed ? " off" : ""));
 
-    const link = el("a", "r-link", t.title);
-    link.href = Routes.url("ownerTheme", { id: t.themeId });
+    const link = el(closed ? "span" : "a", "r-link", t.title);
+    if (!closed) link.href = Routes.url("ownerTheme", { id: t.themeId });
     const main = el("div", "r-main");
     const title = el("div", "t-title");
     title.append(link);
@@ -163,7 +189,7 @@
     if (!r) rating.classList.add("muted");
 
     const slotCell = el("div", "r-slots");
-    if (t.status === "REJECTED" || !slots) {
+    if (closed || t.status === "REJECTED" || !slots) {
       slotCell.textContent = "-";
       slotCell.classList.add("muted");
     } else if (!slots.weekday.length && !slots.weekend.length) {
@@ -173,7 +199,7 @@
       slotCell.textContent = "주중 " + slots.weekday.length + "회 / 주말 " + slots.weekend.length + "회";
     }
 
-    row.append(main, st, rating, slotCell, statusButton(t, st));
+    row.append(main, st, rating, slotCell, closed ? el("div", "r-act") : statusButton(t, st));
     return row;
   }
 

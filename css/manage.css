@@ -94,6 +94,9 @@ a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
 .m-row .r-link:focus-visible { outline: none; }
 .m-row:has(.r-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
 .m-row .r-act { position: relative; z-index: 1; display: flex; justify-content: flex-end; }
+.m-row.off { opacity: .6; }
+.m-row.off:hover { background: none; }
+.store-row.off { opacity: .6; }
 .m-row .sub { margin-top: 2px; font-size: 13px; color: var(--muted); }
 .m-row .r-rate, .m-row .r-slots { font-size: 14px; white-space: nowrap; }
 .m-row .r-slots.warn { color: var(--warn); font-weight: 700; }
@@ -252,6 +255,12 @@ a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
 .m-dialog textarea { width: 100%; min-height: 110px; padding: 10px 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; resize: vertical; }
 .m-dialog textarea:focus { border-color: var(--accent); outline: none; }
 .m-dialog .m-actions { justify-content: flex-end; }
+/* 매장 폐업 확인: 매장 이름을 똑같이 쳐야 [폐업] 이 눌림 */
+.m-close-label { font-size: 14px; }
+.m-close-label b { color: var(--bad); }
+.m-dialog #m-close-name { width: 100%; height: 40px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; }
+.m-dialog #m-close-name:focus { border-color: var(--accent); outline: none; }
+.m-dialog .btn-danger:disabled { opacity: .4; cursor: not-allowed; }
 
 /* 불러오는 중 */
 .sk-line { height: 18px; margin-bottom: 10px; }

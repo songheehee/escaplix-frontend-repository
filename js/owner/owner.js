@@ -69,14 +69,14 @@
 
   // 카드 전체가 링크. 승인 대기·반려는 카드에 안내·사유를 바로 보여 줌 (사장)
   function storeCard(s) {
-    const card = el("a", "m-card store-row");
+    const card = el("a", "m-card store-row" + (s.status === "CLOSED" ? " off" : ""));
     card.href = Routes.url("ownerStore", { id: s.storeId });
     card.append(Manage.thumb(s.photoUrl, s.name));
 
     const info = el("div", "info");
     const head = el("div");
     head.append(el("span", "name", s.name));
-    if (!admin) head.append(Manage.badge(s.status));   // 관리자 목록은 모두 승인됨이라 뺌
+    if (!admin) head.append(Manage.badge(s.status, "store"));   // 관리자 목록은 모두 승인됨이라 뺌
     info.append(head);
     info.append(el("div", "sub", [s.area, s.address].join(" · ")));
     if (!admin) {

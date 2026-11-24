@@ -105,7 +105,7 @@
     const card = el("div", "m-card ad-store" + (ok ? "" : " bad"));
     const top = el("div", "ad-store-top");
     top.append(el("b", null, store.name || "-"));
-    if (store.status) top.append(Manage.badge(store.status));
+    if (store.status) top.append(Manage.badge(store.status, "store"));
     if (!ok && store.storeId) {
       const go = el("a", "go", "매장 먼저 승인하기 →");
       go.href = Routes.url("adminStoreDetail", { id: store.storeId });

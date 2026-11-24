@@ -45,6 +45,10 @@
           admin ? "매장 관리로" : "내 매장으로", Routes.url("owner"));
         return;
       }
+      if (original.status === "CLOSED") {
+        Manage.stop("폐업한 매장은 고칠 수 없어요.", "매장으로", Routes.url("ownerStore", { id: storeId }));
+        return;
+      }
       await areasReady;
       fill(original);
       Manage.crumbs($("crumbs"), [[original.name, Routes.url("ownerStore", { id: storeId })], ["매장 수정"]]);
