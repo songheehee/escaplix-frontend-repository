@@ -17,26 +17,28 @@
 
     <!-- 다 불러오면 #room 안에 이 구조가 들어간다 -->
     <template id="room-tpl">
-      <section class="room-info">
-        <div class="ri-top">
-          <h1 class="ri-title" id="ri-title"></h1>
-          <span class="badge" id="ri-status"></span>
-        </div>
-        <p class="ri-intro" id="ri-intro"></p>
-        <dl class="ri-facts">
-          <div><dt>테마</dt><dd id="ri-theme"></dd></div>
-          <div><dt>매장</dt><dd id="ri-store"></dd></div>
-          <div><dt>일시</dt><dd id="ri-when"></dd></div>
-          <div id="ri-deadline-box"><dt>모집 마감</dt><dd id="ri-deadline"></dd></div>
-        </dl>
-      </section>
-
       <div class="room-split">
-        <section class="room-members" aria-labelledby="rm-h">
-          <div class="rm-head"><h2 id="rm-h">참여자</h2><span class="muted" id="rm-count"></span></div>
-          <ul class="member-list" id="member-list"></ul>
-          <div class="member-actions" id="member-actions"></div>
-        </section>
+        <!-- 왼쪽 열: 방 정보 + 참여자. 오른쪽 채팅이 화면 높이를 다 씀 -->
+        <div class="room-side">
+          <section class="room-info">
+            <div class="ri-top">
+              <h1 class="ri-title" id="ri-title"></h1>
+              <span class="badge" id="ri-status"></span>
+            </div>
+            <p class="ri-intro" id="ri-intro"></p>
+            <dl class="ri-facts">
+              <div><dt>테마</dt><dd id="ri-theme"></dd></div>
+              <div><dt>매장</dt><dd id="ri-store"></dd></div>
+              <div><dt>일시</dt><dd id="ri-when"></dd></div>
+              <div id="ri-deadline-box"><dt>모집 마감</dt><dd id="ri-deadline"></dd></div>
+            </dl>
+          </section>
+          <section class="room-members" aria-labelledby="rm-h">
+            <div class="rm-head"><h2 id="rm-h">참여자</h2><span class="muted" id="rm-count"></span></div>
+            <ul class="member-list" id="member-list"></ul>
+            <div class="member-actions" id="member-actions"></div>
+          </section>
+        </div>
 
         <section class="room-chat" aria-labelledby="rc-h">
           <div class="rm-head"><h2 id="rc-h">파티 채팅</h2></div>

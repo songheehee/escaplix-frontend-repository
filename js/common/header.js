@@ -204,10 +204,8 @@
       btn.setAttribute("aria-expanded", String(v));
       btn.setAttribute("aria-label", v ? "상세 검색 닫기" : "상세 검색 열기");
       onScroll();
-      if (v) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        kw.focus({ preventScroll: true });
-      }
+      // 패널이 헤더 밑에 붙어 있어서(sticky) 맨 위로 올리지 않고 지금 자리에서 바로 씀
+      if (v) kw.focus({ preventScroll: true });
     }
     return { toggle: function () { set(!opened); } };
 

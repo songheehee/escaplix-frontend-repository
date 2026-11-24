@@ -1,6 +1,6 @@
 // S06 파티 방 (pages/party/party-room.html?id=) · A 담당
 //   A-13 방 정보 · A-20 새 채팅 (3초마다) · A-21 보내기
-//   방장: A-18 강퇴 · A-19 모집 마감 · A-15 삭제 / 참여자: A-17 나가기
+//   방장: A-18 강퇴 · A-19 모집 마감 · A-15 삭제 / 참여자: A-17 나가기 (화면 글자는 "참여 취소")
 //   403(참여 안 함·강퇴됨) · 404(없음·삭제됨)를 받으면 3초 반복을 멈추고 파티 목록으로 (명세 A-13, A-20)
 (function () {
   const $ = UI.$;
@@ -89,6 +89,8 @@
     $("ri-deadline-box").hidden = !showDeadline;
     $("ri-intro").textContent = room.intro;
     $("ri-intro").hidden = !room.intro;
+    $("ri-title").title = room.title;
+    paintMore();
 
     $("rm-count").textContent = room.currentPeople + " / " + room.maxPeople + "명";
     const list = $("member-list");
@@ -117,9 +119,34 @@
       if (room.status !== "CLOSED" && !ended) actions.append(actionBtn("모집 마감", "btn btn-line small", doClose));
       actions.append(actionBtn("파티 삭제", "btn danger small", doDelete));
     } else {
-      actions.append(actionBtn("나가기", "btn btn-line small", doLeave));
+      actions.append(actionBtn("참여 취소", "btn btn-line small", doLeave));
     }
     if (ended) paintEnded();
+  }
+
+  // 제목·소개는 두 줄까지만 (넘치면 …). 잘린 게 있으면 [더보기] → 펼치면 왼쪽 열이 스크롤됨
+  //   참여자 칸이 긴 제목 때문에 작아지지 않게
+  function paintMore() {
+    const info = document.querySelector(".room-info");
+    let btn = $("ri-more");
+    if (!btn) {
+      btn = el("button", "ri-more", "더보기");
+      btn.id = "ri-more";
+      btn.type = "button";
+      btn.addEventListener("click", function () {
+        const open = info.classList.toggle("open");
+        btn.textContent = open ? "접기" : "더보기";
+        btn.setAttribute("aria-expanded", String(open));
+      });
+      $("ri-intro").after(btn);
+    }
+    if (info.classList.contains("open")) return;
+    // 그려진 뒤에 잘렸는지 잼 (폭에 따라 달라짐)
+    requestAnimationFrame(function () {
+      const cut = [$("ri-title"), $("ri-intro")].some(function (x) { return !x.hidden && x.scrollHeight > x.clientHeight + 1; });
+      btn.hidden = !cut;
+      btn.setAttribute("aria-expanded", "false");
+    });
   }
 
   // 끝난 파티: 채팅 입력칸을 숨기고, 위 정보 칸 오른쪽(종료 배지 옆)에 후기 쓰기 버튼 (한 번만)
@@ -177,7 +204,7 @@
   }
 
   async function doClose() {
-    const ok = await confirmBox("모집을 마감할까요?", "파티 목록에서 빠지고 더는 참여를 받지 않아요. 채팅은 계속할 수 있어요.", "모집 마감");
+    const ok = await confirmBox("모집을 마감할까요?", "파티 목록에서 빠지고 더는 참여를 받지 않아요. 채팅은 계속할 수 있어요.", "예, 마감할게요", false, "아니요");
     if (!ok) return;
     try {
       await api.put("/api/parties/" + partyId + "/close");
@@ -187,7 +214,7 @@
   }
 
   async function doDelete() {
-    const ok = await confirmBox("파티를 삭제할까요?", "참여자 모두 이 방과 채팅을 더는 볼 수 없어요. 되돌릴 수 없어요.", "삭제", true);
+    const ok = await confirmBox("파티를 삭제할까요?", "참여자 모두 이 방과 채팅을 더는 볼 수 없어요. 되돌릴 수 없어요.", "예, 삭제할게요", true, "아니요");
     if (!ok) return;
     try {
       await api.del("/api/parties/" + partyId);
@@ -198,7 +225,8 @@
   }
 
   async function doLeave() {
-    const ok = await confirmBox("파티에서 나갈까요?", "파티와 채팅방에서 함께 빠져요.", "나가기", true);
+    // 참여할 때 "아니요 / 예, 참여할게요" 와 짝을 맞춤 ("취소" 버튼이 두 개처럼 보이지 않게 아니요로)
+    const ok = await confirmBox("파티 참여를 취소할까요?", "파티와 채팅방에서 함께 빠져요.", "예, 취소할게요", true, "아니요");
     if (!ok) return;
     try {
       await api.del("/api/parties/" + partyId + "/join");
@@ -209,10 +237,12 @@
   }
 
   // 확인 팝업 → Promise<boolean>
-  function confirmBox(title, body, yesText, danger) {
+  function confirmBox(title, body, yesText, danger, noText) {
     const d = $("confirm-dialog");
     $("cd-title").textContent = title;
     $("cd-body").textContent = body;
+    $("cd-body").hidden = !body;   // 설명이 없으면 빈 줄도 안 남김
+    $("cd-no").textContent = noText || "취소";
     const yes = $("cd-yes");
     yes.textContent = yesText;
     yes.classList.toggle("danger-yes", !!danger);
