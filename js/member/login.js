@@ -13,6 +13,13 @@
   const HOME_BY_ROLE = { USER: "home", OWNER: "owner", ADMIN: "admin" };
 
   $("signup-link").href = Routes.url("signup");
+  $("find-id-link").href = Routes.url("findId");
+  // 비밀번호 찾기: 아이디를 쳐 뒀으면 그 화면에 채워서
+  $("find-pw-link").href = Routes.url("findPassword");
+  $("find-pw-link").addEventListener("click", function (e) {
+    const id = idInput.value.trim();
+    if (id) { e.preventDefault(); location.href = Routes.url("findPassword", { id: id }); }
+  });
 
   // 이미 로그인했으면 이 화면에 머물 이유가 없다
   const already = Auth.me();
@@ -20,9 +27,11 @@
 
   // 가입하고 넘어왔을 때 (?id=아이디&joined=1): 아이디를 채우고 비밀번호 칸으로
   const params = new URLSearchParams(location.search);
-  if (params.get("joined")) {
+  if (params.get("joined") || params.get("reset") || params.get("bye")) {
     const info = $("login-info");
-    info.textContent = "가입했어요! 비밀번호를 입력해 로그인해 주세요.";
+    info.textContent = params.get("joined") ? "가입했어요! 비밀번호를 입력해 로그인해 주세요."
+                     : params.get("reset") ? "비밀번호를 바꿨어요. 새 비밀번호로 로그인해 주세요."
+                     : "탈퇴했어요. 그동안 이용해 주셔서 고마워요.";
     info.hidden = false;
   }
   if (params.get("id")) idInput.value = params.get("id");

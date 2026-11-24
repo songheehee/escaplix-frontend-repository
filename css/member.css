@@ -33,6 +33,9 @@
 .input-row { display: flex; gap: 8px; }
 .input-row .input { flex: 1; min-width: 0; }
 .input-row .btn { flex: 0 0 auto; }
+/* 이메일 인증번호 줄: 이메일 칸 바로 아래. hidden 이 display:flex 에 지지 않게 */
+.code-row { margin-top: 8px; }
+.code-row[hidden] { display: none; }
 
 /* 서버가 보낸 오류 문구 · 안내 문구 */
 .form-error {
@@ -47,6 +50,10 @@
 
 .btn.block { display: flex; width: 100%; padding-top: 12px; padding-bottom: 12px; font-size: 15px; }
 .auth-foot { margin: 16px 0 0; text-align: center; font-size: 14px; color: var(--muted); }
+/* 로그인 버튼 아래 "비밀번호를 잊으셨나요?" */
+.auth-links { margin: 12px 0 0; text-align: center; font-size: 13px; }
+.auth-links a { color: var(--muted); }
+.auth-links a:hover { color: var(--ink); }
 .auth-foot a { color: var(--accent-ink); font-weight: 700; }
 
 /* 가입 유형 고르기 (signup) */
@@ -97,6 +104,17 @@ fieldset.field legend { padding: 0; }
 .prow-k { flex: 0 0 auto; min-width: 72px; font-size: 15px; font-weight: 600; }
 .prow-v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: var(--ink2); }
 .prow-v.is-empty { color: var(--muted); }
+.email-note { margin: 0 0 14px; font-size: 13px; }
+/* 회원 탈퇴: 카드 아래 작은 글씨 링크 → 팝업 */
+.withdraw-line { margin: 14px 4px 0; text-align: right; }
+.withdraw-link { background: none; border: 0; padding: 4px; font: inherit; font-size: 13px; color: var(--muted); text-decoration: underline; cursor: pointer; }
+.withdraw-link:hover, .withdraw-link:focus-visible { color: var(--danger); }
+.withdraw-list { margin: 0 0 16px; padding-left: 18px; font-size: 13px; color: var(--ink2); line-height: 1.6; }
+.withdraw-agree { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink2); cursor: pointer; }
+.withdraw-agree input { margin-top: 3px; accent-color: var(--danger); }
+.btn-danger { background: var(--danger); color: #fff; border: 1px solid var(--danger); }
+.btn-danger:hover:not(:disabled) { filter: brightness(1.08); }
+.btn-danger:disabled { opacity: .45; cursor: not-allowed; }
 .prow-btn {
   flex: 0 0 auto; padding: 6px 12px; border: 0; border-radius: 6px; cursor: pointer;
   font: inherit; font-size: 13px; font-weight: 700; color: var(--ink2); background: var(--surface2);
