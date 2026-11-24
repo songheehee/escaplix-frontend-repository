@@ -304,7 +304,6 @@
     const chips = el("div", "rm-people");
     chips.setAttribute("role", "group");
     chips.setAttribute("aria-label", "플레이 인원");
-    const peopleSub = el("small", null, "");
     function paintPeople(lo, hi) {
       if (people !== null) { lo = Math.min(lo, people); hi = Math.max(hi, people); }
       chips.textContent = "";
@@ -319,19 +318,17 @@
     paintPeople(2, 4);   // 테마 정보를 받기 전 잠깐
     loadPeopleRange(t.themeId).then(function (range) {
       if (!range) { paintPeople(1, 8); return; }   // 못 받으면 1~8
-      peopleSub.textContent = "이 테마 " + (range.lo === range.hi ? range.lo : range.lo + "~" + range.hi) + "인";
       if (people === null && range.lo <= 2 && range.hi >= 2) people = 2;   // 처음 값: 2인 (가능하면)
       paintPeople(range.lo, range.hi);
     });
-    list.append(listRow("인원", peopleSub, chips));
+    list.append(listRow("인원", null, chips));
 
-    // 플레이한 날 (처음 값은 오늘)
-    const date = el("input", "rm-date");
-    date.type = "date";
-    date.max = UI.today();
-    date.value = r.playedDate || ctx.playedDate || UI.today();
-    date.setAttribute("aria-label", "플레이한 날");
-    list.append(listRow("플레이한 날", null, date));
+    // 플레이한 날 (처음 값은 오늘): 메인 검색과 같은 사이트 색 달력 (UI.datePicker). 오늘 이후는 못 고름
+    const date = UI.datePicker(null, r.playedDate || ctx.playedDate || UI.today(), {
+      min: "", max: UI.today(), clearable: false, label: "플레이한 날",
+    });
+    keepPickerInDialog(date);
+    list.append(listRow("플레이한 날", null, date.el));
     form.append(list);
 
     // 한 줄 후기 (선택)
@@ -368,7 +365,7 @@
         playerCount: people,
         remainMinutes: escaped ? toInt(min.value) : 0,
         remainSeconds: escaped ? toInt(sec.value) : 0,
-        playedDate: date.value || null,
+        playedDate: date.input.value || null,
         content: ta.value.trim() || null,
       };
       const problem = check(body, t.playMinutes);
@@ -399,8 +396,12 @@
   // 서버와 같은 검사 (서버도 다시 검사함. 여기서는 빨리 알려 주려고)
   function check(b, playMinutes) {
     if (!b.rating) return "별점을 골라 주세요.";
-    if (!isInt(b.remainMinutes, 0, 999) || !isInt(b.remainSeconds, 0, 59)) return "남은 시간을 확인해 주세요. 초는 0~59입니다.";
-    if (b.remainMinutes * 60 + b.remainSeconds > playMinutes * 60) return "남은 시간은 제한 시간(" + playMinutes + "분)보다 길 수 없습니다.";
+    if (!Number.isInteger(b.remainMinutes) || b.remainMinutes < 0) return "남은 시간(분)에 0 이상의 숫자를 입력해주세요.";
+    // 순서: ① 분이 제한시간보다 크면 (61분 61초도) 제한시간 문구 → ② 초가 0~59 밖이면 (59분 75초도) 초 문구
+    //       → ③ 합친 시간이 제한시간보다 길면 (60분 10초) 제한시간 문구
+    if (b.remainMinutes > playMinutes) return "남은 시간은 제한시간보다 길 수 없습니다.";
+    if (!isInt(b.remainSeconds, 0, 59)) return "0~59초 사이의 숫자를 입력해주세요.";
+    if (b.remainMinutes * 60 + b.remainSeconds > playMinutes * 60) return "남은 시간은 제한시간보다 길 수 없습니다.";
     if (!isInt(b.hintCount, 0, 99)) return "힌트 수는 0~99입니다.";
     if (!isInt(b.playerCount, 1, 20)) return "플레이 인원을 골라 주세요.";
     if (b.playedDate && b.playedDate > UI.today()) return "플레이한 날은 오늘이거나 그 이전이어야 합니다.";
@@ -434,6 +435,18 @@
     i.value = String(value);
     i.setAttribute("aria-label", aria);
     return i;
+  }
+  // UI.datePicker 달력은 body 끝에 붙는데, 후기 팝업(showModal)이 맨 위층이라 그 뒤로 숨는다
+  //   → 달력이 열리면 팝업 안으로 옮김 (위치는 position: fixed 라 그대로)
+  //   Esc 는 달력만 닫고 후기 팝업은 그대로, 팝업이 닫히면 달력도 닫음
+  function keepPickerInDialog(dp) {
+    dp.button.addEventListener("click", function () {   // UI.datePicker 가 먼저 달력을 연 뒤에 불림
+      const pop = document.body.lastElementChild;
+      if (!pop || !pop.classList.contains("dp-pop")) return;
+      dialog().append(pop);
+      pop.addEventListener("keydown", function (e) { if (e.key === "Escape") e.preventDefault(); });
+    });
+    dialog().addEventListener("close", dp.close, { once: true });
   }
   // 상자 안 한 줄: 왼쪽 이름(+ 작은 설명), 오른쪽 고르는 칸
   function listRow(text, sub, control) {
