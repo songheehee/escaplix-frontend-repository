@@ -43,11 +43,11 @@
     load();
   });
 
-  // ---------- 테마로 들어왔을 때: "○○ 파티만" 표시 + ✕ ----------
+  // ---------- 테마로 들어왔을 때: 테마 이름 표시 + ✕ ----------
   async function setupThemeFilter() {
     if (!state.themeId) return;
     const box = $("theme-filter");
-    $("theme-filter-name").textContent = "이 테마 파티만";
+    $("theme-filter-name").textContent = "이 테마";
     box.hidden = false;
     $("theme-filter-clear").addEventListener("click", function () {
       state.themeId = null;
@@ -57,7 +57,7 @@
     });
     try {
       const t = await api.get("/api/themes/" + encodeURIComponent(state.themeId));
-      $("theme-filter-name").textContent = t.title + " 파티만";
+      $("theme-filter-name").textContent = t.title;
     } catch (e) { /* 이름을 못 불러와도 조건은 그대로 */ }
   }
 
