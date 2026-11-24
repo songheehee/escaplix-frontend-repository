@@ -50,6 +50,10 @@
 
 .btn.block { display: flex; width: 100%; padding-top: 12px; padding-bottom: 12px; font-size: 15px; }
 .auth-foot { margin: 16px 0 0; text-align: center; font-size: 14px; color: var(--muted); }
+/* 로그인 버튼 아래 "비밀번호를 잊으셨나요?" */
+.auth-links { margin: 12px 0 0; text-align: center; font-size: 13px; }
+.auth-links a { color: var(--muted); }
+.auth-links a:hover { color: var(--ink); }
 .auth-foot a { color: var(--accent-ink); font-weight: 700; }
 
 /* 가입 유형 고르기 (signup) */

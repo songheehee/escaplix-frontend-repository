@@ -112,25 +112,35 @@ const MemberForm = (function () {
    * @param o.input / o.sendBtn / o.msg       이메일 칸 · 받기 버튼 · 문구
    * @param o.codeRow / o.code / o.verifyBtn / o.codeMsg  인증번호 줄 (처음엔 hidden)
    * @param o.sendPath / o.verifyPath        API 주소
+   * 다른 칸과 같이 인증할 때 (비밀번호 재설정: 아이디 + 이메일)
+   * @param o.extra()      요청에 같이 보낼 값 ({ loginId })
+   * @param o.watch        그 칸들 (고치면 인증을 처음부터)
+   * @param o.checkExtra() 보내기 전에 그 칸 검사 (틀리면 스스로 문구를 띄우고 false)
+   * @param o.sentText / o.verifiedText  보냄 · 인증 완료 문구
+   * @param o.onVerified() 인증을 마쳤을 때
    * @returns { ensure(): boolean, value(): string, taken(text), expired(text) }
    */
   function emailVerify(o) {
     const RESEND_SEC = 60, CODE_SEC = 300;
     const SEND_TEXT = o.sendBtn.textContent;
-    let verifiedValue = null;   // 인증을 마친 이메일 (다듬은 값)
-    let sentValue = null;       // 인증번호를 보낸 이메일
+    let verifiedValue = null;   // 인증을 마친 값 (key)
+    let sentValue = null;       // 인증번호를 보낸 값 (key)
     let resendTimer = null, codeTimer = null;
 
     function norm() { return o.input.value.trim().toLowerCase(); }
+    function extra() { return o.extra ? o.extra() : {}; }
+    // 인증 대상 = 이메일 + 같이 보내는 칸. 하나라도 바뀌면 다른 인증
+    function key() { return norm() + "\n" + JSON.stringify(extra()); }
     function mmss(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
 
     function stopTimers() { clearInterval(resendTimer); clearInterval(codeTimer); resendTimer = codeTimer = null; }
     function resetSendBtn(label) { o.sendBtn.disabled = false; o.sendBtn.textContent = label || SEND_TEXT; }
     function hideCode() { o.codeRow.hidden = true; o.code.value = ""; setMsg(o.codeMsg, o.code, "", ""); }
 
-    // 이메일을 고치면 인증을 처음부터
-    o.input.addEventListener("input", function () {
+    // 이메일(이나 같이 보내는 칸)을 고치면 인증을 처음부터
+    function changed(isEmail) {
       if (verifiedValue === null && sentValue === null) {
+        if (!isEmail) return;
         const v = norm();
         const err = v ? rules.email(v) : null;
         setMsg(o.msg, o.input, err || (v ? "인증번호 받기를 눌러 주세요." : ""), err ? "bad" : "");
@@ -140,8 +150,10 @@ const MemberForm = (function () {
       stopTimers();
       hideCode();
       resetSendBtn();
-      setMsg(o.msg, o.input, "이메일이 바뀌었어요. 인증번호를 다시 받아 주세요.", "");
-    });
+      setMsg(o.msg, o.input, (isEmail ? "이메일이" : "입력한 정보가") + " 바뀌었어요. 인증번호를 다시 받아 주세요.", "");
+    }
+    o.input.addEventListener("input", function () { changed(true); });
+    (o.watch || []).forEach(function (w) { w.addEventListener("input", function () { changed(false); }); });
     o.sendBtn.addEventListener("click", send);
     o.verifyBtn.addEventListener("click", verify);
     o.code.addEventListener("input", function () { o.code.value = o.code.value.replace(/\D/g, "").slice(0, 6); });
@@ -150,15 +162,17 @@ const MemberForm = (function () {
     async function send() {
       const v = norm();
       const err = v ? rules.email(v) : "이메일을 입력해 주세요.";
+      if (o.checkExtra && !o.checkExtra()) return;
       if (err) { setMsg(o.msg, o.input, err, "bad"); o.input.focus(); return; }
+      const k = key();
       o.sendBtn.disabled = true;
       o.sendBtn.textContent = "보내는 중…";
       try {
-        await api.post(o.sendPath, { email: v });
-        if (norm() !== v) return;   // 기다리는 사이 이메일을 고침 (input 이 이미 초기화함)
-        sentValue = v;
+        await api.post(o.sendPath, Object.assign({ email: v }, extra()));
+        if (key() !== k) return;   // 기다리는 사이 칸을 고침 (input 이 이미 초기화함)
+        sentValue = k;
         verifiedValue = null;
-        setMsg(o.msg, o.input, "인증번호를 보냈어요. 메일함(안 보이면 스팸함)을 확인해 주세요.", "ok");
+        setMsg(o.msg, o.input, o.sentText || "인증번호를 보냈어요. 메일함(안 보이면 스팸함)을 확인해 주세요.", "ok");
         o.codeRow.hidden = false;
         o.code.value = "";
         o.verifyBtn.disabled = false;
@@ -198,19 +212,20 @@ const MemberForm = (function () {
     }
 
     async function verify() {
-      const v = sentValue;
+      const k = sentValue;
       const code = o.code.value.trim();
-      if (!v) return;
+      if (!k || key() !== k) return;
       if (!/^\d{6}$/.test(code)) { setMsg(o.codeMsg, o.code, "인증번호 6자리를 입력해 주세요.", "bad"); o.code.focus(); return; }
       o.verifyBtn.disabled = true;
       try {
-        await api.post(o.verifyPath, { email: v, code: code });
-        if (norm() !== v) return;
-        verifiedValue = v;
+        await api.post(o.verifyPath, Object.assign({ email: norm(), code: code }, extra()));
+        if (key() !== k) return;
+        verifiedValue = k;
         stopTimers();
         hideCode();
         resetSendBtn("다시 받기");
-        setMsg(o.msg, o.input, "이메일 인증을 마쳤어요.", "ok");
+        setMsg(o.msg, o.input, o.verifiedText || "이메일 인증을 마쳤어요.", "ok");
+        if (o.onVerified) o.onVerified();
       } catch (e) {
         // 5번 틀렸거나 만료면 그 번호는 끝: 확인은 끄고 받기 버튼을 바로 켠다
         if (/다시 받아/.test(e.message)) {
@@ -231,8 +246,9 @@ const MemberForm = (function () {
       ensure: function () {
         const v = norm();
         if (!v) { setMsg(o.msg, o.input, "이메일을 입력해 주세요.", "bad"); o.input.focus(); return false; }
-        if (verifiedValue === v) return true;
-        if (sentValue === v && !o.codeRow.hidden) {
+        const k = key();
+        if (verifiedValue === k) return true;
+        if (sentValue === k && !o.codeRow.hidden) {
           if (codeTimer) {   // 아직 시간 안: 번호를 넣고 확인하라고
             codeNote = "받은 인증번호를 입력하고 확인을 눌러 주세요.";
             paintCode();
