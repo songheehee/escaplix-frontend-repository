@@ -480,11 +480,11 @@
     const facts = el("div", "rd-facts");
     facts.append(fact(r.escaped ? "탈출 성공" : "탈출 실패", r.escaped ? "is-good" : "is-bad"));
     if (r.escaped) {
-      const remain = fact("⏱️ " + mmss(r.remainMinutes, r.remainSeconds), "");
+      const remain = fact(remainText(r.remainMinutes, r.remainSeconds), "");
       remain.setAttribute("aria-label", "남은 시간 " + r.remainMinutes + "분 " + r.remainSeconds + "초");
       facts.append(remain);
     }
-    facts.append(fact(hintText(r), r.escaped && r.hintCount === 0 ? "is-nohint" : ""));
+    facts.append(fact(hintText(r), ""));
     facts.append(fact(r.playerCount + "인", ""));
     info.append(facts);
     if (r.status === "HIDDEN") {
@@ -550,5 +550,5 @@
     const full = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
     return "★★★★★".slice(0, full) + "☆☆☆☆☆".slice(0, 5 - full);
   }
-  function mmss(min, sec) { return pad(min || 0) + ":" + pad(sec || 0); }
+  function remainText(min, sec) { return (min || 0) + "분 " + (sec || 0) + "초"; }   // 앞에 0 안 붙임 (예: 5분 3초)
 })();

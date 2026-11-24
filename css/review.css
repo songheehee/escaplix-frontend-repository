@@ -96,17 +96,17 @@ dialog.rm[open] { animation: rm-in 0.16s ease-out; }
 .rm-pp { min-width: 40px; height: 32px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--rv-line); background: none; color: inherit; font: inherit; font-size: 0.9rem; cursor: pointer; opacity: 0.85; }
 .rm-pp:hover { border-color: rgba(255, 255, 255, 0.35); }
 .rm-pp.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 800; opacity: 1; }
-.rm-li .rm-date { padding: 5px 8px; }
+.rm-li .dp-btn { height: 34px; min-width: 140px; border-color: var(--rv-line); border-radius: 8px; background: var(--rv-soft); font-size: 0.9rem; }
+.rm-li .dp-btn:hover, .rm-li .dp-btn[aria-expanded="true"] { border-color: var(--accent); }
 .rm-step-b:focus-visible, .rm-pp:focus-visible { outline: 2px solid var(--rv-star); outline-offset: 2px; }
 
-.rm-num, .rm-date, .rm-text {
+.rm-num, .rm-text {
   font: inherit; color: inherit;
   background: var(--rv-soft); border: 1px solid var(--rv-line); border-radius: 8px;
 }
 .rm-num { width: 4.5em; padding: 8px; text-align: right; }
-.rm-date { padding: 7px 8px; color-scheme: dark; }
 .rm-text { width: 100%; padding: 10px; resize: vertical; box-sizing: border-box; }
-.rm-num:focus, .rm-date:focus, .rm-text:focus, .rm-opt:focus-within, .rm-star:focus-visible, .rm-pick:focus-visible {
+.rm-num:focus, .rm-text:focus, .rm-opt:focus-within, .rm-star:focus-visible, .rm-pick:focus-visible {
   outline: 2px solid var(--rv-star); outline-offset: 2px;
 }
 .rm-opt-Y:focus-within { outline-color: var(--good); }     /* 성공·실패 칸은 테두리 색에 맞춤 */
@@ -369,7 +369,6 @@ dialog.rm[open] { animation: rm-in 0.16s ease-out; }
 .rd-fact { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; color: var(--ink2); background: var(--rv-soft); }
 .rd-fact.is-good { color: var(--good); background: rgba(70, 214, 140, 0.12); }
 .rd-fact.is-bad { color: var(--danger); background: rgba(255, 92, 108, 0.12); }
-.rd-fact.is-nohint { color: #77bdff; background: rgba(73, 158, 255, 0.14); }
 .rd-hidden { margin: 8px 0 0; color: var(--danger); font-size: 0.75rem; }
 .rd-body { width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--rv-line); }
 .rd-stars { display: block; color: var(--rv-star); font-size: 0.9rem; letter-spacing: 2px; }
