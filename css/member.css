@@ -104,7 +104,6 @@ fieldset.field legend { padding: 0; }
 .prow-k { flex: 0 0 auto; min-width: 72px; font-size: 15px; font-weight: 600; }
 .prow-v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: var(--ink2); }
 .prow-v.is-empty { color: var(--muted); }
-.email-note { margin: 0 0 14px; font-size: 13px; }
 /* 회원 탈퇴: 카드 아래 작은 글씨 링크 → 팝업 */
 .withdraw-line { margin: 14px 4px 0; text-align: right; }
 .withdraw-link { background: none; border: 0; padding: 4px; font: inherit; font-size: 13px; color: var(--muted); text-decoration: underline; cursor: pointer; }
@@ -142,6 +141,13 @@ fieldset.field legend { padding: 0; }
 .pdlg-x { width: 34px; height: 34px; border: 0; border-radius: 50%; cursor: pointer; font-size: 15px; color: inherit; background: var(--surface2); }
 .pdlg-x:hover { background: var(--line); }
 .pdlg-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+/* 팝업 안 칸 옆 버튼 ([인증번호 발송] · [확인] · [중복 확인]): 좁고 작은 글씨 → 입력칸이 넓어짐 */
+.pdlg .input-row .btn { padding: 0 12px; font-size: 13px; }
+/* 팝업 [취소] · 칸 옆 [인증번호 발송]·[중복 확인]: 테두리를 적당히 보이게 (사장 화면 [취소]와 같은 중간 회색) */
+.pdlg-foot .btn-line, .pdlg .input-row .btn-line { border-color: #5a5366; }
+.pdlg-foot .btn-line:hover, .pdlg .input-row .btn-line:hover:not(:disabled) { border-color: #7a7387; background: var(--surface2); }
+/* 팝업 아래 버튼 ([취소] · [저장] · [탈퇴]): 원래(10px 20px · 15px)의 90% */
+.pdlg-foot .btn { padding: 9px 18px; font-size: 13.5px; }
 .pdlg .gchips { margin-top: 2px; }
 @media (prefers-reduced-motion: reduce) { .pdlg[open] { animation: none; } .prow-btn { transition: none; } }
 .gchip input:disabled + span { opacity: .5; cursor: not-allowed; }
