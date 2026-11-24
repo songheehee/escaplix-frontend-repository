@@ -208,6 +208,9 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
 .sel-enh { min-width: 0; }
 .sel-enh .dp-btn { width: 100%; }
 .dp-pop.sel-fit .sel-opt { flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; }   /* 목록 폭을 칸에 맞췄을 때 긴 글자는 … */
+/* 칸 폭에 맞춘 목록에서 고른 줄: ✓ 를 오른쪽 끝에 고정 (float 이면 잘린 글 뒤로 밀려 두 줄이 됨) */
+.dp-pop.sel-fit .sel-opt.on { position: relative; padding-right: 30px; }
+.dp-pop.sel-fit .sel-opt.on::after { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); float: none; margin: 0; }
 /* 검색 칸(지역·날짜·인원·장르·정렬)은 모두 같은 폭 (상단 검색 패널 · 결과 화면 조건 막대) */
 .fb-field .dp-btn, .sp-field .dp-btn { width: 140px; min-width: 0; }
 .dp-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 칸 글은 한 줄 */

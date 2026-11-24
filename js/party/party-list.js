@@ -152,7 +152,6 @@
     const seq = ++loadSeq;
     grid.textContent = "";
     for (let i = 0; i < 4; i++) grid.append(el("div", "sk party-sk"));
-    $("count").textContent = "";
     try {
       const list = await api.get("/api/parties", {
         themeId: state.themeId, keyword: state.keyword, area: state.area, region: state.region,
@@ -160,14 +159,17 @@
       });
       if (seq !== loadSeq) return;
       grid.textContent = "";
-      $("count").textContent = "파티 " + list.length + "개";
       if (!list.length) {
         grid.append(canCreate
           ? UI.emptyBox("조건에 맞는 파티가 없어요.", "직접 파티 만들기", Routes.url("partyForm", { themeId: state.themeId }))
           : UI.emptyBox("조건에 맞는 파티가 없어요."));
         return;
       }
-      list.forEach(function (p) { grid.append(card(p)); });
+      // 순서: 참여할 수 있는 파티(모집 중) → 내가 들어간 파티 → 못 들어가는 파티(정원 참·강퇴됨, 맨 뒤)
+      //   묶음 안에서는 서버 순서(플레이 날짜 빠른 순) 그대로
+      function rank(p) { return p.joined ? 1 : (p.status === "FULL" || p.kicked) ? 2 : 0; }
+      list.slice().sort(function (a, b) { return rank(a) - rank(b); })
+        .forEach(function (p) { grid.append(card(p)); });
     } catch (e) {
       if (seq !== loadSeq) return;
       grid.textContent = "";
@@ -189,27 +191,42 @@
     if (p.kicked) c.setAttribute("aria-disabled", "true");
     else c.type = "button";
 
+    // 카드 (11/24 정리): 위 = 테마(크게)+배지 · 장르 · 날짜 시간 · 매장 / 아래 = 제목 · 인원 · 모집 마감
+    //   한마디·방장은 카드를 누르면 뜨는 참여 확인 팝업에서 봄
     const top = el("div", "pb-top");
-    top.style.background = UI.genreGradient(p.genres);
-    top.append(el("div", "pb-theme", "🚪 " + p.themeTitle));
-    const g = el("div", "pb-genres");
-    (p.genres || []).forEach(function (name) { g.append(el("span", "pb-genre", name)); });
-    top.append(g);
-    top.append(el("div", "pb-date", md(play)));
-    top.append(el("div", "pb-time", hm(play) + " 시작 · " + p.storeName));
-    c.append(top);
-
-    const body = el("div", "pb-body");
+    const theme = el("div", "pb-theme", p.themeTitle);
+    theme.title = p.themeTitle;
+    // 배지(참여 중·정원 마감·강퇴됨)는 위 칸 오른쪽 위, 테마 이름 옆 → 카드 높이가 안 늘어남
     const badges = el("div", "pb-badges");
     if (p.joined) badges.append(el("span", "badge mine", "참여 중"));
     if (p.kicked) badges.append(el("span", "badge bad", "강퇴됨"));
     else if (full) {   // 강퇴됐으면 강퇴 배지 하나만
       const st = UI.partyStatus("FULL");
       badges.append(el("span", st.cls, st.label));
+    } else if (deadline - Date.now() < 24 * 3600 * 1000) {   // 모집 기한이 하루 안 남으면 "곧 마감"
+      const soon = el("span", "badge soon", "곧 마감");
+      soon.title = "모집 마감 " + md(deadline) + " " + hm(deadline);
+      badges.append(soon);
     }
-    body.append(badges);
-    body.append(el("div", "pb-title", p.title));
-    body.append(el("div", "pb-intro", "“" + p.intro + "”"));
+    const themeRow = el("div", "pb-theme-row");
+    themeRow.append(theme);
+    if (badges.childElementCount) themeRow.append(badges);
+    top.append(themeRow);
+    if (p.genres && p.genres.length) {
+      const g = el("div", "pb-genres");
+      p.genres.forEach(function (name) { g.append(el("span", "pb-genre", name)); });
+      top.append(g);
+    }
+    top.append(el("div", "pb-date", md(play) + " " + hm(play)));
+    const store = el("div", "pb-store", p.storeName);
+    store.title = p.storeName;
+    top.append(store);
+    c.append(top);
+
+    const body = el("div", "pb-body");
+    const title = el("div", "pb-title", p.title);
+    title.title = p.title;   // 한 줄 넘어 잘려도 마우스 올리면 전체 제목
+    body.append(title);
 
     const seats = el("div", "pb-seats");
     const dots = el("span", "seats");
@@ -217,12 +234,6 @@
     for (let i = 0; i < p.maxPeople; i++) dots.append(el("i", i < p.currentPeople ? "on" : null));
     seats.append(dots, el("b", null, p.currentPeople + " / " + p.maxPeople + "명"));
     body.append(seats);
-
-    const foot = el("div", "pb-foot");
-    // 강퇴·정원 마감은 배지가 이미 말하니 모집 기한 줄을 빼고, 모집 중일 때만 기한을 보여 준다
-    if (!p.kicked && !full) foot.append(deadlineLine(deadline, play));
-    foot.append(el("div", "muted", "👑 방장 " + p.leaderNickname));
-    body.append(foot);
     c.append(body);
 
     c.setAttribute("aria-label", p.themeTitle + ", " + md(play) + " " + hm(play) + ", " + p.title + ", "
@@ -231,18 +242,8 @@
     return c;
   }
 
-  // 모집 기한 한 줄. 날짜는 위의 플레이 날짜와 겹치지 않게 "당일·전날"로 줄이고, 24시간 안이면 "곧 마감"
-  function deadlineLine(deadline, play) {
-    const DAY = 24 * 3600 * 1000;
-    const dayNo = function (d) { return Math.round(new Date(d.getFullYear(), d.getMonth(), d.getDate()) / DAY); };
-    if (deadline - Date.now() < DAY) {
-      const gap = dayNo(deadline) - dayNo(new Date());
-      return el("div", "pb-deadline soon", "⏰ 곧 마감 · " + (gap === 0 ? "오늘" : "내일") + " " + hm(deadline) + "까지");
-    }
-    const before = dayNo(play) - dayNo(deadline);
-    const day = before === 0 ? "당일" : before === 1 ? "전날" : md(deadline);
-    return el("div", "pb-deadline", "⏰ " + day + " " + hm(deadline) + "까지 모집");
-  }
+  // 모집 마감 한 줄: "모집 마감 11/27 (금) 21:00". 24시간 안이면 "곧 마감 · 오늘 23:00" (굵게)
+  //   예전 "전날 21:00까지 모집" 은 무엇의 전날인지 헷갈려서 날짜를 그대로 씀
 
   function onPick(p) {
     if (p.kicked) { UI.toast("강퇴된 파티에는 다시 참여할 수 없어요.", "err"); return; }
@@ -261,7 +262,6 @@
   if (!me) {
     $("jd-q").textContent = "로그인하면 참여할 수 있어요";
     $("jd-no").textContent = "닫기";
-    document.querySelector("#join-dialog .jd-note").textContent = "로그인한 뒤 이 목록으로 돌아와요. 파티를 다시 누르면 참여할 수 있어요.";
   }
   $("jd-no").addEventListener("click", function () { dialog.close(); });
   dialog.addEventListener("click", function (e) { if (e.target === dialog) dialog.close(); });   // 바깥(어두운 곳) 누르면 닫기
@@ -269,10 +269,20 @@
   function openJoin(p) {
     picked = p;
     const play = at(p.playAt);
+    // 제목 → 테마·매장·일시·인원·방장 표 → 방장 한마디
     $("jd-title").textContent = p.title;
-    $("jd-place").textContent = p.themeTitle + " · " + p.storeName;
-    $("jd-when").textContent = "📅 " + md(play) + " " + hm(play) + " · 지금 " + p.currentPeople + " / " + p.maxPeople + "명 · 👑 " + p.leaderNickname;
-    $("jd-intro").textContent = "“" + p.intro + "”";
+    $("jd-intro").textContent = p.intro || "";
+    $("jd-intro").hidden = !p.intro;
+    $("jd-theme").textContent = p.themeTitle;
+    $("jd-store").textContent = p.storeName;
+    $("jd-when").textContent = md(play) + " " + hm(play);
+    const seats = $("jd-seats");
+    seats.textContent = "";
+    const dots = el("span", "seats");
+    dots.setAttribute("aria-hidden", "true");
+    for (let i = 0; i < p.maxPeople; i++) dots.append(el("i", i < p.currentPeople ? "on" : null));
+    seats.append(dots, el("span", null, p.currentPeople + " / " + p.maxPeople + "명"));
+    $("jd-leader").textContent = p.leaderNickname;
     yesBtn.disabled = false;
     yesBtn.textContent = me ? "예, 참여할게요" : "로그인하고 참여하기";
     dialog.showModal();

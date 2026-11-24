@@ -26,22 +26,8 @@
   // 왔던 화면(파티 목록 · 내 채팅 …). 돌아가기 링크 · 나가기 · 삭제 · 강퇴됐을 때 모두 여기로, 모르면 파티 목록
   const back = PartyNav.setup($("back-link"));
   if (!partyId || !/^\d+$/.test(partyId)) { leaveRoom("없는 파티입니다."); return; }
-  closeOnSideClick();
 
   start();
-
-  // 방 바깥 빈 곳(양옆 여백)을 누르면 왼쪽 위 돌아가기 링크와 똑같이 돌아감
-  //   누르기 시작한 곳도 빈 곳일 때만 (채팅 글자를 드래그하다 바깥에서 떼면 안 나가게). 확인 팝업이 열려 있으면 무시
-  function closeOnSideClick() {
-    const main = document.querySelector("main");
-    function isSide(t) { return t === document.body || t === document.documentElement || t === main; }
-    let downSide = false;
-    document.addEventListener("pointerdown", function (e) { downSide = isSide(e.target); });
-    document.addEventListener("click", function (e) {
-      if (!downSide || !isSide(e.target) || $("confirm-dialog").open) return;
-      back.go();
-    });
-  }
 
   async function start() {
     try {
@@ -92,12 +78,17 @@
     const s = UI.partyStatus(room.status, ended);
     st.textContent = s.label;
     st.className = s.cls;
-    $("ri-meta").textContent = room.theme.title + " · " + room.theme.storeName + " · 📅 " + md(play) + " " + hm(play) + " (" + room.theme.playMinutes + "분)";
-    // 모집 중일 때만 마감 시각 (종료·마감은 제목 옆 배지로 알 수 있음)
-    const recruiting = !ended && room.status !== "CLOSED";
-    $("ri-deadline").textContent = recruiting ? "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집" : "";
-    $("ri-deadline").hidden = !recruiting;
-    $("ri-intro").textContent = "👑 방장 한마디 · “" + room.intro + "”";
+    // 테마 · 매장 · 일시 · 모집 마감 을 칸으로 나눠 보여 줌
+    $("ri-theme").textContent = room.theme.title;
+    $("ri-store").textContent = room.theme.storeName;
+    const end = new Date(play.getTime() + room.theme.playMinutes * 60000);   // 끝나는 시각 = 시작 + 플레이 시간
+    $("ri-when").textContent = md(play) + " " + hm(play) + " – " + hm(end);
+    // 모집 마감 시각: 정원이 찼어도 보여 줌 (누가 나가면 그때까지 다시 모집). 방장이 마감했거나 끝난 파티는 뺌
+    const showDeadline = !ended && room.status !== "CLOSED";
+    $("ri-deadline").textContent = md(deadline) + " " + hm(deadline);
+    $("ri-deadline-box").hidden = !showDeadline;
+    $("ri-intro").textContent = room.intro;
+    $("ri-intro").hidden = !room.intro;
 
     $("rm-count").textContent = room.currentPeople + " / " + room.maxPeople + "명";
     const list = $("member-list");
@@ -105,7 +96,8 @@
     room.members.forEach(function (m) {
       const li = el("li");
       const name = el("span");
-      name.append(m.leader ? "👑 " : "", el("b", null, m.nickname));
+      name.append(el("b", null, m.nickname));
+      if (m.leader) name.append(el("span", "lead-tag", "방장"));
       if (m.memberId === me.memberId) name.append(el("span", "me", "(나)"));
       li.append(name);
       if (isLeader() && !m.leader && !ended) {   // 끝난 파티는 강퇴할 일이 없음
