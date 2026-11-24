@@ -23,7 +23,7 @@
     $("admin-tools").hidden = false;
     $("find").addEventListener("input", function () { page = 1; paint(); });   // 찾으면 다시 1쪽부터
   }
-  load();
+  load().finally(function () { document.body.classList.add("adm-ready"); });   // 관리자 매장 관리: 다 불러오면 제목 아래를 보여 줌 (사장 화면엔 adm-fade 가 없어 영향 없음)
 
   async function load() {
     try {
@@ -86,8 +86,7 @@
 
     if (admin) {
       const side = el("div", "side");
-      side.append(el("span", null, "테마 " + s.themeCount + "개"),
-        el("span", "who-tag" + (s.ownerLoginId ? "" : " admin"), s.ownerLoginId || "관리자"));
+      side.append(el("span", null, "테마 " + s.themeCount + "개"));   // 등록한 사람(사장 아이디·관리자)은 안 보여 줌
       card.append(side);
     }
     card.append(el("span", "go", "›"));

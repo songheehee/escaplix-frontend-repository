@@ -34,7 +34,7 @@
     setKeyword(input.value);
   });
 
-  load();
+  load().finally(function () { document.body.classList.add("adm-ready"); });   // 다 불러오면 제목 아래를 한 번에 보여 줌 (탭 이동 깜빡임 방지, manage.css .adm-fade)
 
   function setKeyword(v) {
     v = v.trim();
@@ -63,10 +63,10 @@
     return btns;
   }
 
-  // 탭 글자 옆에 전체 수 (전체 = 손님 + 사장 + 관리자). 괄호 없이 작고 흐리게: "전체 1,000"
+  // 탭 글자 옆에 전체 수 (전체 = 손님 + 사장, 관리자는 뺌). 괄호 없이 작고 흐리게: "전체 1,000"
   //   메인 검색 결과 탭(테마 12 · 매장 3)과 같은 모양. 검색어와 상관없이 전체 수
   function paintTabCounts(c) {
-    const all = (c.USER || 0) + (c.OWNER || 0) + (c.ADMIN || 0);
+    const all = (c.USER || 0) + (c.OWNER || 0);   // 관리자는 명단에서 빼므로 전체 수에서도 뺌
     Manage.tabCount(tabs[""], "전체", all);
     Manage.tabCount(tabs.USER, "손님", c.USER || 0);
     Manage.tabCount(tabs.OWNER, "사장", c.OWNER || 0);
@@ -94,14 +94,16 @@
 
     const what = role ? ROLE_BADGE[role][0] : "회원";
     // 검색했을 때만 검색창 옆에 결과 수 (검색어가 없으면 탭 숫자와 같아서 안 보임)
-    $("count").textContent = keyword ? Number(res.total).toLocaleString("ko-KR") + "명" : "";
+    // 관리자 계정은 명단에서 뺌 (손님·사장만)
+    const list = res.members.filter(function (m) { return m.role !== "ADMIN"; });
+    $("count").textContent = keyword ? list.length.toLocaleString("ko-KR") + "명" : "";
 
     box.textContent = "";
-    if (!res.members.length) {
+    if (!list.length) {
       box.append(UI.emptyBox(keyword ? "「" + keyword + "」에 맞는 " + what + "이 없어요." : what + "이 아직 없어요."));
       return;
     }
-    members = res.members;
+    members = list;
     page = 1;   // 검색어·탭이 바뀌면 다시 1쪽부터
     showPage();
   }

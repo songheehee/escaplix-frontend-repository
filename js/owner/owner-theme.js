@@ -11,6 +11,7 @@
   const me = Manage.guard(["OWNER", "ADMIN"]);
   if (!me) return;
   const admin = me.role === "ADMIN";
+  if (admin) document.body.classList.add("adm-btns");   // 관리자: 상세 화면 버튼 크기를 하나로 (manage.css .adm-btns). 사장은 그대로
   const themeId = Manage.numParam("id");
   const form = $("form");
 
