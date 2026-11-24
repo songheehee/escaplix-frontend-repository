@@ -39,6 +39,12 @@
             <span class="prow-k">아이디</span>
             <span class="prow-v" id="v-loginId"></span>
           </li>
+          <li class="prow">
+            <svg class="prow-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            <span class="prow-k">이메일</span>
+            <span class="prow-v" id="v-email"></span>
+            <button class="prow-btn" id="email-edit" type="button" aria-label="이메일 수정">수정</button>
+          </li>
           <li class="prow" id="row-biz" hidden>
             <svg class="prow-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/></svg>
             <span class="prow-k">사업자등록번호</span>
@@ -114,6 +120,36 @@
         <div class="pdlg-foot">
           <button class="btn btn-line" type="button" data-close>취소</button>
           <button class="btn btn-accent" id="nick-save" type="submit" disabled>저장</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- 이메일 등록·수정 팝업: 새 이메일로 인증번호 → 맞으면 바로 바뀜 -->
+    <dialog class="pdlg" id="email-dialog" aria-labelledby="email-title">
+      <form id="email-form" novalidate>
+        <div class="pdlg-head">
+          <h2 id="email-title">이메일 수정</h2>
+          <button class="pdlg-x" type="button" data-close aria-label="닫기">✕</button>
+        </div>
+        <p class="muted email-note">아이디·비밀번호를 찾을 때 이 이메일로 인증해요.</p>
+        <div class="field">
+          <label for="email">새 이메일</label>
+          <div class="input-row">
+            <input class="input" id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"
+                   maxlength="100" aria-describedby="email-msg">
+            <button class="btn btn-line" id="email-send" type="button">인증번호 받기</button>
+          </div>
+          <p class="field-msg" id="email-msg" aria-live="polite"></p>
+          <div class="input-row code-row" id="email-code-row" hidden>
+            <label class="sr-only" for="email-code">인증번호 6자리</label>
+            <input class="input" id="email-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                   placeholder="인증번호 6자리" aria-describedby="email-code-msg">
+            <button class="btn btn-line" id="email-verify" type="button">확인</button>
+          </div>
+          <p class="field-msg" id="email-code-msg" aria-live="polite"></p>
+        </div>
+        <div class="pdlg-foot">
+          <button class="btn btn-line" type="button" data-close>닫기</button>
         </div>
       </form>
     </dialog>

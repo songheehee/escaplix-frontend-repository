@@ -1,5 +1,5 @@
 // S26 내 정보 (pages/mypage/profile.html) · A 담당 (선호 장르 칸만 D 담당 API)
-//   A-7 내 정보 · A-8 닉네임 (+ A-4 중복 확인) · A-9 비밀번호 · D-7/D-8 선호 장르 (손님만)
+//   A-7 내 정보 · A-8 닉네임 (+ A-4 중복 확인) · A-9 비밀번호 · 이메일 등록·수정 · D-7/D-8 선호 장르 (손님만)
 //   손님·사장·관리자 모두 헤더 "내 정보"로 들어온다. 손님에게만 마이페이지 탭을 보여 준다
 //   화면: 카드 하나에 아이디 · 비밀번호 · 닉네임 · 선호 장르 줄. [수정]을 누르면 팝업에서 고친다
 (function () {
@@ -48,6 +48,7 @@
     }
     setupPassword();
     setupNickname();
+    setupEmail();
     if (isUser) setupGenres();
   }
 
@@ -109,6 +110,46 @@
         save.disabled = false;
       }
     });
+  }
+
+  // ---------- 이메일 등록·수정 ----------
+  //   새 이메일로 인증번호 → [확인]이 맞으면 서버가 바로 바꾼다 (저장 버튼 없음)
+  //   이메일 칸 생기기 전에 가입한 회원은 "등록 안 함" → [등록]
+  function setupEmail() {
+    function paint() {
+      const v = $("v-email");
+      v.textContent = info.email || "등록 안 함";
+      v.classList.toggle("is-empty", !info.email);
+      $("email-edit").textContent = info.email ? "수정" : "등록";
+      $("email-edit").setAttribute("aria-label", info.email ? "이메일 수정" : "이메일 등록");
+      $("email-title").textContent = info.email ? "이메일 수정" : "이메일 등록";
+    }
+    paint();
+
+    const emailCheck = MemberForm.emailVerify({
+      input: $("email"), sendBtn: $("email-send"), msg: $("email-msg"),
+      codeRow: $("email-code-row"), code: $("email-code"), verifyBtn: $("email-verify"), codeMsg: $("email-code-msg"),
+      sendPath: "/api/members/me/email-code", verifyPath: "/api/members/me/email",
+      onVerified: function () {
+        const wasEmpty = !info.email;
+        info.email = emailCheck.value();
+        paint();
+        dlg.close();
+        UI.toast(wasEmpty ? "이메일을 등록했어요." : "이메일을 바꿨어요.");
+      },
+    });
+    // 팝업 안에서 Enter: 인증번호 줄이 열려 있으면 확인, 아니면 받기 (폼 제출로 새로고침되지 않게)
+    $("email-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!$("email-code-row").hidden) $("email-verify").click();
+      else $("email-send").click();
+    });
+
+    const dlg = dialog("email-dialog", function () {
+      emailCheck.reset();
+      $("email").placeholder = info.email ? "지금 이메일: " + info.email : "이메일 주소";
+    });
+    $("email-edit").addEventListener("click", function () { dlg.open(); $("email").focus(); });
   }
 
   // ---------- 닉네임 (A-8, 중복 확인 A-4) ----------

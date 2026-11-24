@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>아이디 찾기 · Escaplix</title>
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/member.css">
+</head>
+<body>
+  <!-- 아이디 찾기 · 가입한 이메일로 아이디를 메일로 받음 (POST /api/auth/find-id) -->
+  <main class="page auth-page">
+    <section class="auth-box">
+      <a class="back-link" id="back-link" href="#">← 로그인</a>
+      <h1>아이디 찾기</h1>
+      <p class="lead">가입할 때 쓴 이메일로 아이디를 보내 드려요.</p>
+
+      <form class="auth-card" id="find-form" novalidate>
+        <p class="form-info" id="find-info" role="status" hidden></p>
+        <p class="form-error" id="find-error" role="alert" hidden></p>
+
+        <div class="field">
+          <label for="email">가입한 이메일</label>
+          <input class="input" id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"
+                 maxlength="100" aria-describedby="email-msg">
+          <p class="field-msg" id="email-msg" aria-live="polite"></p>
+        </div>
+
+        <button class="btn btn-accent block" id="find-btn" type="submit">아이디 받기</button>
+        <p class="auth-links"><a id="login-link" href="#">로그인</a> · <a id="find-pw-link" href="#">비밀번호 찾기</a></p>
+        <p class="field-hint">이메일을 등록하지 않은 예전 계정은 관리자에게 문의해 주세요.</p>
+      </form>
+    </section>
+  </main>
+
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <script src="../../js/common/footer.js"></script>
+  <script src="../../js/member/member-form.js"></script>
+  <script src="../../js/member/find-id.js"></script>
+</body>
+</html>

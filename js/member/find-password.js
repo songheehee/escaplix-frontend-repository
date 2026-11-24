@@ -9,6 +9,7 @@
   if (Auth.me()) { location.replace(Routes.url("home")); return; }
 
   $("back-link").href = Routes.url("login");
+  $("find-id-link").href = Routes.url("findId");
 
   const form = $("reset-form");
   const errorBox = $("form-error");

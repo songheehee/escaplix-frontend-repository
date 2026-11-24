@@ -104,6 +104,7 @@ fieldset.field legend { padding: 0; }
 .prow-k { flex: 0 0 auto; min-width: 72px; font-size: 15px; font-weight: 600; }
 .prow-v { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; color: var(--ink2); }
 .prow-v.is-empty { color: var(--muted); }
+.email-note { margin: 0 0 14px; font-size: 13px; }
 .prow-btn {
   flex: 0 0 auto; padding: 6px 12px; border: 0; border-radius: 6px; cursor: pointer;
   font: inherit; font-size: 13px; font-weight: 700; color: var(--ink2); background: var(--surface2);
