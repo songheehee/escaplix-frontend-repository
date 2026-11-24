@@ -33,6 +33,9 @@
 .input-row { display: flex; gap: 8px; }
 .input-row .input { flex: 1; min-width: 0; }
 .input-row .btn { flex: 0 0 auto; }
+/* 이메일 인증번호 줄: 이메일 칸 바로 아래. hidden 이 display:flex 에 지지 않게 */
+.code-row { margin-top: 8px; }
+.code-row[hidden] { display: none; }
 
 /* 서버가 보낸 오류 문구 · 안내 문구 */
 .form-error {

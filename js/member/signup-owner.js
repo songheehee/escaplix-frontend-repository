@@ -1,5 +1,5 @@
 // S03-2 사장 회원가입 (pages/member/signup-owner.html) · A 담당
-//   A-3 아이디 · A-4 닉네임 · A-5 사업자번호 중복 확인 · A-2 가입 (multipart, api.upload)
+//   A-3 아이디 · A-4 닉네임 · A-5 사업자번호 중복 확인 · 이메일 인증 · A-2 가입 (multipart, api.upload)
 //   성공하면 로그인 화면으로 (아이디를 채워서). 승인은 매장 단위라 가입하면 바로 로그인할 수 있다
 (function () {
   const $ = UI.$;
@@ -42,6 +42,11 @@
     path: "/api/members/check-biz-no", param: "bizNo",
     validate: R.bizNo, emptyText: "사업자등록번호를 입력해 주세요.",
     okText: "등록되지 않은 번호예요.", takenText: "이미 등록된 사업자등록번호예요.",
+  });
+  const emailCheck = MemberForm.emailVerify({
+    input: $("email"), sendBtn: $("email-send"), msg: $("email-msg"),
+    codeRow: $("email-code-row"), code: $("email-code"), verifyBtn: $("email-verify"), codeMsg: $("email-code-msg"),
+    sendPath: "/api/members/email-code", verifyPath: "/api/members/email-code/verify",
   });
   const pwCheck = MemberForm.passwordMatch($("password"), $("password2"), $("password-msg"), $("password2-msg"), R.password);
 
@@ -90,6 +95,7 @@
     if (!(await idCheck.ensure())) return;
     if (!pwCheck.ok()) return;
     if (!(await nickCheck.ensure())) return;
+    if (!emailCheck.ensure()) return;
     if (!(await bizCheck.ensure())) return;
     if (!checkFile()) { fileInput.focus(); return; }
 
@@ -98,6 +104,7 @@
     fd.append("loginId", $("loginId").value.trim());
     fd.append("password", $("password").value);
     fd.append("nickname", $("nickname").value.trim());
+    fd.append("email", emailCheck.value());
     fd.append("bizNo", bizInput.value.trim());
     fd.append("bizFile", fileInput.files[0]);
 
@@ -111,6 +118,8 @@
       if (err.status === 409 && err.message.indexOf("아이디") >= 0) idCheck.taken(err.message);
       else if (err.status === 409 && err.message.indexOf("닉네임") >= 0) nickCheck.taken(err.message);
       else if (err.status === 409 && err.message.indexOf("사업자") >= 0) bizCheck.taken(err.message);
+      else if (err.status === 409 && err.message.indexOf("이메일") >= 0) emailCheck.taken(err.message);
+      else if (err.status === 400 && err.message.indexOf("이메일 인증") >= 0) emailCheck.expired(err.message);
       else { errorBox.textContent = err.message; errorBox.hidden = false; errorBox.scrollIntoView({ block: "center" }); }
       submitBtn.disabled = false;
       submitBtn.textContent = "가입하기";

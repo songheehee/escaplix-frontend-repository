@@ -49,6 +49,23 @@
         </div>
 
         <div class="field">
+          <label for="email">이메일<span class="req">*</span></label>
+          <div class="input-row">
+            <input class="input" id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"
+                   maxlength="100" placeholder="아이디·비밀번호를 찾을 때 써요" aria-describedby="email-msg">
+            <button class="btn btn-line" id="email-send" type="button">인증번호 받기</button>
+          </div>
+          <p class="field-msg" id="email-msg" aria-live="polite"></p>
+          <div class="input-row code-row" id="email-code-row" hidden>
+            <label class="sr-only" for="email-code">인증번호 6자리</label>
+            <input class="input" id="email-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                   placeholder="인증번호 6자리" aria-describedby="email-code-msg">
+            <button class="btn btn-line" id="email-verify" type="button">확인</button>
+          </div>
+          <p class="field-msg" id="email-code-msg" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
           <label for="bizNo">사업자등록번호<span class="req">*</span></label>
           <div class="input-row">
             <input class="input" id="bizNo" name="bizNo" inputmode="numeric" maxlength="12" placeholder="000-00-00000" aria-describedby="bizNo-msg">
