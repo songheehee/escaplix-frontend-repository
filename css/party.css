@@ -115,28 +115,37 @@
 
 /* ---------- 파티 방 (party-room) ---------- */
 .room-page { max-width: 1100px; word-break: keep-all; overflow-wrap: anywhere; }
-.back-link-p { display: inline-block; margin-bottom: 12px; font-size: 13px; color: var(--muted); text-decoration: none; }
+.back-link-p { display: inline-block; margin-bottom: 12px; font-size: 15px; color: var(--muted); text-decoration: none; }
 .back-link-p:hover { color: var(--ink); }
 .room-sk { height: 420px; border-radius: 10px; }
-.room-info { padding: 18px 20px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 14px; }
-.ri-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.room-info { padding: 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.ri-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .ri-top .badge { flex: 0 0 auto; white-space: nowrap; margin-top: 4px; }
 .ri-top .ri-review { flex: 0 0 auto; white-space: nowrap; margin-top: -2px; }   /* 끝난 파티: 종료 배지 옆 */
-.ri-title { flex: 1; min-width: 0; margin: 0; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.3; }
-.ri-intro { margin: 12px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink2); overflow-wrap: anywhere; }   /* 방장 한마디: 제목 아래 부제처럼 */
-/* 테마 · 매장 · 일시 · 모집 마감: 위 작은 이름표 + 아래 값. 좁으면 2칸씩 */
-.ri-facts { display: grid; grid-template-columns: repeat(4, minmax(0, auto)); justify-content: start; gap: 10px 36px; margin: 16px 0 0; padding-top: 16px; border-top: 1px solid var(--line); }
-.ri-facts dt { font-size: 12px; color: var(--muted); }
-.ri-facts dd { margin: 2px 0 0; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.ri-title { flex: 1; min-width: 0; margin: 0; font-size: 19px; line-height: 1.35; }
+.ri-intro { margin: 8px 0 0; font-size: 14px; line-height: 1.55; color: var(--ink2); overflow-wrap: anywhere; }   /* 방장 한마디: 제목 아래 부제처럼 */
+/* 테마 · 매장 · 일시 · 모집 마감: 왼쪽 열이 좁아서 한 줄에 "이름표 값" 하나씩 */
+.ri-facts { display: flex; flex-direction: column; gap: 6px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.ri-facts > div { display: flex; gap: 10px; align-items: baseline; }
+.ri-facts dt { flex: 0 0 56px; font-size: 12px; color: var(--muted); }
+.ri-facts dd { flex: 1; min-width: 0; margin: 0; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 .ri-facts [hidden] { display: none; }
 #ri-deadline { color: var(--gold); }
-@media (max-width: 640px) { .ri-facts { grid-template-columns: 1fr 1fr; gap: 10px 16px; } }
+/* 제목·소개는 두 줄까지만, 넘치면 … + [더보기]. 펼치면(.open) 전부 */
+.room-info:not(.open) .ri-title, .room-info:not(.open) .ri-intro { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.room-info:not(.open) .ri-intro[hidden] { display: none; }
+.ri-more { display: block; margin: 4px 0 0; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 700; color: var(--accent-ink); cursor: pointer; }
+.ri-more:hover { text-decoration: underline; }
+.ri-more[hidden] { display: none; }
 .badge.st-recruiting { background: rgba(70, 214, 140, .15); color: var(--good); }
 .badge.st-full { background: rgba(242, 184, 75, .18); color: var(--gold); }
 .badge.st-closed { background: rgba(255, 92, 108, .15); color: var(--danger); }   /* 모집 마감: 빨강 */
 .badge.st-ended { background: #3a3542; color: var(--ink2); }                        /* 파티 종료: 회색 */
 
-.room-split { display: grid; grid-template-columns: 280px 1fr; gap: 14px; align-items: stretch; }   /* 참여자·채팅 카드 높이를 맞춤 */
+/* 왼쪽 열(방 정보 + 참여자) | 오른쪽 채팅. 두 열 높이를 맞춤 */
+.room-split { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 14px; align-items: stretch; }
+.room-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.room-side .room-members { flex: 1 0 auto; }   /* 참여자 칸은 줄어들지 않음 (넘치면 왼쪽 열이 스크롤) */
 .room-members, .room-chat { padding: 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
 .rm-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .rm-head h2 { margin: 0; font-size: 16px; }
@@ -177,6 +186,17 @@
 .chat-input { flex: 1; min-width: 0; padding: 10px 12px; font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
 .chat-input:focus { outline: none; border-color: var(--accent); }
 .room-gone { padding: 40px 20px; text-align: center; }
+/* PC: 파티 방은 메신저처럼 한 화면에 딱 맞춤 (페이지 스크롤 없이 채팅 칸만 스크롤)
+   채팅은 화면 높이를 다 쓰고, 왼쪽 열은 참여자 목록이 남는 높이 안에서 스크롤. footer 는 이 화면에서만 숨김 */
+@media (min-width: 761px) {
+  body:has(.room-page) .footer { display: none; }
+  .room-page { height: 100vh; height: 100dvh; padding-bottom: 24px; display: flex; flex-direction: column; }
+  #room { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .room-split { flex: 1 1 auto; min-height: 0; }
+  .room-side, .room-chat { min-height: 0; }
+  .room-side { overflow-y: auto; }   /* [더보기]로 펼쳤거나 인원이 많아 넘칠 때만 왼쪽 열 안에서 스크롤 */
+  .chat { height: auto; flex: 1 1 0; min-height: 160px; }
+}
 @media (max-width: 760px) {
   .room-split { grid-template-columns: 1fr; }
   .chat { height: 52vh; }
@@ -206,6 +226,7 @@
 @media (max-width: 640px) { .chat-list { grid-template-columns: minmax(0, 1fr); } }
 
 .cd-body { margin: 0 0 18px; font-size: 14px; line-height: 1.55; }
+.pdialog h2:has(+ .cd-body[hidden]) { margin-bottom: 20px; }   /* 설명 없는 확인창: 제목과 버튼 사이를 조금 띄움 */
 .pdialog .btn-accent.danger-yes { background: var(--danger); }
 
 /* 참여 확인 팝업 (<dialog>) */
