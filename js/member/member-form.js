@@ -264,6 +264,12 @@ const MemberForm = (function () {
         return false;
       },
       value: norm,
+      /** 처음 상태로 (팝업을 다시 열 때) */
+      reset: function () {
+        verifiedValue = sentValue = null; stopTimers(); hideCode(); resetSendBtn();
+        o.input.value = "";
+        setMsg(o.msg, o.input, "", "");
+      },
       /** 가입 요청이 409 (그 사이 다른 사람이 그 이메일로 가입) */
       taken: function (text) {
         verifiedValue = sentValue = null; stopTimers(); hideCode(); resetSendBtn();

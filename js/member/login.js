@@ -13,6 +13,7 @@
   const HOME_BY_ROLE = { USER: "home", OWNER: "owner", ADMIN: "admin" };
 
   $("signup-link").href = Routes.url("signup");
+  $("find-id-link").href = Routes.url("findId");
   // 비밀번호 찾기: 아이디를 쳐 뒀으면 그 화면에 채워서
   $("find-pw-link").href = Routes.url("findPassword");
   $("find-pw-link").addEventListener("click", function (e) {

@@ -19,6 +19,7 @@ const Routes = (function () {
     signup: "pages/member/signup.html",
     signupUser: "pages/member/signup-user.html",
     signupOwner: "pages/member/signup-owner.html",
+    findId: "pages/member/find-id.html",
     findPassword: "pages/member/find-password.html",
 
     // A · 파티
