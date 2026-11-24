@@ -23,7 +23,7 @@
   if (me.role !== "USER") { location.replace(Routes.url("partyList")); return; }
 
   const partyId = new URLSearchParams(location.search).get("id");
-  // 왔던 화면(파티 목록 · 내 채팅 …). 돌아가기 링크 · 나가기 · 삭제 · 강퇴됐을 때 모두 여기로, 모르면 파티 목록
+  // 왔던 화면(파티 목록 · 내 파티 …). 돌아가기 링크 · 나가기 · 삭제 · 강퇴됐을 때 모두 여기로, 모르면 파티 목록
   const back = PartyNav.setup($("back-link"));
   if (!partyId || !/^\d+$/.test(partyId)) { leaveRoom("없는 파티입니다."); return; }
 
@@ -65,7 +65,7 @@
 
   // ---------- 파티 정보 · 참여자 ----------
   function isLeader() { return room.myRole === "LEADER"; }
-  // 끝난 파티: 플레이 시간이 지남 (내 채팅의 "끝난 파티"와 같은 기준). 지난 대화만 보고 새 메시지는 못 보냄
+  // 끝난 파티: 플레이 시간이 지남 (내 파티의 "끝난 파티"와 같은 기준). 지난 대화만 보고 새 메시지는 못 보냄
   function isEnded() { return new Date(room.playAt) <= new Date(); }
 
   function paintRoom() {
@@ -122,17 +122,15 @@
     if (ended) paintEnded();
   }
 
-  // 끝난 파티: 입력칸 대신 후기 쓰기 버튼 (한 번만 바꿈)
+  // 끝난 파티: 채팅 입력칸을 숨기고, 위 정보 칸 오른쪽(종료 배지 옆)에 후기 쓰기 버튼 (한 번만)
   function paintEnded() {
     const form = $("chat-form");
     if (!form || form.hidden) return;
     form.hidden = true;
-    const bar = el("div", "chat-ended");
-    const btn = el("button", "btn btn-line small", "후기 쓰기");
+    const btn = el("button", "btn btn-accent small ri-review", "후기 쓰기");
     btn.type = "button";
     btn.addEventListener("click", function () { writeReview(btn); });
-    bar.append(btn);
-    form.after(bar);
+    $("ri-status").after(btn);
   }
 
   // 후기 쓰기: D 담당 후기 팝업(window.openReviewModal)이 있으면 열고, 없으면 테마 상세로 (chats.js 와 같음)
@@ -195,7 +193,7 @@
       await api.del("/api/parties/" + partyId);
       gone = true;
       clearTimeout(timer);
-      back.go();   // 들어오기 전 화면으로 (내 채팅에서 왔으면 내 채팅)
+      back.go();   // 들어오기 전 화면으로 (내 파티에서 왔으면 내 파티)
     } catch (e) { handleGone(e); }
   }
 
@@ -206,7 +204,7 @@
       await api.del("/api/parties/" + partyId + "/join");
       gone = true;
       clearTimeout(timer);
-      back.go();   // 들어오기 전 화면으로 (내 채팅에서 왔으면 내 채팅)
+      back.go();   // 들어오기 전 화면으로 (내 파티에서 왔으면 내 파티)
     } catch (e) { handleGone(e); }
   }
 

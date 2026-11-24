@@ -121,7 +121,8 @@
 .room-info { padding: 18px 20px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 14px; }
 .ri-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .ri-top .badge { flex: 0 0 auto; white-space: nowrap; margin-top: 4px; }
-.ri-title { margin: 0; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.3; }
+.ri-top .ri-review { flex: 0 0 auto; white-space: nowrap; margin-top: -2px; }   /* 끝난 파티: 종료 배지 옆 */
+.ri-title { flex: 1; min-width: 0; margin: 0; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.3; }
 .ri-intro { margin: 12px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink2); overflow-wrap: anywhere; }   /* 방장 한마디: 제목 아래 부제처럼 */
 /* 테마 · 매장 · 일시 · 모집 마감: 위 작은 이름표 + 아래 값. 좁으면 2칸씩 */
 .ri-facts { display: grid; grid-template-columns: repeat(4, minmax(0, auto)); justify-content: start; gap: 10px 36px; margin: 16px 0 0; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -173,7 +174,6 @@
 .chat-new[hidden] { display: none; }
 .chat-form { display: flex; gap: 8px; margin-top: 10px; }
 /* 끝난 파티: 입력칸 자리에 후기 쓰기 버튼 (보내기 버튼 자리, 오른쪽) */
-.chat-ended { display: flex; justify-content: flex-end; margin-top: 10px; }
 .chat-input { flex: 1; min-width: 0; padding: 10px 12px; font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
 .chat-input:focus { outline: none; border-color: var(--accent); }
 .room-gone { padding: 40px 20px; text-align: center; }
@@ -183,23 +183,27 @@
   .msg { max-width: 88%; }
 }
 
-/* ---------- 내 채팅 (mypage/chats) ---------- */
-.chat-list { display: flex; flex-direction: column; gap: 10px; word-break: keep-all; overflow-wrap: anywhere; }
-.chat-sk { height: 104px; border-radius: 10px; }
+/* ---------- 내 파티 (mypage/chats) ---------- */
+/* 3열 카드: [왼쪽 날짜 칸] [배지 / 제목 / 테마 · 인원]. 좁아지면 2열 → 1열 */
+.chat-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; word-break: keep-all; }
+.chat-list > :not(.chat-row):not(.chat-sk) { grid-column: 1 / -1; }   /* 빈 목록 · 오류 안내는 한 줄 전체 */
+.chat-sk { height: 84px; border-radius: 10px; }
 .chat-row { position: relative; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); transition: border-color .15s, background .15s; }
 .chat-row:hover, .chat-row:focus-within { border-color: var(--accent); background: var(--surface2); }
-.chat-row.ended { opacity: .78; }
-.cr-link { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; text-decoration: none; color: var(--ink); }
+.chat-row.ended { opacity: .6; }
+.cr-link { display: flex; align-items: center; gap: 14px; padding: 12px 14px; text-decoration: none; color: var(--ink); }
 .cr-link:focus-visible { outline: none; }
-.cr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.cr-title { font-size: 16px; line-height: 1.35; }
-.cr-tags { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; white-space: nowrap; }
-.cr-tags .tag { margin: 0; }
-.cr-meta { font-size: 13px; color: var(--ink2); }
-.cr-last { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
-.cr-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cr-when { flex: 0 0 auto; }
-.cr-review { margin: 0 16px 14px; }
+.cr-date { flex: 0 0 auto; width: 60px; display: flex; flex-direction: column; align-items: center; padding: 6px 0; border-radius: 8px; background: var(--surface2); }
+.chat-row:hover .cr-date, .chat-row:focus-within .cr-date { background: var(--bg); }
+.cr-d { font-size: 19px; font-weight: 900; line-height: 1.15; }
+.cr-m { font-size: 11px; color: var(--ink2); white-space: nowrap; }
+.cr-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.cr-title { font-size: 15px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cr-tags { display: flex; align-items: center; gap: 4px; margin-bottom: 1px; white-space: nowrap; }
+.cr-tags .lead-tag { margin: 0; }
+.cr-meta { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 1000px) { .chat-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .chat-list { grid-template-columns: minmax(0, 1fr); } }
 
 .cd-body { margin: 0 0 18px; font-size: 14px; line-height: 1.55; }
 .pdialog .btn-accent.danger-yes { background: var(--danger); }
