@@ -32,6 +32,9 @@
 .pl-theme { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px; border-radius: 99px; font-size: 13px;
   background: rgba(139, 92, 246, .18); border: 1px solid var(--accent); color: #fff; }
 .pl-theme[hidden] { display: none; }
+/* 테마 이름이 길면 한 줄로 자르고 … (전체 이름은 마우스를 올리면 보임) */
+#theme-filter-name { max-width: min(220px, 60vw); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pl-theme { max-width: 100%; }
 .pl-theme-x { background: none; border: 0; color: var(--ink2); cursor: pointer; font-size: 13px; padding: 0 6px; }
 .pl-theme-x:hover { color: #fff; }
 .pl-count { font-size: 13px; }

@@ -58,6 +58,7 @@
     try {
       const t = await api.get("/api/themes/" + encodeURIComponent(state.themeId));
       $("theme-filter-name").textContent = t.title;
+      $("theme-filter-name").title = t.title;   // 잘려도 마우스를 올리면 전체 이름
     } catch (e) { /* 이름을 못 불러와도 조건은 그대로 */ }
   }
 
