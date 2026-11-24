@@ -1,5 +1,5 @@
 // S26 내 정보 (pages/mypage/profile.html) · A 담당 (선호 장르 칸만 D 담당 API)
-//   A-7 내 정보 · A-8 닉네임 (+ A-4 중복 확인) · A-9 비밀번호 · 이메일 등록·수정 · D-7/D-8 선호 장르 (손님만)
+//   A-7 내 정보 · A-8 닉네임 (+ A-4 중복 확인) · A-9 비밀번호 · 이메일 등록·수정 · D-7/D-8 선호 장르 (손님만) · 회원 탈퇴
 //   손님·사장·관리자 모두 헤더 "내 정보"로 들어온다. 손님에게만 마이페이지 탭을 보여 준다
 //   화면: 카드 하나에 아이디 · 비밀번호 · 닉네임 · 선호 장르 줄. [수정]을 누르면 팝업에서 고친다
 (function () {
@@ -49,6 +49,7 @@
     setupPassword();
     setupNickname();
     setupEmail();
+    if (info.role !== "ADMIN") setupWithdraw();
     if (isUser) setupGenres();
   }
 
@@ -150,6 +151,60 @@
       $("email").placeholder = info.email ? "지금 이메일: " + info.email : "이메일 주소";
     });
     $("email-edit").addEventListener("click", function () { dlg.open(); $("email").focus(); });
+  }
+
+  // ---------- 회원 탈퇴 ----------
+  //   서버가 비밀번호를 다시 확인한다. 매장이 남은 사장은 409 (팝업 안에 문구)
+  //   성공하면 토큰을 지우고 로그인 화면으로 ("탈퇴했어요" 안내)
+  function setupWithdraw() {
+    $("withdraw-line").hidden = false;
+    $("wd-user").value = info.loginId;
+    const list = $("withdraw-list");
+    const pw = $("wd-pw");
+    const pwMsg = $("wd-pw-msg");
+    const agree = $("wd-agree");
+    const save = $("wd-save");
+    const errorBox = $("withdraw-error");
+
+    const lines = info.role === "OWNER"
+      ? ["매장이 남아 있으면 탈퇴할 수 없어요. 매장을 먼저 정리해 주세요.",
+         "사업자등록번호와 사업자등록증은 지워져요."]
+      : ["참여 중인 파티에서 나가고, 내가 방장인 진행 전 파티는 삭제돼요.",
+         "찜 목록과 선호 장르는 지워져요.",
+         "남긴 후기와 지난 채팅은 \"탈퇴한 회원\"으로 남아요."];
+    lines.push("탈퇴하면 되돌릴 수 없어요. 같은 아이디·이메일로 새로 가입할 수는 있어요.");
+    lines.forEach(function (t) { list.append(el("li", null, t)); });
+
+    function paintSave() { save.disabled = !agree.checked || !pw.value; }
+    agree.addEventListener("change", paintSave);
+    pw.addEventListener("input", function () { MemberForm.setMsg(pwMsg, pw, "", ""); errorBox.hidden = true; paintSave(); });
+
+    const dlg = dialog("withdraw-dialog", function () {
+      pw.value = "";
+      agree.checked = false;
+      errorBox.hidden = true;
+      MemberForm.setMsg(pwMsg, pw, "", "");
+      paintSave();
+    });
+    $("withdraw-open").addEventListener("click", function () { dlg.open(); pw.focus(); });
+
+    $("withdraw-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      if (!pw.value) { MemberForm.setMsg(pwMsg, pw, "비밀번호를 입력해 주세요.", "bad"); pw.focus(); return; }
+      if (!agree.checked) return;
+      save.disabled = true;
+      save.textContent = "탈퇴하는 중…";
+      try {
+        await api.post("/api/members/me/withdraw", { password: pw.value });
+        Auth.clear();
+        location.replace(Routes.url("login", { bye: 1 }));
+      } catch (err) {
+        if (err.status === 400) { MemberForm.setMsg(pwMsg, pw, err.message, "bad"); pw.value = ""; pw.focus(); }
+        else { errorBox.textContent = err.message; errorBox.hidden = false; }   // 409 매장이 남음 등
+        save.textContent = "탈퇴하기";
+        paintSave();
+      }
+    });
   }
 
   // ---------- 닉네임 (A-8, 중복 확인 A-4) ----------

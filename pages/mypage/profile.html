@@ -70,6 +70,8 @@
           </li>
         </ul>
       </section>
+      <!-- 회원 탈퇴 (관리자는 안 보임) -->
+      <p class="withdraw-line" id="withdraw-line" hidden><button class="withdraw-link" id="withdraw-open" type="button">회원 탈퇴</button></p>
     </template>
 
     <!-- 비밀번호 수정 팝업 (A-9) -->
@@ -150,6 +152,29 @@
         </div>
         <div class="pdlg-foot">
           <button class="btn btn-line" type="button" data-close>닫기</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- 회원 탈퇴 팝업: 무엇이 어떻게 되는지 보여 주고, 비밀번호 + 확인 체크 -->
+    <dialog class="pdlg" id="withdraw-dialog" aria-labelledby="withdraw-title">
+      <form id="withdraw-form" novalidate>
+        <div class="pdlg-head">
+          <h2 id="withdraw-title">회원 탈퇴</h2>
+          <button class="pdlg-x" type="button" data-close aria-label="닫기">✕</button>
+        </div>
+        <ul class="withdraw-list" id="withdraw-list"></ul>
+        <p class="form-error" id="withdraw-error" role="alert" hidden></p>
+        <input type="text" autocomplete="username" id="wd-user" hidden>
+        <div class="field">
+          <label for="wd-pw">비밀번호 확인</label>
+          <input class="input" id="wd-pw" type="password" autocomplete="current-password" maxlength="20" aria-describedby="wd-pw-msg">
+          <p class="field-msg" id="wd-pw-msg" aria-live="polite"></p>
+        </div>
+        <label class="withdraw-agree"><input type="checkbox" id="wd-agree"> 위 내용을 확인했고, 탈퇴하면 되돌릴 수 없다는 걸 알아요.</label>
+        <div class="pdlg-foot">
+          <button class="btn btn-line" type="button" data-close>취소</button>
+          <button class="btn btn-danger" id="wd-save" type="submit" disabled>탈퇴하기</button>
         </div>
       </form>
     </dialog>
