@@ -195,17 +195,17 @@
     (p.genres || []).forEach(function (name) { g.append(el("span", "pb-genre", name)); });
     top.append(g);
     top.append(el("div", "pb-date", md(play)));
-    top.append(el("div", "pb-time", hm(play) + " 플레이 · " + p.storeName));
+    top.append(el("div", "pb-time", hm(play) + " 시작 · " + p.storeName));
     c.append(top);
 
     const body = el("div", "pb-body");
     const badges = el("div", "pb-badges");
     if (p.joined) badges.append(el("span", "badge mine", "참여 중"));
     if (p.kicked) badges.append(el("span", "badge bad", "강퇴됨"));
-    if (full) {
+    else if (full) {   // 강퇴됐으면 강퇴 배지 하나만
       const st = UI.partyStatus("FULL");
       badges.append(el("span", st.cls, st.label));
-    } else if (!p.kicked && deadline - Date.now() < 24 * 3600 * 1000) badges.append(el("span", "badge soon", "곧 마감"));
+    }
     body.append(badges);
     body.append(el("div", "pb-title", p.title));
     body.append(el("div", "pb-intro", "“" + p.intro + "”"));
@@ -218,9 +218,8 @@
     body.append(seats);
 
     const foot = el("div", "pb-foot");
-    if (p.kicked) foot.append(el("div", "kicked-note", "강퇴된 파티라 다시 참여할 수 없어요"));
-    else if (full) foot.append(el("div", "pb-deadline full", "인원이 다 찼어요"));
-    else foot.append(el("div", "pb-deadline", "⏰ " + md(deadline) + " " + hm(deadline) + "까지 모집"));
+    // 강퇴·정원 마감은 배지가 이미 말하니 모집 기한 줄을 빼고, 모집 중일 때만 기한을 보여 준다
+    if (!p.kicked && !full) foot.append(deadlineLine(deadline, play));
     foot.append(el("div", "muted", "👑 방장 " + p.leaderNickname));
     body.append(foot);
     c.append(body);
@@ -229,6 +228,19 @@
       + p.currentPeople + "/" + p.maxPeople + "명" + (full ? ", 정원 마감" : "") + (p.joined ? ", 참여 중" : "") + (p.kicked ? ", 강퇴되어 참여 불가" : ""));
     c.addEventListener("click", function () { onPick(p); });
     return c;
+  }
+
+  // 모집 기한 한 줄. 날짜는 위의 플레이 날짜와 겹치지 않게 "당일·전날"로 줄이고, 24시간 안이면 "곧 마감"
+  function deadlineLine(deadline, play) {
+    const DAY = 24 * 3600 * 1000;
+    const dayNo = function (d) { return Math.round(new Date(d.getFullYear(), d.getMonth(), d.getDate()) / DAY); };
+    if (deadline - Date.now() < DAY) {
+      const gap = dayNo(deadline) - dayNo(new Date());
+      return el("div", "pb-deadline soon", "⏰ 곧 마감 · " + (gap === 0 ? "오늘" : "내일") + " " + hm(deadline) + "까지");
+    }
+    const before = dayNo(play) - dayNo(deadline);
+    const day = before === 0 ? "당일" : before === 1 ? "전날" : md(deadline);
+    return el("div", "pb-deadline", "⏰ " + day + " " + hm(deadline) + "까지 모집");
   }
 
   function onPick(p) {
