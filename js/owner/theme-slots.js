@@ -32,7 +32,6 @@ const ThemeSlots = (function () {
       return;
     }
     apply(slots);
-    $("slot-play").textContent = playMinutes;
     $("slot-editor").hidden = false;
 
     document.querySelectorAll(".week-col").forEach(bindColumn);
@@ -107,8 +106,8 @@ const ThemeSlots = (function () {
       else if (warn.textContent.indexOf("개까지") !== -1) warn.textContent = "";
     });
     const sum = $("slot-summary");
-    sum.textContent = "주중 " + data.weekday.length + "회 · 주말 " + data.weekend.length + "회";
-    if (dirty()) sum.append(el("b", null, " · 저장 안 됨"));
+    sum.textContent = "";
+    if (dirty()) sum.append(el("b", null, "저장 안 됨"));
     $("slot-save").disabled = !dirty();
   }
 

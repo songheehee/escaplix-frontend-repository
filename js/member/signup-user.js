@@ -1,5 +1,5 @@
 // S03-1 손님 회원가입 (pages/member/signup-user.html) · A 담당
-//   A-3 아이디 중복 · A-4 닉네임 중복 · B-7 장르 목록 · A-1 가입
+//   A-3 아이디 중복 · A-4 닉네임 중복 · 이메일 인증 · B-7 장르 목록 · A-1 가입
 //   성공하면 로그인 화면으로 (아이디를 채워서)
 (function () {
   const $ = UI.$;
@@ -26,6 +26,11 @@
     path: "/api/members/check-nickname", param: "nickname",
     validate: R.nickname, emptyText: "닉네임을 입력해 주세요.",
     okText: "사용할 수 있는 닉네임이에요.", takenText: "이미 사용 중인 닉네임이에요.",
+  });
+  const emailCheck = MemberForm.emailVerify({
+    input: $("email"), sendBtn: $("email-send"), msg: $("email-msg"),
+    codeRow: $("email-code-row"), code: $("email-code"), verifyBtn: $("email-verify"), codeMsg: $("email-code-msg"),
+    sendPath: "/api/members/email-code", verifyPath: "/api/members/email-code/verify",
   });
   const pwCheck = MemberForm.passwordMatch($("password"), $("password2"), $("password-msg"), $("password2-msg"), R.password);
 
@@ -58,11 +63,13 @@
     if (!(await idCheck.ensure())) return;
     if (!pwCheck.ok()) return;
     if (!(await nickCheck.ensure())) return;
+    if (!emailCheck.ensure()) return;
 
     const body = {
       loginId: $("loginId").value.trim(),
       password: $("password").value,
       nickname: $("nickname").value.trim(),
+      email: emailCheck.value(),
       genreIds: Array.from(form.querySelectorAll("input[name=genreIds]:checked")).map(function (c) { return Number(c.value); }),
     };
 
@@ -75,6 +82,8 @@
       // 확인한 뒤에 다른 사람이 먼저 가입했으면 409 → 그 칸에 표시
       if (err.status === 409 && err.message.indexOf("아이디") >= 0) idCheck.taken(err.message);
       else if (err.status === 409 && err.message.indexOf("닉네임") >= 0) nickCheck.taken(err.message);
+      else if (err.status === 409 && err.message.indexOf("이메일") >= 0) emailCheck.taken(err.message);
+      else if (err.status === 400 && err.message.indexOf("이메일 인증") >= 0) emailCheck.expired(err.message);
       else { errorBox.textContent = err.message; errorBox.hidden = false; errorBox.scrollIntoView({ block: "center" }); }
       submitBtn.disabled = false;
       submitBtn.textContent = "가입하기";

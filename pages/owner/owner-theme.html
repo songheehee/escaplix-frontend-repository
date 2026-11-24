@@ -17,7 +17,6 @@
       <h1 class="page-title" id="title">새 테마</h1>
       <div class="m-actions" id="theme-actions" hidden>
         <span id="status"></span>
-        <button class="btn btn-line small" type="button" id="toggle-status" hidden></button>
       </div>
     </div>
 
@@ -96,7 +95,6 @@
       </section>
 
       <div class="f-submit">
-        <span class="note" id="submit-note">승인 전에는 손님에게 보이지 않아요.</span>
         <a class="btn btn-line" id="cancel">취소</a>
         <button class="btn btn-accent" type="submit" id="submit">승인 요청</button>
       </div>
@@ -104,7 +102,6 @@
 
     <!-- [시간표] 탭 (관리자 개편 11/23: 시간은 직접 치거나(1315 → 13:15) 시·분을 골라 넣음, 회차 겹침 허용) -->
     <section id="slots-panel" role="tabpanel" aria-labelledby="tab-slots" hidden>
-      <p class="muted" style="margin:0 0 16px">시작 시간만 넣으면 끝나는 시간은 제한 시간 <b id="slot-play"></b>분으로 계산해요.</p>
       <div class="m-error" id="slot-error" role="alert" hidden></div>
       <div id="slot-editor" hidden>
         <div class="week-grid">

@@ -3,6 +3,7 @@
 //   테마 한 줄: 이름 · 상태 · 평점 · 주중 N회 / 주말 N회. 시간표가 없으면 "시간표 없음"을 눈에 띄게
 //   회차 수는 C-5 에 없어서 테마마다 C-10 을 부른다 (매장 하나의 테마는 몇 개뿐이라 한꺼번에)
 //   줄을 누르면 ③ 테마 화면. 반려된 테마는 거기서 고쳐서 다시 신청
+//   운영 종료/재개(C-9)는 줄 끝 버튼. 테마 화면 상태 배지 옆에 두면 잘못 누르기 쉬워 여기로 옮김
 //   관리자(매장 관리, 관리자 개편 11/23): 승인 상세와 같은 틀 (C-14 상세 + C-15·A-11 서류)
 //     맨 위 한 줄(이름 / 등록자·등록일, [매장 수정]) → 매장 → 서류 → 테마 (+ 테마 등록)
 (function () {
@@ -98,11 +99,10 @@
       dl.append(el("dt", null, r[0]), el("dd", null, r[1] || "-"));
     });
     info.append(dl);
-    if (s.status === "PENDING") info.append(el("p", "m-notice", "관리자 승인 전이라 손님에게 보이지 않아요. 승인되면 테마를 등록할 수 있어요."));
     if (s.status === "REJECTED" && s.rejectReason) info.append(Manage.rejectNote(s.rejectReason));
     box.append(info);
 
-    const edit = el("a", "btn btn-line small", s.status === "REJECTED" ? "고쳐서 다시 신청" : "매장 수정");
+    const edit = el("a", "btn small btn-edit", "매장 수정");
     edit.href = Routes.url("storeForm", { id: s.storeId });
     const acts = el("div", "m-actions");
     acts.append(edit);
@@ -144,13 +144,16 @@
     box.append(list);
   }
 
+  // 줄 전체가 링크 (제목 링크를 줄 크기로 늘림). 운영 버튼만 그 위에 올라와 따로 눌림
   function themeRow(t, slots) {
-    const row = el("a", "m-row");
-    row.href = Routes.url("ownerTheme", { id: t.themeId });
+    const row = el("div", "m-row");
 
+    const link = el("a", "r-link", t.title);
+    link.href = Routes.url("ownerTheme", { id: t.themeId });
     const main = el("div", "r-main");
-    main.append(el("div", "t-title", t.title), el("div", "sub", UI.genresText(t.genres) + " · " + t.playMinutes + "분"));
-    if (!admin && t.status === "REJECTED" && t.rejectReason) main.append(Manage.rejectNote(t.rejectReason));   // 관리자 매장 관리에서는 반려 사유 안 보여 줌
+    const title = el("div", "t-title");
+    title.append(link);
+    main.append(title, el("div", "sub", UI.genresText(t.genres) + " · " + t.playMinutes + "분"));
 
     const st = el("div", "r-st");
     st.append(Manage.badge(t.status));
@@ -170,7 +173,43 @@
       slotCell.textContent = "주중 " + slots.weekday.length + "회 / 주말 " + slots.weekend.length + "회";
     }
 
-    row.append(main, st, rating, slotCell, el("span", "go", "›"));
+    row.append(main, st, rating, slotCell, statusButton(t, st));
     return row;
+  }
+
+  // 운영 중이면 [운영 종료], 종료됐으면 [운영 재개]. 승인 전·반려 테마는 바꿀 수 없어 빈 칸
+  function statusButton(t, stCell) {
+    const wrap = el("div", "r-act");
+    if (t.status !== "OPEN" && t.status !== "CLOSED") return wrap;
+    const btn = el("button");
+    btn.type = "button";
+    paint();
+    wrap.append(btn);
+
+    function paint() {
+      btn.textContent = t.status === "OPEN" ? "운영 종료" : "운영 재개";
+      btn.className = "btn small " + (t.status === "OPEN" ? "btn-no" : "btn-line");
+    }
+    btn.addEventListener("click", async function () {
+      const next = t.status === "OPEN" ? "CLOSED" : "OPEN";
+      const msg = next === "CLOSED"
+        ? "'" + t.title + "' 운영을 종료하면 손님 화면에서 사라져요. 찜 목록과 후기 기록에는 남아요. 종료할까요?"
+        : "'" + t.title + "' 을(를) 다시 운영하면 손님 화면에 바로 보여요. 재개할까요?";
+      if (!confirm(msg)) return;
+      Manage.busy(btn, true);
+      try {
+        const r = await api.put("/api/owner/themes/" + t.themeId + "/status", { status: next });
+        Manage.busy(btn, false);
+        t.status = r.status;
+        stCell.textContent = "";
+        stCell.append(Manage.badge(t.status));
+        paint();
+        UI.toast(t.status === "CLOSED" ? "운영을 종료했어요." : "운영을 다시 시작했어요.");
+      } catch (e) {
+        Manage.busy(btn, false);
+        UI.toast(e.message, "err");
+      }
+    });
+    return wrap;
   }
 })();

@@ -45,8 +45,8 @@ const Manage = (function () {
     const s = STATUS[status] || [status, "off"];
     return el("span", "st " + s[1], s[0]);
   }
-  function rejectNote(reason, prefix) {
-    return el("div", "reject-note", (prefix || "반려 사유") + ": " + reason);
+  function rejectNote(reason) {
+    return el("div", "reject-note", "반려 사유: " + reason);
   }
 
   // ---------- 날짜 ("2026-11-17T10:00:00") ----------

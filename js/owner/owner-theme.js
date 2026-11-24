@@ -62,8 +62,7 @@
     Manage.crumbs($("crumbs"), [[store.name, storeUrl], [theme ? theme.title : "새 테마"]]);
     document.title = (theme ? theme.title : "새 테마") + " · Escaplix";
     $("title").textContent = theme ? theme.title : "새 테마";
-    $("submit").textContent = admin ? "저장" : (theme ? "수정하고 다시 승인 요청" : "승인 요청");
-    $("submit-note").textContent = admin ? "저장하면 바로 손님에게 보여요." : "승인 전에는 손님에게 보이지 않아요.";
+    $("submit").textContent = admin ? "저장" : "승인 요청";
 
     renderGenres(genres);
     if (theme) {
@@ -145,12 +144,11 @@
     document.querySelectorAll("#genres input").forEach(function (cb) { cb.checked = ids.indexOf(Number(cb.value)) !== -1; });
 
     $("re-approve").hidden = admin;
-    if (t.status === "REJECTED" && t.rejectReason) form.prepend(Manage.rejectNote(t.rejectReason, "지난번 반려 사유"));
+    if (t.status === "REJECTED" && t.rejectReason) form.prepend(Manage.rejectNote(t.rejectReason));
 
-    // 위쪽: 상태 · 운영 종료/재개
+    // 위쪽: 상태 (운영 종료/재개는 매장 화면 테마 목록에서)
     $("theme-actions").hidden = false;
     paintStatus(t.status);
-    $("toggle-status").addEventListener("click", toggleStatus);
   }
 
   function paintStatus(status) {
@@ -158,29 +156,6 @@
     const box = $("status");
     box.textContent = "";
     box.append(Manage.badge(status));
-    const btn = $("toggle-status");
-    // C-9: OPEN ↔ CLOSED 만. 승인 전·반려 테마는 바꿀 수 없음
-    btn.hidden = status !== "OPEN" && status !== "CLOSED";
-    btn.textContent = status === "OPEN" ? "운영 종료" : "운영 재개";
-  }
-
-  async function toggleStatus() {
-    const next = theme.status === "OPEN" ? "CLOSED" : "OPEN";
-    const msg = next === "CLOSED"
-      ? "운영을 종료하면 손님 화면에서 사라져요. 찜 목록과 후기 기록에는 남아요. 종료할까요?"
-      : "다시 운영하면 손님 화면에 바로 보여요. 재개할까요?";
-    if (!confirm(msg)) return;
-    const btn = $("toggle-status");
-    Manage.busy(btn, true);
-    try {
-      const r = await api.put("/api/owner/themes/" + theme.themeId + "/status", { status: next });
-      Manage.busy(btn, false);
-      paintStatus(r.status);
-      UI.toast(r.status === "CLOSED" ? "운영을 종료했어요." : "운영을 다시 시작했어요.");
-    } catch (e) {
-      Manage.busy(btn, false);
-      UI.toast(e.message, "err");
-    }
   }
 
   function checkedGenres() {
