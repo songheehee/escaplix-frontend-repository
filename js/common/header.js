@@ -23,7 +23,7 @@
     USER: {
       home: "home",
       links: [["home", "홈"], ["stores", "매장"], ["partyList", "파티"]],   // 찜 목록은 프로필 ▾ 안에
-      my: [["mypage", "내 기록"], ["wishes", "찜 목록"], ["chats", "내 채팅"], ["profile", "내 정보"]],
+      my: [["mypage", "내 기록"], ["wishes", "찜 목록"], ["chats", "내 파티"], ["profile", "내 정보"]],
       search: true,
     },
     OWNER: {

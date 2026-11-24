@@ -5,7 +5,7 @@ const PartyNav = (function () {
   // 돌아갈 수 있는 화면 (routes.js 이름 → 링크 문구)
   const LABELS = {
     home: "홈으로", theme: "테마 상세로", stores: "매장 목록으로", store: "매장 상세로",
-    partyList: "파티 목록", chats: "채팅 목록", wishes: "찜 목록으로", mypage: "마이페이지로",
+    partyList: "파티 목록", chats: "내 파티", wishes: "찜 목록으로", mypage: "마이페이지로",
   };
 
   // 바로 전 화면이 위 표의 어느 화면인지 (없으면 null)
@@ -23,7 +23,7 @@ const PartyNav = (function () {
 
   /**
    * link: <a> 요소, fallback: { name, params } (기본 파티 목록)
-   * 반환: { go(): 같은 곳으로 이동 (취소 · 나가기 · 삭제 뒤), label: "내 채팅" 같은 화면 이름 }
+   * 반환: { go(): 같은 곳으로 이동 (취소 · 나가기 · 삭제 뒤), label: "내 파티" 같은 화면 이름 }
    */
   function setup(link, fallback) {
     const fb = fallback || { name: "partyList" };

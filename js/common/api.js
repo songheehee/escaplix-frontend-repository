@@ -82,7 +82,7 @@ const api = (function () {
         method: method,
         headers: headers,
         // 서버 응답에 Cache-Control 이 없어서, 뒤로가기로 돌아온 화면에서 브라우저가 예전 응답을 캐시에서 꺼내 쓴다
-        // (예: 파티에서 나가고 돌아왔는데 내 채팅에 그대로 남음) → API 는 항상 서버에 새로 묻는다
+        // (예: 파티에서 나가고 돌아왔는데 내 파티에 그대로 남음) → API 는 항상 서버에 새로 묻는다
         cache: "no-store",
         body: body === undefined ? undefined : (isForm ? body : JSON.stringify(body)),
       });

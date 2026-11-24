@@ -38,7 +38,7 @@ button { font: inherit; }
 :focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .muted { color: var(--muted); }
-/* 마이페이지 탭 화면 (내 기록 · 찜 목록 · 내 채팅 · 내 정보): 깜빡임 방지
+/* 마이페이지 탭 화면 (내 기록 · 찜 목록 · 내 파티 · 내 정보): 깜빡임 방지
    - 탭 아래 내용은 데이터를 다 받은 뒤(body.my-ready) 한 번에 부드럽게 보여 줌
    - 혹시 JS 가 멈춰도 2초 뒤에는 그냥 보이게 함
    - 내용이 짧아도 아래 footer 가 위로 올라왔다 밀려나지 않게 본문 높이를 화면만큼 잡아 둠 */
