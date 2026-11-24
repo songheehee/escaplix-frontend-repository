@@ -37,7 +37,6 @@
 .pl-theme { max-width: 100%; }
 .pl-theme-x { background: none; border: 0; color: var(--ink2); cursor: pointer; font-size: 13px; padding: 0 6px; }
 .pl-theme-x:hover { color: #fff; }
-.pl-count { font-size: 13px; }
 
 /* 장르 칩 (목록 필터, 파티 만들기에서도 씀) */
 .pchips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -59,29 +58,33 @@
 .party-card:hover, .party-card:focus-visible { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.45); outline: none; }
 .party-card.kicked { opacity: .5; cursor: not-allowed; }
 .party-card.kicked:hover { transform: none; border-color: var(--line); box-shadow: none; }
-.pb-top { padding: 12px 14px; color: #fff; }
-.pb-theme { font-size: 12px; font-weight: 700; opacity: .92; }
-.pb-genres { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
+/* 위 칸: 테마(제일 크게) · 장르 · 날짜 시간 · 매장 */
+.pb-top { padding: 14px; color: #fff; background: var(--surface2); display: flex; flex-direction: column; gap: 2px; }
+.pb-theme { font-size: 19px; font-weight: 900; line-height: 1.25; letter-spacing: -.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pb-theme-row { display: flex; align-items: center; gap: 8px; }
+.pb-theme-row .pb-theme { flex: 1; min-width: 0; }
+.pb-badges { display: flex; gap: 4px; flex-shrink: 0; }
+.pb-genres { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
 .pb-genre { font-size: 11px; padding: 1px 8px; border-radius: 99px; background: rgba(255,255,255,.2); }
-.pb-date { font-size: 22px; font-weight: 800; line-height: 1.2; }
-.pb-time { font-size: 13px; opacity: .88; }
-.pb-body { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; flex: 1; }
-.pb-badges { display: flex; gap: 4px; flex-wrap: wrap; min-height: 18px; }
+.pb-date { font-size: 15px; font-weight: 800; line-height: 1.3; }
+.pb-store { font-size: 12px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pb-body { display: flex; flex-direction: column; gap: 12px; padding: 14px; flex: 1; }
 .badge.mine { background: rgba(139, 92, 246, .25); color: var(--accent-ink); }
+.badge.soon { background: rgba(255, 92, 108, .18); color: #ff9aa5; }   /* 모집 기한 하루 안 */
 .badge.bad { background: rgba(255, 92, 108, .18); color: #ff9aa5; }
 /* 정원 마감 파티: 보이기만 하고 참여는 못 함 → 살짝 흐리게 */
 .party-card.full { opacity: .72; }
 .party-card.full:hover { opacity: .9; }
-.pb-title { font-weight: 800; line-height: 1.35; }
-.pb-intro { font-size: 13px; color: var(--ink2); background: var(--surface2); border-left: 3px solid var(--accent); padding: 6px 9px; border-radius: 4px; }
+/* 제목은 한 줄, 넘으면 … (전체 제목은 참여 확인 팝업에서) → 카드 높이가 모두 같음 */
+.pb-title { font-weight: 700; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pb-seats { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+.pb-seats b { white-space: nowrap; }
 .seats { display: flex; gap: 4px; }
 .seats i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--accent); }
 .seats i.on { background: var(--accent); }
-.pb-foot { margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
-.pb-deadline { color: var(--gold); }
-.pb-deadline.soon { font-weight: 700; }
-.party-sk { height: 290px; border-radius: 10px; }
+/* 한마디 (참여 확인 팝업에서 씀. 카드에서는 뺌) */
+/* 모집 마감: 인원 아래 따로 한 줄 */
+.party-sk { height: 240px; border-radius: 10px; }
 
 /* ---------- 파티 만들기 (party-form). 입력칸·카드는 member.css 를 같이 씀 ---------- */
 .slots { display: flex; flex-wrap: wrap; gap: 8px; min-height: 38px; align-items: center; }
@@ -119,9 +122,14 @@
 .ri-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .ri-top .badge { flex: 0 0 auto; white-space: nowrap; margin-top: 4px; }
 .ri-title { margin: 0; font-size: clamp(20px, 2.4vw, 26px); line-height: 1.3; }
-.ri-meta { margin-top: 6px; font-size: 14px; color: var(--ink2); }
-.ri-deadline { margin-top: 2px; font-size: 13px; color: var(--gold); }
-.ri-intro { margin-top: 10px; font-size: 14px; }
+.ri-intro { margin: 12px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink2); overflow-wrap: anywhere; }   /* 방장 한마디: 제목 아래 부제처럼 */
+/* 테마 · 매장 · 일시 · 모집 마감: 위 작은 이름표 + 아래 값. 좁으면 2칸씩 */
+.ri-facts { display: grid; grid-template-columns: repeat(4, minmax(0, auto)); justify-content: start; gap: 10px 36px; margin: 16px 0 0; padding-top: 16px; border-top: 1px solid var(--line); }
+.ri-facts dt { font-size: 12px; color: var(--muted); }
+.ri-facts dd { margin: 2px 0 0; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.ri-facts [hidden] { display: none; }
+#ri-deadline { color: var(--gold); }
+@media (max-width: 640px) { .ri-facts { grid-template-columns: 1fr 1fr; gap: 10px 16px; } }
 .badge.st-recruiting { background: rgba(70, 214, 140, .15); color: var(--good); }
 .badge.st-full { background: rgba(242, 184, 75, .18); color: var(--gold); }
 .badge.st-closed { background: rgba(255, 92, 108, .15); color: var(--danger); }   /* 모집 마감: 빨강 */
@@ -135,11 +143,14 @@
 .member-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .member-list li { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; padding: 4px 10px; border-radius: 6px; background: var(--bg); font-size: 14px; }
 .member-list li.empty { color: var(--muted); border: 1px dashed var(--line); background: transparent; }
+.lead-tag { margin-left: 6px; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; color: var(--accent-ink); background: rgba(139, 92, 246, .2); vertical-align: 1px; }   /* 참여자 목록 방장 표시 */
 .member-list .me { color: var(--muted); font-size: 12px; margin-left: 4px; }
 /* 빨간 버튼 (파티 삭제 · 강퇴): 바탕을 옅은 빨강으로 채워 어두운 카드 위에서도 버튼으로 보이게 */
 .btn.danger { background: rgba(255, 92, 108, .14); color: #ff9aa5; border-color: rgba(255, 92, 108, .6); }
 .btn.danger:hover { background: rgba(255, 92, 108, .24); color: #ffc2c8; }
-.member-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.room-members { display: flex; flex-direction: column; }
+.member-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 14px; }   /* 나가기·마감 버튼은 카드 맨 아래 */
+.member-actions:empty { display: none; }
 /* 나가기 · 모집 마감: 투명 바탕 + 어두운 테두리는 카드와 구분이 안 돼서, 바탕을 채우고 테두리를 밝게 */
 .member-actions .btn-line { background: var(--surface2); border-color: #4a4356; color: var(--ink); }
 .member-actions .btn-line:hover { background: #2e2938; border-color: var(--ink2); }
@@ -155,7 +166,6 @@
 .msg.mine { align-self: flex-end; text-align: right; }
 .msg.mine .who { margin: 0 2px 3px 0; }
 .msg.mine .bubble { background: var(--accent-deep); color: #fff; border-radius: 12px 4px 12px 12px; text-align: left; }
-.msg.leader .who b::before { content: "👑 "; }
 .notice { align-self: center; font-size: 12px; color: var(--muted); background: rgba(255,255,255,.04); padding: 3px 12px; border-radius: 99px; }
 .day-line { align-self: center; font-size: 12px; color: var(--muted); margin: 6px 0; }
 .chat-empty { margin: auto; color: var(--muted); font-size: 14px; text-align: center; }
@@ -164,7 +174,6 @@
 .chat-form { display: flex; gap: 8px; margin-top: 10px; }
 /* 끝난 파티: 입력칸 자리에 후기 쓰기 버튼 (보내기 버튼 자리, 오른쪽) */
 .chat-ended { display: flex; justify-content: flex-end; margin-top: 10px; }
-.ri-deadline[hidden] { display: none; }
 .chat-input { flex: 1; min-width: 0; padding: 10px 12px; font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
 .chat-input:focus { outline: none; border-color: var(--accent); }
 .room-gone { padding: 40px 20px; text-align: center; }
@@ -202,7 +211,12 @@
 }
 .pdialog::backdrop { background: rgba(0, 0, 0, .6); }
 .pdialog h2 { margin: 0 0 12px; font-size: 19px; }
-.jd-box { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 8px; background: var(--surface2); font-size: 14px; }
-.jd-box .pb-intro { margin-top: 6px; }
-.jd-note { font-size: 12px; margin: 12px 0 16px; }
+.jd-box { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 10px; background: var(--surface2); font-size: 14px; margin-bottom: 18px; }
+.jd-title { font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
+.jd-intro { margin: 0; padding-top: 12px; border-top: 1px solid var(--line); line-height: 1.5; overflow-wrap: anywhere; }   /* 방장 한마디: 표 아래 */
+.jd-info { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.jd-info dt { color: var(--muted); }
+.jd-info dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+#jd-when { font-weight: 700; }
+#jd-seats { display: flex; align-items: center; gap: 8px; }
 .jd-btns { display: flex; justify-content: flex-end; gap: 8px; }

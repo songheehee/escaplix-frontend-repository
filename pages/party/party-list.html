@@ -37,7 +37,6 @@
         <span id="theme-filter-name"></span>
         <button class="pl-theme-x" id="theme-filter-clear" type="button" aria-label="테마 조건 지우기">✕</button>
       </span>
-      <span class="muted pl-count" id="count" aria-live="polite"></span>
     </div>
 
     <div class="party-grid" id="grid"></div>
@@ -47,12 +46,16 @@
   <dialog class="pdialog" id="join-dialog" aria-labelledby="jd-q">
     <h2 id="jd-q">이 파티에 참여할까요?</h2>
     <div class="jd-box">
-      <strong id="jd-title"></strong>
-      <div class="muted" id="jd-place"></div>
-      <div id="jd-when"></div>
-      <div class="pb-intro" id="jd-intro"></div>
+      <strong class="jd-title" id="jd-title"></strong>
+      <dl class="jd-info">
+        <dt>테마</dt><dd id="jd-theme"></dd>
+        <dt>매장</dt><dd id="jd-store"></dd>
+        <dt>일시</dt><dd id="jd-when"></dd>
+        <dt>인원</dt><dd id="jd-seats"></dd>
+        <dt>방장</dt><dd id="jd-leader"></dd>
+      </dl>
+      <p class="jd-intro" id="jd-intro"></p>
     </div>
-    <p class="muted jd-note">참여하면 파티 방(채팅)으로 이동해요. 나중에 방에서 나갈 수 있어요.</p>
     <div class="jd-btns">
       <button class="btn btn-line" id="jd-no" type="button">아니요</button>
       <button class="btn btn-accent" id="jd-yes" type="button">예, 참여할게요</button>

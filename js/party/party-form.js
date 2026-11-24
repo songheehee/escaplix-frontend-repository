@@ -82,14 +82,14 @@
     $("theme-info").textContent = t
       ? t.area + " · " + UI.genresText(t.genres) + " · " + UI.people(t.minPeople, t.maxPeople) + " · " + t.playMinutes + "분"
       : "";
-    // 모집 인원: 2명 이상이면서 테마 인원 범위 안 (기본은 테마 최대)
+    // 모집 인원: 2명 이상이면서 테마 인원 범위 안 (기본은 가장 적은 인원 = 보통 2명. 테마 최소가 3명 이상이면 그 인원)
     peopleSel.textContent = "";
     if (!t) {
       peopleSel.append(new Option("테마를 먼저 골라 주세요", ""));
       peopleSel.disabled = true;
     } else {
       for (let n = Math.max(2, t.minPeople); n <= t.maxPeople; n++) peopleSel.append(new Option(n + "명", n));
-      peopleSel.value = String(t.maxPeople);
+      peopleSel.value = String(Math.max(2, t.minPeople));
       peopleSel.disabled = false;
     }
     loadSlots();
