@@ -139,15 +139,25 @@
         UI.toast(wasEmpty ? "이메일을 등록했어요." : "이메일을 바꿨어요.");
       },
     });
-    // 팝업 안에서 Enter: 인증번호 줄이 열려 있으면 확인, 아니면 받기 (폼 제출로 새로고침되지 않게)
+    // 아래 [저장] = 인증번호 확인 (맞으면 바로 이메일이 바뀜). 칸 옆 [확인]은 숨기고 [저장]이 대신 누름
+    //   [저장]은 인증번호 줄이 열리고 6자리를 다 쳤을 때만 켜짐 (확인 중에는 꺼짐)
+    const save = $("email-save");
+    function paintSave() {
+      save.disabled = $("email-code-row").hidden || $("email-verify").disabled || $("email-code").value.length !== 6;
+    }
+    $("email-code").addEventListener("input", paintSave);
+    new MutationObserver(paintSave).observe($("email-code-row"), { attributes: true, attributeFilter: ["hidden"] });
+    new MutationObserver(paintSave).observe($("email-verify"), { attributes: true, attributeFilter: ["disabled"] });
+    // [저장]·Enter: 인증번호 줄이 열려 있으면 확인(=저장), 아니면 인증번호 발송 (폼 제출로 새로고침되지 않게)
     $("email-form").addEventListener("submit", function (e) {
       e.preventDefault();
-      if (!$("email-code-row").hidden) $("email-verify").click();
+      if (!$("email-code-row").hidden) { if ($("email-code").value.length === 6) $("email-verify").click(); }
       else $("email-send").click();
     });
 
     const dlg = dialog("email-dialog", function () {
       emailCheck.reset();
+      paintSave();
       $("email").placeholder = info.email ? "지금 이메일: " + info.email : "이메일 주소";
     });
     $("email-edit").addEventListener("click", function () { dlg.open(); $("email").focus(); });
@@ -234,7 +244,7 @@
 
     const dlg = dialog("nick-dialog", function () {
       nick.value = "";
-      nick.placeholder = "지금 닉네임: " + info.nickname;
+      nick.placeholder = "";   // "지금 닉네임: …" 안내는 안 보여 줌
       nickOk = false;
       MemberForm.setMsg(msg, nick, "", "");
       paintSave();

@@ -133,25 +133,25 @@
           <h2 id="email-title">이메일 수정</h2>
           <button class="pdlg-x" type="button" data-close aria-label="닫기">✕</button>
         </div>
-        <p class="muted email-note">아이디·비밀번호를 찾을 때 이 이메일로 인증해요.</p>
         <div class="field">
           <label for="email">새 이메일</label>
           <div class="input-row">
             <input class="input" id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"
                    maxlength="100" aria-describedby="email-msg">
-            <button class="btn btn-line" id="email-send" type="button">인증번호 받기</button>
+            <button class="btn btn-line" id="email-send" type="button">인증번호 발송</button>
           </div>
           <p class="field-msg" id="email-msg" aria-live="polite"></p>
           <div class="input-row code-row" id="email-code-row" hidden>
             <label class="sr-only" for="email-code">인증번호 6자리</label>
             <input class="input" id="email-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
                    placeholder="인증번호 6자리" aria-describedby="email-code-msg">
-            <button class="btn btn-line" id="email-verify" type="button">확인</button>
+            <button class="btn btn-line" id="email-verify" type="button" hidden>확인</button>   <!-- 숨김: 아래 [저장]이 대신 누름 -->
           </div>
           <p class="field-msg" id="email-code-msg" aria-live="polite"></p>
         </div>
         <div class="pdlg-foot">
-          <button class="btn btn-line" type="button" data-close>닫기</button>
+          <button class="btn btn-line" type="button" data-close>취소</button>
+          <button class="btn btn-accent" id="email-save" type="submit" disabled>저장</button>
         </div>
       </form>
     </dialog>
