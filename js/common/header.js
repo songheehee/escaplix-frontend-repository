@@ -152,7 +152,7 @@
     kw.type = "search";
     kw.name = "keyword";
     kw.maxLength = 50;
-    kw.placeholder = "테마·매장 이름 (비워 두면 전체)";
+    kw.placeholder = "테마·매장 이름";
     fields.append(field("검색어", kw, "sp-kw"));
 
     const area = UI.areaPicker();   // 큰 지역(서울…) 누르면 펼쳐져서 세부 지역을 고름
