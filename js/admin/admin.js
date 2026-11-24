@@ -1,5 +1,5 @@
 // S25 관리자 홈 (pages/admin/admin.html) · C 담당
-//   C-12 숫자 요약 (회원 수까지 한 번에), C-13 · C-17 승인 대기 → 매장 칸 · 테마 칸 (위아래)
+//   C-12 숫자 요약 (승인 대기 매장·테마, 공개 매장, 공개 테마), C-13 · C-17 승인 대기 → 매장 칸 · 테마 칸 (위아래)
 //   관리자 개편 11/23: 카드 아래 작은 글씨 없앰, "지금 처리할 것" 을 매장·테마로 나눔, 줄 전체가 링크
 (function () {
   const el = UI.el;
@@ -9,7 +9,7 @@
   const MAX_ROWS = 5;   // 칸마다 오래 기다린 순서로 최대 5개
   $("all-store").href = Routes.url("adminStores");
   $("all-theme").href = Routes.url("adminThemes");
-  load();
+  load().finally(function () { document.body.classList.add("adm-ready"); });   // 다 불러오면 제목 아래를 한 번에 보여 줌 (탭 이동 깜빡임 방지, manage.css .adm-fade)
 
   async function load() {
     let sum, stores, themes;
@@ -46,15 +46,13 @@
   }
 
   function renderStats(s) {
-    const m = s.memberCountByRole || {};
-    const total = (m.USER || 0) + (m.OWNER || 0) + (m.ADMIN || 0);
     const box = $("stats");
     box.textContent = "";
     box.append(
       stat("매장 승인 대기", s.pendingStores, s.pendingStores > 0),
       stat("테마 승인 대기", s.pendingThemes, s.pendingThemes > 0),
-      stat("전체 회원", total, false),
-      stat("공개 중 매장 / 테마", s.approvedStores + " / " + s.openThemes, false)
+      stat("공개 매장", s.approvedStores, false),
+      stat("공개 테마", s.openThemes, false)
     );
   }
 
