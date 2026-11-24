@@ -5,7 +5,7 @@
 //   줄을 누르면 ③ 테마 화면. 반려된 테마는 거기서 고쳐서 다시 신청
 //   운영 종료/재개(C-9)는 줄 끝 버튼. 테마 화면 상태 배지 옆에 두면 잘못 누르기 쉬워 여기로 옮김
 //   관리자(매장 관리, 관리자 개편 11/23): 승인 상세와 같은 틀 (C-14 상세 + C-15·A-11 서류)
-//     맨 위 한 줄(이름·승인됨 / 신청자·승인일, [매장 수정]) → 매장 → 서류 → 테마 (+ 테마 등록)
+//     맨 위 한 줄(이름 / 등록자·등록일, [매장 수정]) → 매장 → 서류 → 테마 (+ 테마 등록)
 (function () {
   const el = UI.el;
   const $ = UI.$;
@@ -14,6 +14,7 @@
   const storeId = Manage.numParam("id");
 
   const admin = me.role === "ADMIN";
+  if (admin) document.body.classList.add("adm-btns");   // 관리자: 상세 화면 버튼 크기를 하나로 (manage.css .adm-btns). 사장은 그대로
   if (!storeId) {
     Manage.stop("매장 번호가 없어요.", admin ? "매장 관리로" : "내 매장으로", Routes.url("owner", { list: 1 }));
     return;
@@ -39,10 +40,9 @@
     $("owner-view").hidden = true;
     $("admin-view").hidden = false;
     $("a-name").textContent = s.name;
-    $("a-status").append(Manage.badge(s.status));
-    Manage.metaRow($("a-meta"), s.owner
-      ? [["신청자", s.owner.loginId + " (" + s.owner.nickname + ")"], ["승인일", s.approvedAt ? Manage.ymd(s.approvedAt) : null]]
-      : [["등록자", "관리자"], ["등록일", Manage.ymd(s.approvedAt || s.createdAt)]]);
+    // 상태 표시(승인됨)는 안 보여 줌: 매장 관리에는 승인된 매장만 있음
+    // 등록자·등록일로 통일. 사장이 신청한 매장은 등록자 = 사장 아이디, 등록일 = 신청일
+    Manage.metaRow($("a-meta"), [["등록자", s.owner ? s.owner.loginId : "관리자"], ["등록일", Manage.ymd(s.createdAt)]]);
     $("a-edit").href = Routes.url("storeForm", { id: s.storeId });
 
     const body = $("a-body");

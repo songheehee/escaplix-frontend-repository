@@ -243,6 +243,7 @@ const Manage = (function () {
 
   // ---------- 승인 목록 위쪽 탭 (S22 매장 승인 · S15 테마 승인) ----------
   //   active: "stores" | "themes". 탭 옆 숫자는 승인 대기 수 (C-12)
+  //   돌려주는 값: 숫자까지 다 칠하면 끝나는 Promise (실패해도 끝남)
   function approvalTabs(box, active) {
     const tabs = [["stores", "adminStores", "매장"], ["themes", "adminThemes", "테마"]];
     const links = {};
@@ -254,9 +255,16 @@ const Manage = (function () {
       box.append(a);
     });
     // 탭 옆 숫자 = 승인 대기 수. 괄호 없이 작고 흐리게 "매장 1" (회원 관리 탭과 같은 모양)
-    api.get("/api/admin/summary").then(function (s) {
+    //   매장 ↔ 테마 탭을 오갈 때 숫자가 늦게 붙어 글자가 밀리지 않게 지난번 숫자를 먼저 칠하고, 새 숫자가 오면 바꿈
+    const KEY = "adminPendingCounts";
+    function paint(s) {
       tabCount(links.stores, "매장", s.pendingStores);
       tabCount(links.themes, "테마", s.pendingThemes);
+    }
+    try { const old = JSON.parse(sessionStorage.getItem(KEY)); if (old) paint(old); } catch (e) { /* 없으면 숫자 없이 시작 */ }
+    return api.get("/api/admin/summary").then(function (s) {
+      paint(s);
+      try { sessionStorage.setItem(KEY, JSON.stringify({ pendingStores: s.pendingStores, pendingThemes: s.pendingThemes })); } catch (e) { /* 저장 못 해도 괜찮음 */ }
     }).catch(function () { /* 숫자만 못 보여 줌 */ });
   }
   // 탭 글자 + 작은 숫자: "매장 1", "전체 1,000"

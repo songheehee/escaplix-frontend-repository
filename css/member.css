@@ -163,7 +163,8 @@ fieldset.field legend { padding: 0; }
 .am-search { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; }   /* 검색칸 모양은 manage.css .mg-search (파티 목록 검색창과 같음). 치는 동안 찾고 Enter 로도 찾음 */
 .am-count { font-size: 13px; color: var(--muted); white-space: nowrap; }   /* 검색했을 때만 "3명" */
 
-.am-table td { white-space: nowrap; }   /* 좁은 화면은 표를 옆으로 밀어서 봄 (m-table-wrap) */
+.am-table td { white-space: nowrap; }
+.am-table th:last-child, .am-table td.go { width: 1%; }   /* 맨 오른쪽(사업자등록증) 칸은 버튼 폭만큼만 → 왼쪽 빈칸이 다른 칸 사이와 비슷하게 */   /* 좁은 화면은 표를 옆으로 밀어서 봄 (m-table-wrap) */
 .am-doc { width: min(640px, calc(100vw - 32px)); }
 .am-doc .m-preview { min-height: 200px; max-height: none; }
 .am-doc .m-preview img { max-height: 60vh; max-width: 100%; }

@@ -9,17 +9,18 @@
 </head>
 <body>
   <!-- S22 매장 승인 목록 · C-13 (탭 숫자 C-12) -->
-  <main class="page m-page" id="main">
+  <!-- 위쪽 메뉴 바를 본문보다 먼저 그림 (끝에 두면 메뉴 바 없는 화면이 먼저 보였다가 붙어서 번쩍임) -->
+  <script src="../../js/common/routes.js"></script>
+  <script src="../../js/common/api.js"></script>
+  <script src="../../js/common/ui.js"></script>
+  <script src="../../js/common/header.js"></script>
+  <main class="page m-page adm-fade" id="main">
     <h1 class="page-title">승인 요청</h1>
     <nav class="m-tabs" id="tabs" aria-label="승인 종류"></nav>
     <div class="m-tabs" id="chips" role="tablist" aria-label="매장 상태" style="margin-top:-8px"></div>
     <div id="list"><div class="sk sk-block"></div></div>
   </main>
 
-  <script src="../../js/common/routes.js"></script>
-  <script src="../../js/common/api.js"></script>
-  <script src="../../js/common/ui.js"></script>
-  <script src="../../js/common/header.js"></script>
   <script src="../../js/common/footer.js"></script>
   <script src="../../js/owner/manage.js"></script>
   <script src="../../js/admin/admin-stores.js"></script>
