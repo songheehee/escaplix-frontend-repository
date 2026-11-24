@@ -53,8 +53,7 @@
     document.title = (storeId ? "매장 수정" : "매장 등록") + " · Escaplix";
     $("title").textContent = storeId ? "매장 수정" : "매장 등록";
     $("re-approve").hidden = admin || !storeId;
-    $("submit").textContent = admin ? (storeId ? "저장" : "등록") : (storeId ? "수정하고 다시 승인 요청" : "등록 신청");
-    $("submit-note").textContent = admin ? "저장하면 바로 손님에게 보여요." : "승인 전에는 손님에게 보이지 않아요.";
+    $("submit").textContent = admin ? (storeId ? "저장" : "등록") : (storeId ? "승인 요청" : "등록 신청");
     // 사업장등록증: 사장이 새로 등록할 때만 필수. 수정 때 비우면 지금 파일 그대로 (C-4)
     const fileRequired = !admin && !storeId;
     $("file-req").hidden = !fileRequired;
@@ -85,7 +84,7 @@
     $("intro").dispatchEvent(new Event("input"));
     checkedNo = s.bizPlaceNo; // 원래 번호는 내 것이니 다시 확인하지 않음
     if (s.status === "REJECTED" && s.rejectReason) {
-      form.prepend(Manage.rejectNote(s.rejectReason, "지난번 반려 사유"));
+      form.prepend(Manage.rejectNote(s.rejectReason));
     }
   }
 
