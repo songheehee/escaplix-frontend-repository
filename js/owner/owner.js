@@ -81,8 +81,6 @@
     info.append(el("div", "sub", [s.area, s.address].join(" · ")));
     if (!admin) {
       info.append(el("div", "sub", s.themeCount ? "테마 " + s.themeCount + "개" : "테마 없음"));
-      if (s.status === "PENDING") info.append(el("div", "sub note", "관리자 승인 전이라 손님에게 보이지 않아요. 승인되면 테마를 등록할 수 있어요."));
-      if (s.status === "REJECTED" && s.rejectReason) info.append(Manage.rejectNote(s.rejectReason));
     }
     card.append(info);
 
