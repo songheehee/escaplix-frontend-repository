@@ -35,7 +35,7 @@ const Manage = (function () {
 
   // ---------- 상태 표시 ----------
   const STATUS = {
-    APPROVED: ["승인됨", "ok"],
+    APPROVED: ["승인", "ok"],
     PENDING: ["승인 대기", "warn"],
     REJECTED: ["반려", "bad"],
     OPEN: ["공개 중", "ok"],
@@ -209,16 +209,28 @@ const Manage = (function () {
 
   // 매장 폐업 확인. 되돌릴 수 없어서 매장 이름을 똑같이 쳐야 [폐업] 이 눌림. 확인하면 true
   function askClose(storeName) {
+    return askTyped("매장 폐업",
+      "폐업하면 되돌릴 수 없어요. 이 매장과 모든 테마가 손님 화면에서 사라지고, 다시 열려면 매장 등록부터 새로 신청해야 해요.",
+      storeName, "폐업");
+  }
+  // 테마 [삭제] 확인 (실제로는 운영 종료 C-9): 테마 이름을 똑같이 쳐야 [삭제] 가 눌림
+  function askDeleteTheme(themeTitle) {
+    return askTyped("테마 삭제",
+      "삭제하면 이 테마가 손님 화면에서 사라져요. 찜 목록과 후기 기록에는 남고, 나중에 [운영 재개]로 다시 열 수 있어요.",
+      themeTitle, "삭제");
+  }
+  // 이름을 똑같이 쳐야 확인 버튼이 눌리는 팝업 (매장 폐업 · 테마 삭제 공용). 확인하면 true
+  function askTyped(title, helpText, name, okText) {
     return new Promise(function (resolve) {
       const dlg = el("dialog", "m-dialog");
       dlg.setAttribute("aria-labelledby", "m-dialog-title");
       const form = el("form");
       form.method = "dialog";
-      const h = el("h2", null, "매장 폐업");
+      const h = el("h2", null, title);
       h.id = "m-dialog-title";
-      const help = el("p", null, "폐업하면 되돌릴 수 없어요. 이 매장과 모든 테마가 손님 화면에서 사라지고, 다시 열려면 매장 등록부터 새로 신청해야 해요.");
+      const help = el("p", null, helpText);
       const label = el("label", "m-close-label");
-      label.append("확인을 위해 ", el("b", null, storeName), " 을(를) 입력해 주세요.");
+      label.append("확인을 위해 ", el("b", null, name), " 을(를) 입력해 주세요.");
       const input = el("input");
       input.type = "text";
       input.autocomplete = "off";
@@ -227,7 +239,7 @@ const Manage = (function () {
       const actions = el("div", "m-actions");
       const cancel = el("button", "btn btn-line", "취소");
       cancel.type = "button";
-      const ok = el("button", "btn btn-danger", "폐업");
+      const ok = el("button", "btn btn-danger", okText);
       ok.type = "submit";
       ok.disabled = true;
       actions.append(cancel, ok);
@@ -236,10 +248,10 @@ const Manage = (function () {
       document.body.append(dlg);
 
       let result = false;
-      input.addEventListener("input", function () { ok.disabled = input.value.trim() !== storeName; });
+      input.addEventListener("input", function () { ok.disabled = input.value.trim() !== name; });
       cancel.addEventListener("click", function () { dlg.close(); });
       form.addEventListener("submit", function (e) {
-        if (input.value.trim() !== storeName) { e.preventDefault(); return; }
+        if (input.value.trim() !== name) { e.preventDefault(); return; }
         result = true;
       });
       dlg.addEventListener("close", function () { dlg.remove(); resolve(result); });
@@ -473,6 +485,6 @@ const Manage = (function () {
     checkImage: checkImage, bindImageInput: bindImageInput, privateImage: privateImage,
     approvalTabs: approvalTabs, statusChips: statusChips, statusText: statusText,
     crumbs: crumbs, sortStores: sortStores, myStore: myStore,
-    askReason: askReason, askClose: askClose, busy: busy, showError: showError, counter: counter,
+    askReason: askReason, askClose: askClose, askDeleteTheme: askDeleteTheme, busy: busy, showError: showError, counter: counter,
   };
 })();

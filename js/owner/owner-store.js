@@ -4,7 +4,7 @@
 //   회차 수는 C-5 에 없어서 테마마다 C-10 을 부른다 (매장 하나의 테마는 몇 개뿐이라 한꺼번에)
 //   줄을 누르면 ③ 테마 화면. 반려된 테마는 거기서 고쳐서 다시 신청
 //   매장 폐업: 사장·관리자 둘 다 (승인된 매장만, 되돌릴 수 없음 → 매장 이름을 쳐야 됨). 폐업 매장은 보기만
-//   운영 종료/재개(C-9)는 줄 끝 버튼. 테마 화면 상태 배지 옆에 두면 잘못 누르기 쉬워 여기로 옮김
+//   줄 끝 [수정] · [삭제](= 운영 종료 C-9) / [운영 재개]. 줄 자체는 눌러도 이동 안 함 (사장 화면 개편 11/24)
 //   관리자(매장 관리, 관리자 개편 11/23): 승인 상세와 같은 틀 (C-14 상세 + C-15·A-11 서류)
 //     맨 위 한 줄(이름 / 등록자·등록일, [매장 수정]) → 매장 → 서류 → 테마 (+ 테마 등록)
 (function () {
@@ -107,7 +107,7 @@
     box.append(info);
 
     if (s.status === "CLOSED") return;   // 폐업 매장은 보기만
-    const edit = el("a", "btn small btn-edit", "매장 수정");
+    const edit = el("a", "btn small btn-soft", "매장 수정");   // 회색 배경 + 기본 글씨색 (테마 줄 [수정]과 같은 모양)
     edit.href = Routes.url("storeForm", { id: s.storeId });
     const acts = el("div", "m-actions");
     acts.append(edit);
@@ -115,9 +115,10 @@
     box.append(acts);
   }
 
-  // [폐업] → 매장 이름 확인 → 폐업 → 새로고침 (매장·테마 상태가 다 바뀌어서)
+  // [매장 폐업] → 매장 이름 확인 → 폐업 → 새로고침 (매장·테마 상태가 다 바뀌어서)
+  //   사장 화면(small): 회색 배경 + 빨간 테두리·글씨 (btn-soft-bad). 관리자 화면: 빨간 테두리 버튼 그대로
   function closeButton(s, small) {
-    const btn = el("button", "btn btn-no" + (small ? " small" : ""), "폐업");
+    const btn = el("button", small ? "btn small btn-soft btn-soft-bad" : "btn btn-no", "매장 폐업");
     btn.type = "button";
     btn.addEventListener("click", async function () {
       if (!(await Manage.askClose(s.name))) return;
@@ -170,23 +171,20 @@
     box.append(list);
   }
 
-  // 줄 전체가 링크 (제목 링크를 줄 크기로 늘림). 운영 버튼만 그 위에 올라와 따로 눌림
-  //   폐업 매장: 테마를 고칠 수 없어 링크·운영 버튼 없이 보여 주기만
+  // 줄을 눌러도 이동하지 않음. 오른쪽 끝 [수정] · [삭제] 버튼으로 (사장 화면 개편 11/24)
+  //   폐업 매장: 테마를 고칠 수 없어 버튼 없이 보여 주기만
   function themeRow(t, slots, closed) {
     const row = el("div", "m-row" + (closed ? " off" : ""));
 
-    const link = el(closed ? "span" : "a", "r-link", t.title);
-    if (!closed) link.href = Routes.url("ownerTheme", { id: t.themeId });
     const main = el("div", "r-main");
-    const title = el("div", "t-title");
-    title.append(link);
+    const title = el("div", "t-title", t.title);
     main.append(title, el("div", "sub", UI.genresText(t.genres) + " · " + t.playMinutes + "분"));
 
     const st = el("div", "r-st");
     st.append(Manage.badge(t.status));
 
     const r = UI.rating(t.avgRating);
-    const rating = el("div", "r-rate", r ? r + " (" + t.reviewCount + ")" : "후기 없음");
+    const rating = el("div", "r-rate", r ? r + " (" + t.reviewCount + ")" : "-");   // 후기가 없으면 "-"
     if (!r) rating.classList.add("muted");
 
     const slotCell = el("div", "r-slots");
@@ -200,29 +198,42 @@
       slotCell.textContent = "주중 " + slots.weekday.length + "회 / 주말 " + slots.weekend.length + "회";
     }
 
-    row.append(main, st, rating, slotCell, closed ? el("div", "r-act") : statusButton(t, st));
+    row.append(main, st, rating, slotCell, closed ? el("div", "r-act") : rowButtons(t, st));
     return row;
   }
 
-  // 운영 중이면 [운영 종료], 종료됐으면 [운영 재개]. 승인 전·반려 테마는 바꿀 수 없어 빈 칸
-  function statusButton(t, stCell) {
+  // 오른쪽 끝 버튼: [수정] (모든 테마) + [삭제] (운영 중) / [운영 재개] (삭제한 테마)
+  //   [삭제]는 실제로는 운영 종료 (C-9, 서버에 테마를 지우는 기능은 없음): 손님 화면에서 사라지고 후기·찜 기록은 남음
+  //   승인 전·반려 테마는 운영 상태를 바꿀 수 없어 [수정]만
+  function rowButtons(t, stCell) {
     const wrap = el("div", "r-act");
-    if (t.status !== "OPEN" && t.status !== "CLOSED") return wrap;
+    const edit = el("a", "btn small btn-soft", "수정");
+    edit.href = Routes.url("ownerTheme", { id: t.themeId });
+    edit.setAttribute("aria-label", t.title + " 수정");
+    wrap.append(edit);
+    if (t.status !== "OPEN" && t.status !== "CLOSED") {
+      // 두 번째 버튼이 없어도 그 자리를 비워 둬서 다른 줄과 [수정] 위치·칸 폭이 같게 (안 보이고 안 눌림)
+      const ph = el("span", "btn small btn-soft r-ph", "삭제");
+      ph.setAttribute("aria-hidden", "true");
+      wrap.append(ph);
+      return wrap;
+    }
     const btn = el("button");
     btn.type = "button";
     paint();
     wrap.append(btn);
 
     function paint() {
-      btn.textContent = t.status === "OPEN" ? "운영 종료" : "운영 재개";
-      btn.className = "btn small " + (t.status === "OPEN" ? "btn-no" : "btn-line");
+      btn.textContent = t.status === "OPEN" ? "삭제" : "운영 재개";
+      btn.className = "btn small btn-soft";
+      btn.setAttribute("aria-label", t.title + " " + btn.textContent);
     }
     btn.addEventListener("click", async function () {
       const next = t.status === "OPEN" ? "CLOSED" : "OPEN";
-      const msg = next === "CLOSED"
-        ? "'" + t.title + "' 운영을 종료하면 손님 화면에서 사라져요. 찜 목록과 후기 기록에는 남아요. 종료할까요?"
-        : "'" + t.title + "' 을(를) 다시 운영하면 손님 화면에 바로 보여요. 재개할까요?";
-      if (!confirm(msg)) return;
+      // 삭제: 매장 폐업처럼 테마 이름을 쳐야 하는 팝업. 운영 재개: 간단한 확인
+      if (next === "CLOSED") {
+        if (!(await Manage.askDeleteTheme(t.title))) return;
+      } else if (!confirm("'" + t.title + "' 을(를) 다시 운영하면 손님 화면에 바로 보여요. 재개할까요?")) return;
       Manage.busy(btn, true);
       try {
         const r = await api.put("/api/owner/themes/" + t.themeId + "/status", { status: next });
@@ -231,7 +242,7 @@
         stCell.textContent = "";
         stCell.append(Manage.badge(t.status));
         paint();
-        UI.toast(t.status === "CLOSED" ? "운영을 종료했어요." : "운영을 다시 시작했어요.");
+        UI.toast(t.status === "CLOSED" ? "삭제했어요. 손님 화면에서 사라졌어요." : "운영을 다시 시작했어요.");
       } catch (e) {
         Manage.busy(btn, false);
         UI.toast(e.message, "err");

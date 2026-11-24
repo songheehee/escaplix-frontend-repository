@@ -63,9 +63,10 @@
 
     $("storeId").value = store.storeId;
     $("cancel").href = storeUrl;
-    Manage.crumbs($("crumbs"), [[store.name, storeUrl], [theme ? theme.title : "새 테마"]]);
-    document.title = (theme ? theme.title : "새 테마") + " · Escaplix";
-    $("title").textContent = theme ? theme.title : "새 테마";
+    Manage.crumbs($("crumbs"), [[store.name, storeUrl], [theme ? theme.title : "테마 추가"]]);
+    document.title = (theme ? theme.title : "테마 추가") + " · Escaplix";
+    $("title").textContent = theme ? theme.title : "테마 추가";
+    $("title").hidden = !theme && !admin;   // 사장의 테마 추가: 위쪽 큰 제목은 안 보여 줌 (경로 줄에는 남음)
     $("submit").textContent = admin ? "저장" : "승인 요청";
 
     renderGenres(genres);
@@ -148,6 +149,7 @@
     document.querySelectorAll("#genres input").forEach(function (cb) { cb.checked = ids.indexOf(Number(cb.value)) !== -1; });
 
     $("re-approve").hidden = admin;
+    $("re-approve-slots").hidden = admin;   // 같은 안내를 [시간표] 탭에도
     if (t.status === "REJECTED" && t.rejectReason) form.prepend(Manage.rejectNote(t.rejectReason));
 
     // 위쪽: 상태 (운영 종료/재개는 매장 화면 테마 목록에서)

@@ -58,7 +58,7 @@
     document.title = (storeId ? "매장 수정" : "매장 등록") + " · Escaplix";
     $("title").textContent = storeId ? "매장 수정" : "매장 등록";
     $("re-approve").hidden = admin || !storeId;
-    $("submit").textContent = admin ? (storeId ? "저장" : "등록") : (storeId ? "승인 요청" : "등록 신청");
+    $("submit").textContent = admin ? (storeId ? "저장" : "등록") : "승인 요청";
     // 사업장등록증: 사장이 새로 등록할 때만 필수. 수정 때 비우면 지금 파일 그대로 (C-4)
     const fileRequired = !admin && !storeId;
     $("file-req").hidden = !fileRequired;
