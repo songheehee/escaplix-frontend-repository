@@ -52,6 +52,10 @@
       return;
     }
     const storeUrl = Routes.url("ownerStore", { id: store.storeId });
+    if (store.status === "CLOSED") {
+      Manage.stop("폐업한 매장의 테마는 고칠 수 없어요.", "매장으로", storeUrl);
+      return;
+    }
     if (!theme && store.status !== "APPROVED") {
       Manage.stop("승인된 매장에만 테마를 등록할 수 있어요.", "매장으로", storeUrl);
       return;

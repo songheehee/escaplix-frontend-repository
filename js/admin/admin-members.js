@@ -188,7 +188,7 @@
       a.href = s.status === "APPROVED" ? Routes.url("ownerStore", { id: s.storeId }) : Routes.url("adminStoreDetail", { id: s.storeId });
       const name = el("span", "am-store-name", s.name);
       name.title = s.name;
-      a.append(name, Manage.badge(s.status), el("span", "am-store-go", s.status === "APPROVED" ? "매장 보기 ›" : "승인 상세 ›"));
+      a.append(name, Manage.badge(s.status, "store"), el("span", "am-store-go", s.status === "APPROVED" ? "매장 보기 ›" : "승인 상세 ›"));
       list.append(a);
     });
     td.append(list);
