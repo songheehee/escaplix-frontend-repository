@@ -38,7 +38,7 @@ const Manage = (function () {
     APPROVED: ["승인", "ok"],
     PENDING: ["승인 대기", "warn"],
     REJECTED: ["반려", "bad"],
-    OPEN: ["공개 중", "ok"],
+    OPEN: ["운영 중", "ok"],
     CLOSED: ["운영 종료", "off"],
   };
   // kind "store": 매장의 CLOSED 는 "폐업" (테마의 CLOSED 는 "운영 종료")
@@ -213,13 +213,13 @@ const Manage = (function () {
       "폐업하면 되돌릴 수 없어요. 이 매장과 모든 테마가 손님 화면에서 사라지고, 다시 열려면 매장 등록부터 새로 신청해야 해요.",
       storeName, "폐업");
   }
-  // 테마 [삭제] 확인 (실제로는 운영 종료 C-9): 테마 이름을 똑같이 쳐야 [삭제] 가 눌림
+  // 테마 [운영 종료] 확인 (C-9): 테마 이름을 똑같이 쳐야 [운영 종료] 가 눌림
   function askDeleteTheme(themeTitle) {
-    return askTyped("테마 삭제",
-      "삭제하면 이 테마가 손님 화면에서 사라져요. 찜 목록과 후기 기록에는 남고, 나중에 [운영 재개]로 다시 열 수 있어요.",
-      themeTitle, "삭제");
+    return askTyped("테마 운영 종료",
+      "종료하면 이 테마가 손님 화면에서 사라져요. 찜 목록과 후기 기록에는 남고, 나중에 [운영 재개]로 다시 열 수 있어요.",
+      themeTitle, "운영 종료");
   }
-  // 이름을 똑같이 쳐야 확인 버튼이 눌리는 팝업 (매장 폐업 · 테마 삭제 공용). 확인하면 true
+  // 이름을 똑같이 쳐야 확인 버튼이 눌리는 팝업 (매장 폐업 · 테마 종료 공용). 확인하면 true
   function askTyped(title, helpText, name, okText) {
     return new Promise(function (resolve) {
       const dlg = el("dialog", "m-dialog");

@@ -4,7 +4,8 @@
 //   회차 수는 C-5 에 없어서 테마마다 C-10 을 부른다 (매장 하나의 테마는 몇 개뿐이라 한꺼번에)
 //   줄을 누르면 ③ 테마 화면. 반려된 테마는 거기서 고쳐서 다시 신청
 //   매장 폐업: 사장·관리자 둘 다 (승인된 매장만, 되돌릴 수 없음 → 매장 이름을 쳐야 됨). 폐업 매장은 보기만
-//   줄 끝 [수정] · [삭제](= 운영 종료 C-9) / [운영 재개]. 줄 자체는 눌러도 이동 안 함 (사장 화면 개편 11/24)
+//   줄 끝 [수정] · [운영 종료](C-9) / [운영 재개]. 줄 자체는 눌러도 이동 안 함 (사장 화면 개편 11/24)
+//   테마 순서: 운영 중 → 승인 대기 → 반려 → 운영 종료, 같은 상태끼리는 서버 순서(최근 등록 순). 종료·재개하면 바로 자리를 옮김
 //   관리자(매장 관리, 관리자 개편 11/23): 승인 상세와 같은 틀 (C-14 상세 + C-15·A-11 서류)
 //     맨 위 한 줄(이름 / 등록자·등록일, [매장 수정]) → 매장 → 서류 → 테마 (+ 테마 등록)
 (function () {
@@ -167,14 +168,22 @@
 
     const list = el("div", "m-rows");
     const closed = s.status === "CLOSED";
-    themes.forEach(function (t, i) { list.append(themeRow(t, counts[i], closed)); });
+    // 상태 순서대로 (같은 상태 안에서는 원래 순서 = 최근 등록 순)
+    themes.map(function (t, i) { return { t: t, slots: counts[i], order: i }; })
+      .sort(function (a, b) { return rank(a.t.status) - rank(b.t.status) || a.order - b.order; })
+      .forEach(function (x) {
+        const row = themeRow(x.t, x.slots, closed);
+        row.dataset.order = x.order;   // 서버 순서 (최근 등록 순). 종료·재개 때 제자리를 찾는 데 씀
+        list.append(row);
+      });
     box.append(list);
   }
 
-  // 줄을 눌러도 이동하지 않음. 오른쪽 끝 [수정] · [삭제] 버튼으로 (사장 화면 개편 11/24)
+  // 줄을 눌러도 이동하지 않음. 오른쪽 끝 [수정] · [운영 종료] 버튼으로 (사장 화면 개편 11/24)
   //   폐업 매장: 테마를 고칠 수 없어 버튼 없이 보여 주기만
   function themeRow(t, slots, closed) {
     const row = el("div", "m-row" + (closed ? " off" : ""));
+    row.dataset.rank = rank(t.status);   // 종료·재개 때 자리 옮기기 (moveRow)
 
     const main = el("div", "r-main");
     const title = el("div", "t-title", t.title);
@@ -202,8 +211,8 @@
     return row;
   }
 
-  // 오른쪽 끝 버튼: [수정] (모든 테마) + [삭제] (운영 중) / [운영 재개] (삭제한 테마)
-  //   [삭제]는 실제로는 운영 종료 (C-9, 서버에 테마를 지우는 기능은 없음): 손님 화면에서 사라지고 후기·찜 기록은 남음
+  // 오른쪽 끝 버튼: [수정] (모든 테마) + [운영 종료] (운영 중) / [운영 재개] (종료한 테마)
+  //   [운영 종료] (C-9, 서버에 테마를 지우는 기능은 없음): 손님 화면에서 사라지고 후기·찜 기록은 남음
   //   승인 전·반려 테마는 운영 상태를 바꿀 수 없어 [수정]만
   function rowButtons(t, stCell) {
     const wrap = el("div", "r-act");
@@ -213,7 +222,7 @@
     wrap.append(edit);
     if (t.status !== "OPEN" && t.status !== "CLOSED") {
       // 두 번째 버튼이 없어도 그 자리를 비워 둬서 다른 줄과 [수정] 위치·칸 폭이 같게 (안 보이고 안 눌림)
-      const ph = el("span", "btn small btn-soft r-ph", "삭제");
+      const ph = el("span", "btn small btn-soft r-ph", "운영 종료");
       ph.setAttribute("aria-hidden", "true");
       wrap.append(ph);
       return wrap;
@@ -224,13 +233,13 @@
     wrap.append(btn);
 
     function paint() {
-      btn.textContent = t.status === "OPEN" ? "삭제" : "운영 재개";
+      btn.textContent = t.status === "OPEN" ? "운영 종료" : "운영 재개";
       btn.className = "btn small btn-soft";
       btn.setAttribute("aria-label", t.title + " " + btn.textContent);
     }
     btn.addEventListener("click", async function () {
       const next = t.status === "OPEN" ? "CLOSED" : "OPEN";
-      // 삭제: 매장 폐업처럼 테마 이름을 쳐야 하는 팝업. 운영 재개: 간단한 확인
+      // 운영 종료: 매장 폐업처럼 테마 이름을 쳐야 하는 팝업. 운영 재개: 간단한 확인
       if (next === "CLOSED") {
         if (!(await Manage.askDeleteTheme(t.title))) return;
       } else if (!confirm("'" + t.title + "' 을(를) 다시 운영하면 손님 화면에 바로 보여요. 재개할까요?")) return;
@@ -242,12 +251,30 @@
         stCell.textContent = "";
         stCell.append(Manage.badge(t.status));
         paint();
-        UI.toast(t.status === "CLOSED" ? "삭제했어요. 손님 화면에서 사라졌어요." : "운영을 다시 시작했어요.");
+        moveRow(stCell.closest(".m-row"), t.status);
+        UI.toast(t.status === "CLOSED" ? "운영을 종료했어요. 손님 화면에서 사라졌어요." : "운영을 다시 시작했어요.");
       } catch (e) {
         Manage.busy(btn, false);
         UI.toast(e.message, "err");
       }
     });
     return wrap;
+  }
+
+  // 테마 줄 순서: 운영 중 → 승인 대기 → 반려 → 운영 종료
+  const RANK = { OPEN: 0, PENDING: 1, REJECTED: 2, CLOSED: 3 };
+  function rank(status) { return status in RANK ? RANK[status] : 9; }
+
+  // 종료·재개하면 새로고침했을 때와 같은 자리로 옮김 (새로고침 없이). 재개한 테마는 원래 자리로 돌아감
+  function moveRow(row, status) {
+    const list = row.parentElement;
+    row.remove();
+    row.dataset.rank = rank(status);
+    const me = [rank(status), Number(row.dataset.order)];
+    const next = Array.prototype.find.call(list.children, function (r) {
+      const o = [Number(r.dataset.rank), Number(r.dataset.order)];
+      return o[0] > me[0] || (o[0] === me[0] && o[1] > me[1]);
+    });
+    list.insertBefore(row, next || null);
   }
 })();

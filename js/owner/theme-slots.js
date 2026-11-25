@@ -195,9 +195,11 @@ const ThemeSlots = (function () {
       });
       apply(r);
       UI.toast("시간표를 저장했어요.");
+      // 기본 정보 저장처럼 ② 매장 화면으로 (저장했으니 "안 저장" 경고 없이 나감)
+      const storeId = $("storeId").value;
+      setTimeout(function () { location.href = Routes.url("ownerStore", { id: storeId }); }, 900);
     } catch (e) {
       Manage.showError($("slot-error"), e.message);
-    } finally {
       Manage.busy(btn, false);
       $("slot-save").disabled = !dirty();
     }
