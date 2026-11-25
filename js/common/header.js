@@ -104,7 +104,7 @@
 
   // ---------- 검색 (손님·비회원) ----------
   // 처음엔 돋보기만. 누르면 헤더 바로 아래(메인이면 헤더와 추천 배너 사이)가 열리면서 상세 검색 칸이 나온다
-  //   검색 → 메인 결과 화면 (B-1: keyword·area·date·people·genreId·sort)
+  //   검색 → 메인 결과 화면 (B-1: keyword·area·people·genreId·sort. 날짜는 뺌: 예약이 찼는지 알 수 없어서)
   //   메인 검색 결과 화면은 조건 막대가 이미 있으니 패널 대신 그 막대의 검색어 칸으로 보낸다
   function searchBox() {
     const btn = el("button", "top-search-btn");
@@ -157,8 +157,6 @@
 
     const area = UI.areaPicker();   // 큰 지역(서울…) 누르면 펼쳐져서 세부 지역을 고름
     fields.append(field("지역", area.el));
-    const date = UI.datePicker("date", "");   // 사이트 색 달력 (오늘 이전은 못 고름)
-    fields.append(field("날짜", date.el));
     // 인원·장르·정렬: 사이트 모양 선택 칸 (UI.selectPicker). 정렬은 이번 주 인기순이 맨 위·기본
     const ppl = UI.selectPicker("people", [["", "인원 무관"]].concat([2, 3, 4, 5, 6, 7, 8].map(function (n) { return [String(n), n + "명"]; })), "", { label: "인원" });
     fields.append(field("인원", ppl.el));
@@ -196,7 +194,7 @@
 
     let opened = false;
     function set(v) {
-      if (!v) { date.close(); area.close(); ppl.close(); genre.close(); sort.close(); }   // 열려 있던 달력·지역 목록도 같이 닫기
+      if (!v) { area.close(); ppl.close(); genre.close(); sort.close(); }   // 열려 있던 지역·선택 목록도 같이 닫기
       opened = v;
       box.classList.toggle("open", v);
       box.inert = !v;

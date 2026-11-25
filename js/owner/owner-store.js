@@ -234,7 +234,7 @@
 
     function paint() {
       btn.textContent = t.status === "OPEN" ? "운영 종료" : "운영 재개";
-      btn.className = "btn small btn-soft";
+      btn.className = "btn small btn-soft" + (t.status === "OPEN" ? " btn-soft-bad" : "");   // 운영 종료는 빨강 (매장 폐업 버튼과 같은 모양). 운영 재개는 회색
       btn.setAttribute("aria-label", t.title + " " + btn.textContent);
     }
     btn.addEventListener("click", async function () {

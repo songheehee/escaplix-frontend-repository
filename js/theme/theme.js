@@ -1,5 +1,5 @@
 // S09 테마 상세 (pages/theme/theme.html?id=) · B 담당
-//   B-2 상세 → B-3 그날 시간표(날짜 고르기) → D-4 후기 → B-10 같은 매장의 다른 테마
+//   B-2 상세 → B-3 시간표(평일 / 주말·공휴일 회차) → D-4 후기 → B-10 같은 매장의 다른 테마
 //   후기 쓰기·수정 팝업은 D 담당(js/mypage/review-modal.js, theme.html 에서 불러옴) 의 window.openReviewModal.
 //   저장 뒤 document 에 "review-saved" 이벤트를 쏘면 후기를 다시 불러온다. 후기 신고 버튼은 뺌
 (function () {
@@ -25,7 +25,7 @@
     renderStoreInfo(t);
     $("d-body").hidden = false;
     renderIntro(t);   // 본문이 보인 뒤에 (더 보기가 필요한지 재야 해서)
-    renderDates(t);
+    renderWeek(t);
     loadReviews(t);
     loadSameStore(t);
   }
@@ -194,73 +194,57 @@
   }
 
   // ---------- 시간표 (B-3) ----------
-  function renderDates(t) {
-    const strip = $("date-strip");
+  //   평일 / 주말·공휴일 회차만 보여 줌. 예약이 찼는지는 알 수 없어서 날짜를 고르게 하지 않음
+  //   공개 API 는 날짜별(B-3)이라, 다음 평일 하루·다음 토요일 하루의 시간표를 불러와 씀
+  //   (평일이 공휴일이면 주말 시간표가 오니 그날은 건너뛰고 다음 평일로)
+  async function renderWeek(t) {
+    const box = $("week-slots");
+    box.textContent = "";
+    box.append(el("div", "sk ws-sk"));
     const base = new Date();
     base.setHours(0, 0, 0, 0);
-    let current = null;
+    function dayAt(n) { const d = new Date(base); d.setDate(base.getDate() + n); return d; }
+    function get(d) { return api.get("/api/themes/" + t.themeId + "/slots", { date: UI.ymd(d) }); }
 
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(base);
-      d.setDate(base.getDate() + i);
-      const day = d.getDay();
-      const b = el("button", "date-chip" + (day === 0 || day === 6 ? " weekend" : ""));
-      b.type = "button";
-      b.setAttribute("role", "tab");
-      b.dataset.date = UI.ymd(d);
-      b.append(el("span", "dc-day", i === 0 ? "오늘" : i === 1 ? "내일" : UI.DAYS[day]));
-      b.append(el("span", "dc-num", String(d.getDate())));
-      b.addEventListener("click", function () { pick(b); });
-      strip.append(b);
-    }
-    pick(strip.firstChild);
-
-    async function pick(btn) {
-      if (current === btn) return;
-      current = btn;
-      strip.querySelectorAll(".date-chip").forEach(function (c) {
-        const on = c === btn;
-        c.classList.toggle("on", on);
-        c.setAttribute("aria-selected", String(on));
-      });
-      const box = $("slots");
-      box.textContent = "";
-      box.append(el("div", "sk", null));
-      box.firstChild.style.cssText = "height:40px;width:100%";
-      try {
-        const res = await api.get("/api/themes/" + t.themeId + "/slots", { date: btn.dataset.date });
-        if (current !== btn) return; // 그사이 다른 날짜를 눌렀으면 버림
-        box.textContent = "";
-        // 공휴일은 날짜 칸을 주말 색으로 칠하고 이름은 마우스를 올리면 보이게 (제목 옆 안내 글은 뺌)
-        if (res.holidayName) {
-          btn.classList.add("weekend");
-          btn.title = res.holidayName;
-        }
-        if (!res.slots.length) {
-          box.append(el("p", "muted", "이 날은 남은 회차가 없어요."));
-          return;
-        }
-        res.slots.forEach(function (s) {
-          const label = s.startTime + " ~ " + s.endTime;
-          let n;
-          if (isUser) {
-            // 손님은 시간을 눌러 바로 그 시간으로 파티를 모집할 수 있게
-            n = el("a", "slot");
-            n.href = Routes.url("partyForm", { themeId: t.themeId, playAt: btn.dataset.date + "T" + s.startTime + ":00" });
-            n.title = "이 시간으로 파티 모집하기";
-          } else {
-            n = el("span", "slot");
-          }
-          n.append(el("b", null, s.startTime), el("small", null, "~ " + s.endTime));
-          n.setAttribute("aria-label", label);
-          box.append(n);
-        });
-      } catch (e) {
-        if (current !== btn) return;
-        box.textContent = "";
-        box.append(el("p", "muted", e.message));
+    let weekday = null;
+    let weekend = null;
+    try {
+      // 내일부터 (오늘은 지난 회차가 빠져서). 토요일은 늘 주말 시간표
+      let sat = 1;
+      while (dayAt(sat).getDay() !== 6) sat++;
+      const satReq = get(dayAt(sat));
+      for (let i = 1; i <= 14 && !weekday; i++) {
+        const day = dayAt(i).getDay();
+        if (day === 0 || day === 6) continue;
+        const r = await get(dayAt(i));
+        if (r.dayType === "WEEKDAY") weekday = r.slots;
       }
+      weekend = (await satReq).slots;
+    } catch (e) {
+      box.textContent = "";
+      box.append(el("p", "muted", e.message));
+      return;
     }
+
+    box.textContent = "";
+    if (!(weekday || []).length && !weekend.length) {
+      box.append(el("p", "muted", "아직 시간표가 없어요."));
+      return;
+    }
+    [["평일", weekday || []], ["주말·공휴일", weekend]].forEach(function (row) {
+      const line = el("div", "ws-row");
+      line.append(el("div", "ws-label", row[0]));
+      const slots = el("div", "slots");
+      if (!row[1].length) slots.append(el("p", "muted", "회차 없음"));
+      row[1].forEach(function (s) {
+        const n = el("span", "slot");
+        n.append(el("b", null, s.startTime), el("small", null, "~ " + s.endTime));
+        n.setAttribute("aria-label", row[0] + " " + s.startTime + " ~ " + s.endTime);
+        slots.append(n);
+      });
+      line.append(slots);
+      box.append(line);
+    });
   }
 
   // ---------- 후기 (D-4) ----------
