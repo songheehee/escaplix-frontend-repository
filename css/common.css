@@ -25,6 +25,10 @@
 }
 
 * { box-sizing: border-box; }
+/* 스크롤바: 사이트 전체를 얇은 어두운 막대로 통일. 안쪽 스크롤 칸은 마우스를 올리면 조금 밝게
+   (숨긴 곳 .track 처럼 클래스로 따로 정한 건 그쪽이 이김) */
+* { scrollbar-width: thin; scrollbar-color: #4a4356 transparent; }
+:where(:not(html, body)):hover { scrollbar-color: #5f5770 transparent; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
@@ -215,7 +219,7 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
 /* 검색 칸(지역·날짜·인원·장르·정렬)은 모두 같은 폭 (상단 검색 패널 · 결과 화면 조건 막대) */
 .fb-field .dp-btn, .sp-field .dp-btn { width: 140px; min-width: 0; }
 .dp-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 칸 글은 한 줄 */
-.dp-pop.sel-pop { width: auto; max-height: min(232px, calc(100vh - 80px)); overflow-y: auto; scrollbar-width: thin; scrollbar-color: #4a4356 transparent; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.dp-pop.sel-pop { width: auto; max-height: min(232px, calc(100vh - 80px)); overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
 .sel-opt {
   display: block; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: none;
   color: var(--ink2); font: inherit; font-size: 14px; text-align: left; white-space: nowrap; cursor: pointer;
