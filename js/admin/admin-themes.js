@@ -6,7 +6,7 @@
   const $ = UI.$;
   if (!Manage.guard(["ADMIN"])) return;
 
-  // 처리할 것만: 대기 · 반려. 공개 중·운영 종료 테마는 매장 관리 → 매장에서 (관리자 개편 11/23)
+  // 처리할 것만: 대기 · 반려. 운영 중·운영 종료 테마는 매장 관리 → 매장에서 (관리자 개편 11/23)
   const STATUSES = [["PENDING", "대기"], ["REJECTED", "반려"]];
   const CODES = STATUSES.map(function (x) { return x[0]; });
   let status = CODES.indexOf(Manage.param("status")) !== -1 ? Manage.param("status") : "PENDING";

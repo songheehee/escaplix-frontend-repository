@@ -89,7 +89,7 @@ a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
 }
 .m-row:last-child { border-bottom: 0; }
 .m-row .r-act { display: flex; justify-content: flex-end; gap: 6px; }   /* 줄 오른쪽 끝에 붙임 */
-.m-row .r-act .btn { min-width: 4.9em; padding-inline: 4px; }   /* 처음 폭(7em)의 70%. "운영 재개"까지 이 폭에 들어가서 버튼 폭이 모두 같음 → 줄이 맞음 */
+.m-row .r-act .btn { min-width: 6.6em; padding-inline: 10px; }   /* "운영 종료"·"운영 재개"가 여유 있게 들어가는 폭. [수정]도 같은 폭 → 줄이 맞음 */
 .m-row .r-ph { visibility: hidden; pointer-events: none; }   /* 승인 대기·반려 줄: 두 번째 버튼 자리만 차지 */
 /* 테마 줄 [수정] · [삭제] · [운영 재개]: 튀지 않는 옅은 회색 버튼 */
 .btn-soft { background: var(--surface2); border-color: #5a5366; color: var(--ink); }   /* 테두리: 배경과 구분될 만큼만 (흰색 계열은 너무 튐) */
@@ -103,7 +103,7 @@ a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
 .m-row .r-slots.warn { color: var(--warn); font-weight: 700; }
 @media (max-width: 640px) {
   .m-row { grid-template-columns: auto auto 1fr; gap: 6px 12px; }
-  .m-row .r-main { grid-column: 1 / -1; padding-right: 150px; }
+  .m-row .r-main { grid-column: 1 / -1; padding-right: 190px; }
   .m-row .r-act { position: absolute; top: 10px; right: 10px; }
 }
 .m-empty { color: var(--muted); font-size: 14px; }
@@ -423,6 +423,7 @@ main.adm-fade { min-height: 100vh; }
 }
 .mg-search input:focus { outline: none; border-color: var(--accent); }
 .mg-tools .btn { margin-left: auto; }
+.mg-sort .sel-btn { min-width: 140px; height: 38px; }   /* 매장 관리 정렬 (검색창 옆). 높이는 검색창과 맞춤 */
 .store-row .side { align-self: center; display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink2); white-space: nowrap; }
 .who-tag { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: var(--surface2); color: var(--ink2); }
 #a-edit { border-color: var(--ink2); }   /* 관리자 매장 관리 상세의 [매장 수정]: 테두리가 잘 보이게 */
