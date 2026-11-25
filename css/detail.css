@@ -114,20 +114,13 @@
 .map-box a { color: var(--accent-ink); }
 
 /* 날짜 고르기 */
-.date-strip { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 10px; scrollbar-width: thin; }
-.date-chip {
-  flex: 0 0 auto; width: 58px; padding: 8px 0; border-radius: 8px; border: 1px solid var(--line);
-  background: var(--surface); color: var(--ink2); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
-  transition: background .15s, border-color .15s, color .15s;
-}
-.date-chip:hover { border-color: var(--ink2); }
-.date-chip .dc-day { font-size: 11px; }
-.date-chip .dc-num { font-size: 18px; font-weight: 800; color: var(--ink); }
-.date-chip.weekend .dc-day, .date-chip.weekend .dc-num { color: #ff8a9a; }
-.date-chip.on { background: #fff; border-color: #fff; }
-.date-chip.on .dc-day, .date-chip.on .dc-num { color: #111; }
-.date-chip.on.weekend .dc-num { color: #d0263f; }
-
+/* 시간표: 평일 / 주말·공휴일 두 줄. 왼쪽 이름표 + 회차 칸 */
+.week-slots { display: flex; flex-direction: column; gap: 6px; }
+.ws-row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; }
+.ws-label { font-size: 14px; font-weight: 700; color: var(--ink2); }
+.ws-row .slots { margin: 6px 0; }
+.ws-sk { height: 100px; }
+@media (max-width: 640px) { .ws-row { grid-template-columns: 1fr; gap: 0; } }
 .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; margin: 14px 0 10px; min-height: 44px; }
 .slots > p, .slots > .sk { grid-column: 1 / -1; margin: 0; align-self: center; }   /* "남은 회차가 없어요"·오류 문구·불러오는 중은 한 칸이 아니라 한 줄 전체 */
 .slot {
@@ -136,7 +129,6 @@
 }
 .slot b { font-size: 17px; }
 .slot small { font-size: 11px; color: var(--muted); }
-a.slot:hover { border-color: var(--accent); background: rgba(139, 92, 246, .15); }
 
 /* 후기 */
 .review-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
