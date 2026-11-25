@@ -66,7 +66,7 @@
 .my-tabs a:hover { color: #fff; }
 .my-tabs a[aria-current="page"] { color: #fff; border-color: var(--accent); }
 
-.wish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px 12px; }   /* 카드를 작게 (한 칸 최소 140px) */
+.wish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 28px 20px; }   /* 카드를 작게 (한 칸 최소 140px). 카드 사이는 넉넉히 */
 .wish-grid > .empty { grid-column: 1 / -1; }
 .wcard { position: relative; transition: opacity .3s, transform .3s; }
 .wcard.removing { opacity: 0; transform: scale(.92); }

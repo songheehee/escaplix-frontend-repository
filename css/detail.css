@@ -205,3 +205,17 @@ a.slot:hover { border-color: var(--accent); background: rgba(139, 92, 246, .15);
   .ds-cell:nth-child(odd) { padding-left: 0; border-left: 0; }
   .ds-num { font-size: 24px; }
 }
+
+/* 매장 상세의 테마 목록: 테마는 포스터 모양(세로 4:5), 매장 사진은 가로 → 모양만 봐도 구분되게
+   (메인 줄은 가로 카드 그대로. 마우스를 올리면 펼쳐지는 정보 칸도 그대로) */
+#themes.grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 40px 20px; }
+#themes .tcard-art { aspect-ratio: 4 / 5; }   /* 찜 목록 카드와 같은 비율 (2:3 은 너무 길쭉해서) */
+#themes .tcard-art img { object-position: center; }
+#themes .tcard-title { font-size: 14px; }
+/* 테마 상세 맨 아래 "○○의 다른 테마" 줄도 같은 세로(4:5) 카드. 옆으로 넘기는 줄이라 카드 폭을 정해 둠 */
+#more-rows { --card-w: clamp(140px, 12vw, 180px); }
+#more-rows .track { gap: 20px; }   /* 매장 상세 테마 목록과 같은 간격 */
+#more-rows .tcard-art { aspect-ratio: 4 / 5; }
+#more-rows .tcard-art img { object-position: center; }
+#more-rows .tcard-title { font-size: 14px; }
+#more-rows .row-arrow { height: calc(var(--card-w) * 1.25); }   /* 화살표 높이를 세로 카드에 맞춤 */
