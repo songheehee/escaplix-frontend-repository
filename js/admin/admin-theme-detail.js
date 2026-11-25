@@ -154,8 +154,8 @@
     paintStatus();
   }
 
-  function approve() {
-    if (!confirm("「" + theme.title + "」을(를) 승인할까요? 바로 손님 메인에 나타나요.")) return;
+  async function approve() {
+    if (!(await UI.ask({ title: "「" + theme.title + "」을(를) 승인할까요?", body: "바로 손님 메인에 나타나요.", yes: "예, 승인할게요" }))) return;
     decide({ approved: true }, $("approve"));
   }
 

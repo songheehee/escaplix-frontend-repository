@@ -175,9 +175,9 @@ const ThemeSlots = (function () {
       input.focus();
     }
     col.querySelector(".add").addEventListener("click", add);
-    col.querySelector(".copy").addEventListener("click", function () {
+    col.querySelector(".copy").addEventListener("click", async function () {
       const to = this.dataset.to;
-      if (data[to].length && !confirm(KIND_NAME[to] + " 시간표를 " + KIND_NAME[kind] + "와 똑같이 바꿀까요?")) return;
+      if (data[to].length && !(await UI.ask({ title: KIND_NAME[to] + " 시간표를 " + KIND_NAME[kind] + "와 똑같이 바꿀까요?", body: "지금 " + KIND_NAME[to] + " 시간표는 지워져요.", yes: "예, 바꿀게요" }))) return;
       data[to] = data[kind].slice();
       render();
       UI.toast(KIND_NAME[kind] + " 시간표를 " + KIND_NAME[to] + "에 똑같이 넣었어요.");
@@ -197,7 +197,7 @@ const ThemeSlots = (function () {
       UI.toast("시간표를 저장했어요.");
       // 기본 정보 저장처럼 ② 매장 화면으로 (저장했으니 "안 저장" 경고 없이 나감)
       const storeId = $("storeId").value;
-      setTimeout(function () { location.href = Routes.url("ownerStore", { id: storeId }); }, 900);
+      setTimeout(function () { location.replace(Routes.url("ownerStore", { id: storeId })); }, 900);
     } catch (e) {
       Manage.showError($("slot-error"), e.message);
       Manage.busy(btn, false);

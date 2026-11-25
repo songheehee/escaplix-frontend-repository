@@ -246,7 +246,7 @@
       // 운영 종료: 매장 폐업처럼 테마 이름을 쳐야 하는 팝업. 운영 재개: 간단한 확인
       if (next === "CLOSED") {
         if (!(await Manage.askDeleteTheme(t.title))) return;
-      } else if (!confirm("'" + t.title + "' 을(를) 다시 운영하면 손님 화면에 바로 보여요. 재개할까요?")) return;
+      } else if (!(await UI.ask({ title: "「" + t.title + "」 운영을 재개할까요?", body: "손님 화면에 바로 보여요.", yes: "예, 재개할게요" }))) return;
       Manage.busy(btn, true);
       try {
         const r = await api.put("/api/owner/themes/" + t.themeId + "/status", { status: next });

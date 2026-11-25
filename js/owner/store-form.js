@@ -1,5 +1,5 @@
 // S21 매장 등록·수정 (pages/owner/store-form.html?id=) · C 담당
-//   C-1 처음 값(수정), C-2 사업장 등록번호 중복 확인, C-3 등록, C-4 수정 (multipart, api.upload)
+//   C-1 처음 값(수정), C-2 사업장 관리번호 중복 확인, C-3 등록, C-4 수정 (multipart, api.upload)
 //   사장: 등록·수정하면 PENDING → 관리자 승인 (결정 S1). 사업장등록증은 등록할 때 꼭 필요
 //   관리자: 바로 APPROVED, 사업장등록증 없어도 됨 (결정 S3). 사장 매장을 고쳐도 상태 그대로 (관리자 개편 11/23)
 //   관리자 개편 11/23
@@ -70,6 +70,8 @@
 
     $("find-addr").addEventListener("click", findAddress);
     $("addr1").addEventListener("click", findAddress);
+    autoFormat($("phone"), fmtPhone);
+    autoFormat($("bizPlaceNo"), fmtBiz);
     $("bizPlaceNo").addEventListener("input", function () {
       checkedNo = null;
       setNoHint("", null);
@@ -80,6 +82,7 @@
 
   function fill(s) {
     ["name", "phone", "websiteUrl", "hours", "intro", "bizPlaceNo"].forEach(function (k) { $(k).value = s[k] || ""; });
+    $("phone").value = fmtPhone($("phone").value);   // 예전에 - 없이 넣은 번호도 모양을 맞춰 보여 줌
     $("addr1").value = s.address || "";   // 저장된 주소는 한 칸 그대로. 다시 고르려면 [주소 검색]
     area.set(s.area || "");
     if (s.area && area.value() !== s.area) {
@@ -164,6 +167,49 @@
     });
   }
 
+  // 숫자만 쳐도 - 가 붙음. 서버 StoreForm 의 모양 검사와 같은 규칙
+  const PHONE_RE = /^(02-\d{3,4}-\d{4}|050\d-\d{4}-\d{4}|0[13-9]\d-\d{3,4}-\d{4}|1[5-9]\d{2}-\d{4})$/;
+  // 사업장 관리번호 11자리 = 사업자등록번호 10자리 + 끝 1자리 (000-00-00000-0)
+  //   예전에 10자리로 넣은 매장(더미 데이터)은 번호를 안 바꾸면 그대로 저장 가능 (bizOk)
+  const BIZ_RE = /^\d{3}-\d{2}-\d{5}-\d$/;
+
+  function join(d, cuts) {   // cuts: 끊는 자리. 친 만큼만 - 를 붙임
+    const parts = [];
+    let at = 0;
+    cuts.concat([Infinity]).some(function (c) {
+      if (d.length <= at) return true;
+      parts.push(d.slice(at, c));
+      at = c;
+      return false;
+    });
+    return parts.join("-");
+  }
+  // 02-123-4567 · 02-1234-5678 · 031-123-4567 · 010-1234-5678 · 0507-1234-5678 · 1588-1234
+  function fmtPhone(v) {
+    let d = String(v || "").replace(/\D/g, "");
+    if (d.startsWith("02")) { d = d.slice(0, 10); return join(d, d.length === 10 ? [2, 6] : [2, 5]); }
+    if (d.startsWith("050")) return join(d.slice(0, 12), [4, 8]);
+    if (/^1[5-9]/.test(d)) return join(d.slice(0, 8), [4]);
+    d = d.slice(0, 11);
+    return join(d, d.length === 11 ? [3, 7] : [3, 6]);
+  }
+  function fmtBiz(v) {
+    return join(String(v || "").replace(/\D/g, "").slice(0, 11), [3, 5, 10]);
+  }
+  function bizOk(no) { return BIZ_RE.test(no) || !!(original && no === original.bizPlaceNo); }
+  // 고친 뒤에도 커서가 같은 숫자 뒤에 남도록
+  function autoFormat(input, fmt) {
+    input.addEventListener("input", function () {
+      const before = input.value.slice(0, input.selectionStart).replace(/\D/g, "").length;
+      const f = fmt(input.value);
+      if (f === input.value) return;
+      input.value = f;
+      let pos = 0, seen = 0;
+      while (pos < f.length && seen < before) { if (/\d/.test(f[pos])) seen++; pos++; }
+      input.setSelectionRange(pos, pos);
+    });
+  }
+
   function setNoHint(msg, ok) {
     const h = $("bizPlaceNo-hint");
     h.textContent = msg || "";
@@ -175,22 +221,22 @@
   async function checkNo() {
     const input = $("bizPlaceNo");
     const no = input.value.trim();
-    if (!/^\d{3}-\d{2}-\d{5}$/.test(no)) {
-      setNoHint("123-45-67890 모양으로 입력해 주세요.", false);
-      input.focus();
-      return false;
-    }
     if (original && no === original.bizPlaceNo) {
       checkedNo = no;
       setNoHint("지금 이 매장의 번호예요.", true);
       return true;
+    }
+    if (!BIZ_RE.test(no)) {
+      setNoHint("숫자 11자리를 입력해 주세요.", false);
+      input.focus();
+      return false;
     }
     const btn = $("check-no");
     Manage.busy(btn, true, "확인 중…");
     try {
       const r = await api.get("/api/owner/stores/check-biz-place-no", { bizPlaceNo: no });
       checkedNo = r.available ? no : null;
-      setNoHint(r.available ? "쓸 수 있는 번호예요." : "이미 등록된 사업장 등록번호예요.", r.available);
+      setNoHint(r.available ? "쓸 수 있는 번호예요." : "이미 등록된 사업장 관리번호예요.", r.available);
       return r.available;
     } catch (e) {
       setNoHint(e.message, false);
@@ -219,15 +265,23 @@
     if (!area.value()) { area.button.focus(); return "지역을 골라 주세요."; }
     err = need("phone", "전화번호");
     if (err) return err;
-    if (!/^[0-9-]{9,13}$/.test($("phone").value.trim())) { $("phone").focus(); return "전화번호는 숫자와 - 로 9~13자 입력해 주세요."; }
-    err = need("hours", "영업시간") || need("websiteUrl", "웹사이트");
+    if (!PHONE_RE.test($("phone").value.trim())) { $("phone").focus(); return "전화번호를 끝까지 입력해 주세요. 예) 02-123-4567, 010-1234-5678"; }
+    err = need("hours", "영업시간");
+    if (err) return err;
+    // 자유 입력이지만 시간은 하나 있어야 함 (10:00 / 10시). 서버 StoreForm 과 같은 규칙
+    if (!/\d{1,2}\s*:\s*\d{2}|\d{1,2}\s*시/.test($("hours").value)) {
+      $("hours").focus();
+      return "영업시간에 시간을 넣어 주세요. 예) 10:00 ~ 23:00 (화 휴무)";
+    }
+    err = need("websiteUrl", "웹사이트");
     if (err) return err;
     if (!Manage.isWebUrl($("websiteUrl").value.trim())) {
       $("websiteUrl").focus();
       return "웹사이트가 열 수 있는 주소가 아니에요. 예) https://example.com";
     }
-    err = need("intro", "매장 소개") || need("bizPlaceNo", "사업장 등록번호");
+    err = need("bizPlaceNo", "사업장 관리번호");   // 매장 소개는 선택
     if (err) return err;
+    if (!bizOk($("bizPlaceNo").value.trim())) { $("bizPlaceNo").focus(); return "사업장 관리번호 숫자 11자리를 입력해 주세요."; }
     if (!admin && !storeId && !$("bizPlaceFile").files[0]) {
       $("bizPlaceFile").focus();
       return "사업장등록증 이미지를 올려 주세요.";
@@ -243,10 +297,10 @@
 
     const no = $("bizPlaceNo").value.trim();
     if (checkedNo !== no && !(await checkNo())) {
-      Manage.showError($("error"), "사업장 등록번호를 확인해 주세요.");
+      Manage.showError($("error"), "사업장 관리번호를 확인해 주세요.");
       return;
     }
-    if (storeId && !admin && !confirm("수정하면 다시 승인을 받을 때까지 매장과 테마가 손님에게 보이지 않아요. 저장할까요?")) return;
+    if (storeId && !admin && !(await UI.ask({ title: "승인 요청을 보낼까요?", body: "다시 승인을 받을 때까지 매장과 테마가 손님에게 보이지 않아요.", yes: "예, 요청할게요" }))) return;
 
     const f = new FormData();
     ["name", "phone", "websiteUrl", "hours", "intro", "bizPlaceNo"].forEach(function (k) { f.append(k, $(k).value.trim()); });
@@ -262,7 +316,9 @@
         ? await api.upload("/api/owner/stores/" + storeId, f, "PUT")
         : await api.upload("/api/owner/stores", f);
       UI.toast(r.status === "APPROVED" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
-      setTimeout(function () { location.href = Routes.url("ownerStore", { id: r.storeId || storeId }); }, 900);
+      // 등록·수정 모두 그 매장 페이지로. replace 라 뒤로 가기로 폼에 다시 안 들어옴
+      const next = Routes.url("ownerStore", { id: r.storeId || storeId });
+      setTimeout(function () { location.replace(next); }, 900);
     } catch (e2) {
       Manage.busy(btn, false);
       Manage.showError($("error"), e2.message);

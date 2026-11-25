@@ -75,8 +75,8 @@
     }
   }
 
-  function approve() {
-    if (!confirm("「" + store.name + "」을(를) 승인할까요? 바로 손님 매장 목록에 보여요.")) return;
+  async function approve() {
+    if (!(await UI.ask({ title: "「" + store.name + "」을(를) 승인할까요?", body: "바로 손님 매장 목록에 보여요.", yes: "예, 승인할게요" }))) return;
     decide({ approved: true }, $("approve"));
   }
 
