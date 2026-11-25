@@ -6,13 +6,14 @@
 .hero-slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .9s ease, visibility 0s linear .9s; }
 .hero-slide.on { opacity: 1; visibility: visible; transition: opacity .9s ease; }
 
-/* 사진은 오른쪽에 크게, 왼쪽·아래로 어둡게 번지게 */
+/* 사진은 오른쪽에, 왼쪽·아래로 어둡게 번지게
+   칸을 화면 오른쪽 62%로 좁혀 둠: 넓을수록 세로 포스터가 가운데만 크게 늘어나 깨져 보여서 */
 .hero-bg {
-  position: absolute; inset: 0 0 0 24%;
+  position: absolute; inset: 0 0 0 38%;
   background-size: cover; background-position: center 30%;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 38%);
-          mask-image: linear-gradient(to right, transparent 0%, #000 38%);
-  transform: scale(1.06); transition: transform 8s ease-out;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%);
+          mask-image: linear-gradient(to right, transparent 0%, #000 30%);
+  transform: scale(1.02); transition: transform 8s ease-out;
 }
 .hero-slide.on .hero-bg { transform: scale(1); }
 .hero-shade {

@@ -105,31 +105,52 @@
 
   // ---------- 테마 소개 (본문 맨 위) ----------
   function renderIntro(t) {
-    if (!t.description) return;
-    $("intro").append(longText(t.description));
+    const img = UI.poster(t, "d-poster-img");   // 사진이 없으면 장르 색 칸
+    if (img.tagName === "IMG") img.loading = "eager";   // 설명 칸 높이를 포스터에 맞춰 재야 해서 바로 불러옴
+    $("d-poster").append(img);
+    if (t.description) $("intro").append(longText(t.description));
     $("intro-sec").hidden = false;
   }
 
-  // 소개글: 네 줄까지만 보이고, 넘치면 "더 보기"로 펼치기
+  // 소개글: 옆 포스터 높이까지만 보이고, 넘칠 때만 "더 보기"로 펼치기 (포스터보다 짧으면 버튼 없음)
   function longText(text) {
     const wrap = el("div", "d-desc-wrap");
-    const p = el("p", "d-desc clamp", text);
+    const p = el("p", "d-desc", text);
     p.id = "d-desc";
     wrap.append(p);
-    // 화면에 붙은 뒤에야 넘치는지 잴 수 있음
-    requestAnimationFrame(function () {
-      if (p.scrollHeight <= p.clientHeight + 2) { p.classList.remove("clamp"); return; }
+    // 화면에 붙고 포스터 사진까지 불러온 뒤에야 넘치는지 잴 수 있음 (포스터 높이가 사진마다 다름)
+    const img = $("d-poster").querySelector("img");
+    if (img && !img.complete) {
+      img.addEventListener("load", measure, { once: true });
+      img.addEventListener("error", function () { requestAnimationFrame(measure); }, { once: true });   // 장르 색 칸으로 바뀐 뒤
+    } else requestAnimationFrame(measure);
+    function measure() {
+      const poster = $("d-poster");
+      const lineH = parseFloat(getComputedStyle(p).lineHeight) || 27;
+      // 포스터 아래 끝까지 남은 높이 (더 보기 버튼 한 줄 자리는 빼 둠). 줄 단위로 맞춰 글자가 반쯤 잘리지 않게
+      //   가로로 납작한 사진이면 포스터가 낮아서, 그래도 네 줄은 보이게
+      const room = Math.max(poster.getBoundingClientRect().bottom - p.getBoundingClientRect().top - 30, lineH * 4);
+      if (p.scrollHeight <= room + lineH) return;   // 다 들어감 (한 줄 넘치는 정도는 그냥 보여 줌)
+      const lines = Math.floor(room / lineH);
+      p.style.maxHeight = lines * lineH + "px";
+      p.classList.add("cut");
       const more = el("button", "d-more", "더 보기");
       more.type = "button";
       more.setAttribute("aria-controls", "d-desc");
       more.setAttribute("aria-expanded", "false");
       more.addEventListener("click", function () {
-        const open = p.classList.toggle("clamp") === false;
+        const open = p.classList.toggle("cut") === false;
+        p.style.maxHeight = open ? "" : lines * lineH + "px";
         more.textContent = open ? "접기" : "더 보기";
         more.setAttribute("aria-expanded", String(open));
+        // 접으면 글이 확 줄어 화면이 아래(시간표 쪽)로 가 있음 → 테마 소개 위가 화면 밖(또는 헤더 밑)이면 그쪽으로 돌아감
+        if (!open) {
+          const sec = $("intro-sec");
+          if (sec.getBoundingClientRect().top < 80) sec.scrollIntoView({ block: "start", behavior: "smooth" });
+        }
       });
       wrap.append(more);
-    });
+    }
     return wrap;
   }
 

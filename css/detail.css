@@ -3,9 +3,11 @@
 /* ---------- 위쪽 큰 화면 ---------- */
 /* 내용은 위에서부터 같은 자리에 시작 (소개글이 길든 짧든 헤더와의 여백이 같음). 길면 아래로 늘어남 */
 .d-hero { position: relative; min-height: min(62vh, 560px); display: flex; align-items: flex-start; overflow: hidden; }
-.d-hero-bg {
-  position: absolute; inset: 0; background-size: cover; background-position: center 30%;
-  filter: saturate(1.05); transform: scale(1.04);
+.d-hero-bg {   /* 메인 배너처럼 오른쪽 62%만 (화면 전체에 깔면 포스터가 크게 늘어나 깨져 보임) */
+  position: absolute; inset: 0 0 0 38%; background-size: cover; background-position: center 30%;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%);
+          mask-image: linear-gradient(to right, transparent 0%, #000 30%);
+  filter: saturate(1.05);
 }
 .d-hero-shade {
   position: absolute; inset: 0;
@@ -48,8 +50,7 @@
 .d-store:hover { border-color: #fff; }
 .d-desc { margin: 0; font-size: 16px; color: #e6e1ee; line-height: 1.7; white-space: pre-line; max-width: 72ch; }
 .d-hero-text .d-desc { margin-top: 16px; max-width: 60ch; }   /* 매장 상세는 소개가 위쪽 큰 화면에 있음 */
-/* 긴 소개글은 네 줄까지 (theme.js longText). "더 보기"를 누르면 clamp 를 떼서 전부 */
-.d-desc.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+/* 긴 소개글은 옆 포스터 높이까지 (theme.js longText, .d-desc.cut). "더 보기"를 누르면 전부 */
 .d-more { margin-top: 6px; padding: 0; border: 0; background: none; color: #fff; font: inherit; font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .d-more:hover { color: var(--accent-ink); }
 .d-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
@@ -59,6 +60,20 @@
 .d-body { max-width: 1600px; margin: 0 auto; padding: 10px var(--gutter) 30px; }
 .d-cols { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
 .d-sec { margin-bottom: 36px; }
+/* 테마 소개: 포스터 + (제목·설명). 포스터는 잘리지 않게 원래 비율 그대로
+   너비 220px 칸 안에서 줄여 보여 줌 (사진 파일이 아무리 커도 이 크기). 아주 길쭉한 사진만 높이 400px 에서 멈춤 */
+.d-intro { display: flex; gap: 28px; align-items: flex-start; }
+.d-poster { flex: 0 0 220px; display: flex; justify-content: center; }
+.d-poster-img { display: block; max-width: 100%; max-height: 400px; width: auto; height: auto; border-radius: 8px; }
+.d-poster .poster-ph { width: 100%; aspect-ratio: 2 / 3; border-radius: 8px; display: grid; place-items: center; font-size: 48px; font-weight: 900; color: rgba(255,255,255,.85); }
+.d-intro-text { flex: 1; min-width: 0; }
+.d-desc.cut { overflow: hidden; }
+#intro-sec { scroll-margin-top: calc(var(--topbar-h) + 12px); }   /* 접기 뒤 돌아올 때 고정 헤더에 안 가려지게 */   /* 포스터 높이를 넘는 설명 (높이는 theme.js 가 줄 단위로 정함) */
+@media (max-width: 640px) {
+  .d-intro { gap: 16px; }
+  .d-poster { flex-basis: 120px; }
+  .d-poster-img { max-height: 220px; }
+}
 .d-sec h2 { font-size: 20px; margin: 0 0 14px; }
 .d-sec-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .d-sec-head h2 { margin: 0; }
