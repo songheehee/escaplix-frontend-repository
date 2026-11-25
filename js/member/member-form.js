@@ -107,7 +107,8 @@ const MemberForm = (function () {
   }
 
   /**
-   * 이메일 인증 칸: [이메일][인증번호 받기] → [6자리][확인]
+   * 이메일 인증 칸: [이메일][인증번호 전송] → [6자리][확인]
+   *   보낸 뒤 버튼은 "재전송". 인증번호 제한시간(5분)이 끝나야 켜짐 (버튼에 남은 초는 안 씀, 남은 시간은 인증번호 줄 아래에)
    * 서버 규칙: 인증번호 5분 유효, 다시 받기는 60초 뒤, 5번 틀리면 다시 받기, 맞힌 뒤 30분 안에 가입
    * @param o.input / o.sendBtn / o.msg       이메일 칸 · 받기 버튼 · 문구
    * @param o.codeRow / o.code / o.verifyBtn / o.codeMsg  인증번호 줄 (처음엔 hidden)
@@ -121,7 +122,8 @@ const MemberForm = (function () {
    * @returns { ensure(): boolean, value(): string, taken(text), expired(text) }
    */
   function emailVerify(o) {
-    const RESEND_SEC = 60, CODE_SEC = 300;
+    const CODE_SEC = 300;
+    const RESEND_TEXT = "재전송";
     const SEND_TEXT = o.sendBtn.textContent;
     let verifiedValue = null;   // 인증을 마친 값 (key)
     let sentValue = null;       // 인증번호를 보낸 값 (key)
@@ -143,7 +145,7 @@ const MemberForm = (function () {
         if (!isEmail) return;
         const v = norm();
         const err = v ? rules.email(v) : null;
-        setMsg(o.msg, o.input, err || (v ? "인증번호 받기를 눌러 주세요." : ""), err ? "bad" : "");
+        setMsg(o.msg, o.input, err || "", err ? "bad" : "");   // "인증번호를 전송해 주세요" 같은 안내는 안 띄움
         return;
       }
       verifiedValue = sentValue = null;
@@ -172,7 +174,7 @@ const MemberForm = (function () {
         if (key() !== k) return;   // 기다리는 사이 칸을 고침 (input 이 이미 초기화함)
         sentValue = k;
         verifiedValue = null;
-        setMsg(o.msg, o.input, o.sentText || "인증번호를 보냈어요. 메일함(안 보이면 스팸함)을 확인해 주세요.", "ok");
+        setMsg(o.msg, o.input, o.sentText || "인증번호를 보냈어요. 메일함 또는 스팸함을 확인해 주세요.", "ok");
         o.codeRow.hidden = false;
         o.code.value = "";
         o.verifyBtn.disabled = false;
@@ -180,7 +182,7 @@ const MemberForm = (function () {
         startTimers();
       } catch (e) {
         setMsg(o.msg, o.input, e.message, "bad");   // 409 이미 가입 · 429 잠시 후 · 503 메일 실패
-        resetSendBtn(sentValue ? "다시 받기" : null);
+        resetSendBtn(sentValue ? RESEND_TEXT : null);
       }
     }
 
@@ -192,21 +194,18 @@ const MemberForm = (function () {
 
     function startTimers() {
       stopTimers();
-      let resendLeft = RESEND_SEC;
       codeLeft = CODE_SEC;
       codeNote = "";
-      o.sendBtn.textContent = "다시 받기 (" + resendLeft + ")";
+      // [재전송]은 제한시간이 끝날 때까지 꺼 둠 (남은 시간은 아래 줄에 보여 줌)
+      o.sendBtn.textContent = RESEND_TEXT;
+      o.sendBtn.disabled = true;
       paintCode();
-      resendTimer = setInterval(function () {
-        resendLeft--;
-        if (resendLeft <= 0) { clearInterval(resendTimer); resendTimer = null; resetSendBtn("다시 받기"); }
-        else o.sendBtn.textContent = "다시 받기 (" + resendLeft + ")";
-      }, 1000);
       codeTimer = setInterval(function () {
         codeLeft--;
         if (codeLeft > 0) { paintCode(); return; }
         clearInterval(codeTimer); codeTimer = null;
         o.verifyBtn.disabled = true;
+        resetSendBtn(RESEND_TEXT);
         setMsg(o.codeMsg, o.code, "인증 시간이 지났어요. 인증번호를 다시 받아 주세요.", "bad");
       }, 1000);
     }
@@ -223,14 +222,14 @@ const MemberForm = (function () {
         verifiedValue = k;
         stopTimers();
         hideCode();
-        resetSendBtn("다시 받기");
+        resetSendBtn(RESEND_TEXT);
         setMsg(o.msg, o.input, o.verifiedText || "이메일 인증을 마쳤어요.", "ok");
         if (o.onVerified) o.onVerified();
       } catch (e) {
         // 5번 틀렸거나 만료면 그 번호는 끝: 확인은 끄고 받기 버튼을 바로 켠다
         if (/다시 받아/.test(e.message)) {
           stopTimers();
-          resetSendBtn("다시 받기");
+          resetSendBtn(RESEND_TEXT);
           setMsg(o.codeMsg, o.code, e.message, "bad");
         } else {   // 틀림 (n/5): 문구 옆에 남은 시간은 계속
           codeNote = e.message;
@@ -258,7 +257,7 @@ const MemberForm = (function () {
           }
         } else {
           const err = rules.email(v);
-          setMsg(o.msg, o.input, err || "이메일 인증을 해 주세요. (인증번호 받기)", "bad");
+          setMsg(o.msg, o.input, err || "이메일 인증을 해 주세요. (인증번호 전송)", "bad");
           o.input.focus();
         }
         return false;
