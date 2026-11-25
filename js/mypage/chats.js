@@ -57,6 +57,9 @@
     if (p.myRole === "LEADER") tags.append(el("span", "lead-tag", "방장"));
     const st = UI.partyStatus(p.status, p.ended);
     tags.append(el("span", st.cls, st.label));
+    // 운영 종료 테마·폐업 매장 (안 끝난 파티만. 끝난 파티는 이미 "파티 종료")
+    const gone = p.themeOpen === false && !p.ended;
+    if (gone) tags.append(el("span", "badge st-closed", "운영 종료"));
 
     const main = el("div", "cr-main");
     const title = el("strong", "cr-title", p.title);
@@ -64,7 +67,7 @@
     main.append(tags, title, el("div", "cr-meta", p.themeTitle + " · " + p.currentPeople + "/" + p.maxPeople + "명"));
 
     link.append(date, main);
-    link.setAttribute("aria-label", md(play) + " " + hm(play) + ", " + p.title + " 파티 방 열기" + (p.ended ? " (파티 종료)" : ""));
+    link.setAttribute("aria-label", md(play) + " " + hm(play) + ", " + p.title + " 파티 방 열기" + (p.ended ? " (파티 종료)" : "") + (gone ? " (운영 종료된 테마)" : ""));
     item.append(link);
     return item;
   }

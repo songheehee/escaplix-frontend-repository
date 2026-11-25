@@ -80,6 +80,10 @@
     st.className = s.cls;
     // 테마 · 매장 · 일시 · 모집 마감 을 칸으로 나눠 보여 줌
     $("ri-theme").textContent = room.theme.title;
+    // 운영 종료 테마·폐업 매장: 상세가 안 열려서 링크를 빼고 (href 없는 a = 그냥 글자), 안 끝난 파티면 안내 줄
+    if (room.theme.open === false) $("ri-theme").removeAttribute("href");
+    else $("ri-theme").href = Routes.url("theme", { id: room.theme.themeId });
+    $("ri-gone").hidden = !(room.theme.open === false && !ended);
     $("ri-store").textContent = room.theme.storeName;
     const end = new Date(play.getTime() + room.theme.playMinutes * 60000);   // 끝나는 시각 = 시작 + 플레이 시간
     $("ri-when").textContent = md(play) + " " + hm(play) + " – " + hm(end);
