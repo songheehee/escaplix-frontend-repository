@@ -80,6 +80,8 @@
     st.className = s.cls;
     // 테마 · 매장 · 일시 · 모집 마감 을 칸으로 나눠 보여 줌
     $("ri-theme").textContent = room.theme.title;
+    $("ri-theme-link").href = Routes.url("theme", { id: room.theme.themeId });
+    $("ri-theme-link").setAttribute("aria-label", room.theme.title + " 테마 보기");
     $("ri-store").textContent = room.theme.storeName;
     const end = new Date(play.getTime() + room.theme.playMinutes * 60000);   // 끝나는 시각 = 시작 + 플레이 시간
     $("ri-when").textContent = md(play) + " " + hm(play) + " – " + hm(end);
