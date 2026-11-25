@@ -216,9 +216,9 @@
       const r = theme
         ? await api.upload("/api/owner/themes/" + theme.themeId, f, "PUT")
         : await api.upload("/api/owner/themes", f);
-      UI.toast(r.status === "OPEN" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
-      // 새 테마·수정 모두 ② 매장 화면으로 ([취소]와 같은 곳). replace 라 뒤로 가기로 폼에 다시 안 들어옴
-      setTimeout(function () { location.replace($("cancel").href); }, 900);
+      // 새 테마·수정 모두 ② 매장 화면으로 바로 ([취소]와 같은 곳). 알림은 그 페이지에서 (UI.flash). replace 라 뒤로 가기로 폼에 다시 안 들어옴
+      UI.flash(r.status === "OPEN" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
+      location.replace($("cancel").href);
     } catch (e2) {
       Manage.busy(btn, false);
       Manage.showError($("error"), e2.message);

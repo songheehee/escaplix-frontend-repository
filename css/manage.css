@@ -14,6 +14,9 @@
 }
 
 .m-page { max-width: 1200px; }
+/* 내용이 짧아도 footer 는 화면 맨 아래에 (매장이 1개뿐인 사장 홈 등). 내용이 길면 평소처럼 내용 다음에 */
+body:has(> main.m-page) { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+body:has(> main.m-page) > main.m-page { flex: 1 0 auto; width: 100%; }
 .m-page.narrow { max-width: 760px; }
 .m-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 20px; }
 .m-head p { margin: 0; }
@@ -360,21 +363,23 @@ a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
 
 /* ---------- 관리자 홈: 승인 대기 두 칸 (위아래) ---------- */
 .ah-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.ah-queues { margin-top: 16px; display: grid; gap: 16px; }
+.ah-queues { margin-top: 16px; display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }   /* 매장·테마 반반 */
+@media (max-width: 860px) { .ah-queues { grid-template-columns: 1fr; } }   /* 좁으면 위아래 */
 .ah-q { padding: 0; overflow: hidden; }
 .ah-q-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .ah-q-head h2 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; }
 .ah-cnt { min-width: 24px; padding: 1px 8px; border-radius: 99px; font-size: 13px; font-weight: 800; text-align: center; color: var(--warn); background: rgba(242, 184, 75, .14); }
 .ah-cnt.zero { color: var(--muted); background: var(--surface2); }
 .ah-all { font-size: 13px; font-weight: 700; color: var(--accent-ink); text-decoration: none; white-space: nowrap; }
-.ah-q ul { list-style: none; margin: 0; padding: 0; }
+.ah-q ul { list-style: none; margin: 0; padding: 0; max-height: 334px; overflow-y: auto; }   /* 5줄(66px x 5 + 줄 사이 선 4px)까지 보이고 넘치면 칸 안에서 스크롤 */
 .ah-q li + li a { border-top: 1px solid var(--line); }
 .ah-q li a { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; color: inherit; text-decoration: none; }
 .ah-q li a:hover, .ah-q li a:focus-visible { background: var(--surface2); outline: none; }
 .ah-q .what { min-width: 0; }
 .ah-q .what b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ah-q .what span { display: block; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ah-q .go-btn { flex: 0 0 auto; font-size: 13px; font-weight: 800; padding: 5px 12px; border-radius: var(--radius); background: var(--accent); color: #fff; }
+.ah-q .go-arrow { flex: 0 0 auto; font-size: 22px; line-height: 1; color: var(--muted); transition: color .15s, transform .15s; }
+.ah-q li a:hover .go-arrow, .ah-q li a:focus-visible .go-arrow { color: var(--accent-ink); transform: translateX(2px); }
 .ah-empty { padding: 24px 18px; text-align: center; color: var(--muted); font-size: 14px; }
 @media (max-width: 760px) { .ah-stats { grid-template-columns: 1fr 1fr; } }
 
@@ -385,7 +390,9 @@ a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
    - 화면 높이를 미리 잡아 둬서 아래 꼬리말이 위아래로 튀지 않게
    - 혹시 adm-ready 가 안 붙어도 2초 뒤에는 보이게 (안전장치) */
 main.adm-fade { min-height: 100vh; }
-.adm-fade > .page-title ~ *, .adm-fade > .m-head ~ * { visibility: hidden; animation: adm-show 0s 2s forwards; }
+/* 관리자 홈은 내용 높이가 거의 정해져 있어서(목록 5줄까지) 화면 높이를 잡아 두면 아래가 텅 빔 → 내용만큼만 */
+main.adm-fade:has(> .ah-queues) { min-height: 0; }
+body.admin-view .footer { display: none; }   /* 관리자로 들어온 화면 전체 footer 없음 (손님용 소개 문구라 관리 도구엔 필요 없음). Manage.guard 가 붙임 */.adm-fade > .page-title ~ *, .adm-fade > .m-head ~ * { visibility: hidden; animation: adm-show 0s 2s forwards; }
 .adm-ready .adm-fade > .page-title ~ *, .adm-ready .adm-fade > .m-head ~ * { visibility: visible; animation: none; }   /* 페이드 없이 바로 (서서히 밝아지면 번쩍이는 것처럼 보여서) */
 @keyframes adm-show { to { visibility: visible; } }
 /* 승인 요청: 매장/테마 탭과 대기/반려 칩은 바로 보이게 (탭 자리가 사라졌다 나타나며 깜빡이던 것). 아래 표만 기다림 */

@@ -687,6 +687,23 @@ const UI = (function () {
     setTimeout(function () { t.remove(); }, 3000);
   }
 
+  // 다음 페이지에서 띄울 알림. 저장하고 바로 이동할 때 씀 (기다리지 않고 넘어가도 알림은 보이게)
+  //   UI.flash("저장했어요."); location.replace(next);  → 다음 페이지에서 ui.js 가 읽고 한 번 띄운 뒤 지움
+  const FLASH_KEY = "flash";
+  function flash(msg, kind) {
+    try { sessionStorage.setItem(FLASH_KEY, JSON.stringify({ msg: msg, kind: kind || null })); } catch (e) { /* 저장 못 하면 알림만 없음 */ }
+  }
+  function showFlash() {
+    let f = null;
+    try {
+      f = JSON.parse(sessionStorage.getItem(FLASH_KEY) || "null");
+      sessionStorage.removeItem(FLASH_KEY);
+    } catch (e) { return; }
+    if (f && f.msg) toast(f.msg, f.kind || undefined);
+  }
+  if (document.body) showFlash();
+  else document.addEventListener("DOMContentLoaded", showFlash);
+
   // ---------- 확인창 (브라우저 기본 confirm 대신) ----------
   // UI.ask({ title, body, yes, no, danger }) → Promise<true|false>. Esc·바깥 누르기·[아니요] = false
   //   버튼 글은 "아니요 / 예, ~할게요" 모양으로 (파티 화면과 같은 말투)
@@ -915,7 +932,7 @@ const UI = (function () {
     el: el, $: $, poster: poster, posterBg: posterBg, genreGradient: genreGradient,
     rating: rating, won: won, people: people, genresText: genresText, genreName: genreName,
     safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, partyStatus: partyStatus, selectPicker: selectPicker, enhanceSelect: enhanceSelect, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
-    toast: toast, ask: ask, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
+    toast: toast, flash: flash, ask: ask, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
     skeletonRow: skeletonRow, emptyBox: emptyBox,
   };
 })();

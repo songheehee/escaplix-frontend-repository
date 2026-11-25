@@ -40,8 +40,8 @@
   const bizCheck = MemberForm.dupCheck({
     input: bizInput, button: $("bizNo-check"), msg: $("bizNo-msg"),
     path: "/api/members/check-biz-no", param: "bizNo",
-    validate: R.bizNo, emptyText: "사업자등록번호를 입력해 주세요.",
-    okText: "등록되지 않은 번호예요.", takenText: "이미 등록된 사업자등록번호예요.",
+    validate: R.bizNo, emptyText: "사업자 등록번호를 입력해 주세요.",
+    okText: "등록되지 않은 번호예요.", takenText: "이미 등록된 사업자 등록번호예요.",
   });
   const emailCheck = MemberForm.emailVerify({
     input: $("email"), sendBtn: $("email-send"), msg: $("email-msg"),

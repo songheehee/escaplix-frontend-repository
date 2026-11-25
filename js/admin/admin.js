@@ -1,12 +1,12 @@
 // S25 관리자 홈 (pages/admin/admin.html) · C 담당
 //   C-12 숫자 요약 (승인 대기 매장·테마, 공개 매장, 공개 테마), C-13 · C-17 승인 대기 → 매장 칸 · 테마 칸 (위아래)
 //   관리자 개편 11/23: 카드 아래 작은 글씨 없앰, "지금 처리할 것" 을 매장·테마로 나눔, 줄 전체가 링크
+//   11/25: 승인 대기를 다 보여 줌 (5개 제한 없앰, 많으면 칸 안에서 스크롤). 매장·테마 칸은 반반 (좁으면 위아래)
 (function () {
   const el = UI.el;
   const $ = UI.$;
   if (!Manage.guard(["ADMIN"])) return;
 
-  const MAX_ROWS = 5;   // 칸마다 오래 기다린 순서로 최대 5개
   $("all-store").href = Routes.url("adminStores");
   $("all-theme").href = Routes.url("adminThemes");
   load().finally(function () { document.body.classList.add("adm-ready"); });   // 다 불러오면 제목 아래를 한 번에 보여 줌 (탭 이동 깜빡임 방지, manage.css .adm-fade)
@@ -51,8 +51,8 @@
     box.append(
       stat("매장 승인 대기", s.pendingStores, s.pendingStores > 0),
       stat("테마 승인 대기", s.pendingThemes, s.pendingThemes > 0),
-      stat("공개 매장", s.approvedStores, false),
-      stat("공개 테마", s.openThemes, false)
+      stat("운영 중 매장", s.approvedStores, false),
+      stat("운영 중 테마", s.openThemes, false)
     );
   }
 
@@ -66,7 +66,7 @@
       ul.append(el("li", "ah-empty", emptyText));
       return;
     }
-    list.slice(0, MAX_ROWS).forEach(function (item) {
+    list.forEach(function (item) {   // 오래 기다린 순서로 전부
       const r = toRow(item);
       const li = el("li");
       const a = el("a");
@@ -75,7 +75,9 @@
       const b = el("b", null, r.name);
       b.title = r.name;
       what.append(b, el("span", null, r.sub));
-      a.append(what, el("span", "go-btn", "검토"));
+      const arrow = el("span", "go-arrow", "›");   // 줄 전체가 링크라 [검토] 버튼 대신 화살표만
+      arrow.setAttribute("aria-hidden", "true");
+      a.append(what, arrow);
       li.append(a);
       ul.append(li);
     });

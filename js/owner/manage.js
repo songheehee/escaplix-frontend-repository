@@ -19,6 +19,7 @@ const Manage = (function () {
         "홈으로", Routes.url(me.role === "OWNER" ? "owner" : me.role === "ADMIN" ? "admin" : "home"));
       return null;
     }
+    if (me.role === "ADMIN") document.body.classList.add("admin-view");   // 관리자 화면 전체: footer 숨김 (manage.css)
     return me;
   }
   function isAdmin() {
@@ -263,10 +264,9 @@ const Manage = (function () {
   // ---------- 사장 화면 경로 (내 매장 › 홍대점 › 사라진 탐정) ----------
   //   items: [[글자, 주소], ..., [글자]]. 마지막은 지금 화면이라 링크 없음
   //   맨 앞 "내 매장"(관리자는 "매장 관리")은 자동으로 붙인다
-  //   ?list=1: 매장이 1개뿐이어도 목록을 보여 줌 (안 붙이면 바로 그 매장 화면으로 넘어감)
   function crumbs(box, items) {
     box.textContent = "";
-    const all = [[isAdmin() ? "매장 관리" : "내 매장", Routes.url("owner", { list: 1 })]].concat(items);
+    const all = [[isAdmin() ? "매장 관리" : "내 매장", Routes.url("owner")]].concat(items);
     all.forEach(function (it, i) {
       if (i) box.append(el("span", "sep", "›"));
       if (it[1] && i < all.length - 1) {
@@ -422,22 +422,22 @@ const Manage = (function () {
     ]));
     return card;
   }
-  // 서류 칸: 사업장등록증(C-15) · 사장 사업자등록증(A-11) 나란히. 관리자 직접 등록이면 사업장등록증만
+  // 서류 칸: 사업장 증빙 서류(C-15) · 사장 사업자등록증(A-11) 나란히. 관리자 직접 등록이면 사업장 증빙 서류만
   function storeDocs(s) {
     const wrap = el("div", "ad-docs");
     const place = el("div", "m-card ad-doc");
     const pv = el("div", "m-preview");
-    place.append(el("h3", null, "사업장등록증"), pv,
-      dlRows([["상호", s.name], ["주소", s.address], ["관리번호", s.bizPlaceNo]]));
+    place.append(el("h3", null, "사업장 증빙 서류"), pv,
+      dlRows([["상호", s.name], ["주소", s.address], ["사업장 관리번호", s.bizPlaceNo]]));
     wrap.append(place);
-    if (s.hasBizPlaceFile) privateImage("/api/admin/stores/" + s.storeId + "/biz-place-file", pv, "사업장등록증");
-    else pv.textContent = s.owner ? "올린 사업장등록증이 없어요." : "관리자가 등록한 매장이라 등록증이 없어요.";
+    if (s.hasBizPlaceFile) privateImage("/api/admin/stores/" + s.storeId + "/biz-place-file", pv, "사업장 증빙 서류");
+    else pv.textContent = s.owner ? "올린 사업장 증빙 서류가 없어요." : "관리자가 등록한 매장이라 증빙 서류가 없어요.";
     if (s.owner) {
       const own = el("div", "m-card ad-doc");
       const opv = el("div", "m-preview");
       own.append(el("h3", null, "사업자등록증"), opv, dlRows([
         ["사장", s.owner.loginId + " (" + s.owner.nickname + ")"],
-        ["사업자번호", s.owner.bizNo],
+        ["사업자 등록번호", s.owner.bizNo],
         ["가입일", s.owner.joinedAt ? ymd(s.owner.joinedAt) : null],
       ]));
       wrap.append(own);
