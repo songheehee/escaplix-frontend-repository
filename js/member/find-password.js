@@ -9,13 +9,11 @@
   if (Auth.me()) { location.replace(Routes.url("home")); return; }
 
   $("back-link").href = Routes.url("login");
-  $("find-id-link").href = Routes.url("findId");
 
   const form = $("reset-form");
   const errorBox = $("form-error");
   const submitBtn = $("submit-btn");
   const idInput = $("loginId");
-  const newPw = $("new-pw");
 
   // 로그인 화면에서 아이디를 친 채로 왔으면 채워 둔다 (?id=)
   const presetId = new URLSearchParams(location.search).get("id");
@@ -36,28 +34,44 @@
       idInput.focus();
       return false;
     },
-    // 아이디·이메일이 맞는지는 알려 주지 않는다 (남의 가입 여부를 캐낼 수 없게)
-    sentText: "아이디와 이메일이 맞으면 인증번호를 보냈어요. 메일함(안 보이면 스팸함)을 확인해 주세요.",
+    sentText: "입력한 이메일로 인증번호를 보냈어요. 메일함 또는 스팸함을 확인해 주세요.",   // 틀린 조합은 서버가 400 "아이디 또는 이메일이 올바르지 않습니다." → 이메일 칸 아래 빨간 글씨
     verifiedText: "인증을 마쳤어요. 새 비밀번호를 정해 주세요.",
     onVerified: function () {
-      newPw.hidden = false;
+      setPwOn(true);
       $("password").focus();
     },
   });
+
+  // 단계 칸은 처음부터 다 보이고, 차례가 되면 켜진다 (사용자 요청 11/25)
+  //   ① 아이디·이메일 → [인증번호 전송]  ② 인증번호를 보내면 인증번호 칸·[확인]이 켜짐  ③ 인증을 마치면 새 비밀번호 칸·[비밀번호 바꾸기]가 켜짐
+  //   MemberForm 은 인증번호 줄을 hidden 으로 열고 닫는다 → 여기서는 숨기지 않고(css .steps-open) 켜고 끄기로 바꿔 보여 줌
+  const codeRow = $("email-code-row");
+  function paintCodeRow() {
+    const off = codeRow.hidden;
+    $("email-code").disabled = off;
+    if (off) $("email-verify").disabled = true;
+  }
+  new MutationObserver(paintCodeRow).observe(codeRow, { attributes: true, attributeFilter: ["hidden"] });
+  paintCodeRow();
+  function setPwOn(on) {
+    $("password").disabled = !on;
+    $("password2").disabled = !on;
+    submitBtn.disabled = !on;
+  }
   const pwCheck = MemberForm.passwordMatch($("password"), $("password2"), $("password-msg"), $("password2-msg"), R.password);
 
-  // 아이디를 고치면 문구를 지우고, 인증이 풀리면 새 비밀번호 칸도 닫는다
+  // 아이디·이메일을 고치면 문구를 지우고, 인증이 풀리니 새 비밀번호 칸도 끈다
   idInput.addEventListener("input", function () {
     MemberForm.setMsg($("loginId-msg"), idInput, "", "");
-    newPw.hidden = true;
+    setPwOn(false);
   });
-  $("email").addEventListener("input", function () { newPw.hidden = true; });
+  $("email").addEventListener("input", function () { setPwOn(false); });
   form.addEventListener("input", function () { errorBox.hidden = true; });
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     errorBox.hidden = true;
-    if (!emailCheck.ensure()) { newPw.hidden = true; return; }
+    if (!emailCheck.ensure()) { setPwOn(false); return; }
     if (!pwCheck.ok()) return;
 
     const id = loginId();
@@ -68,13 +82,13 @@
       location.replace(Routes.url("login", { id: id, reset: 1 }));
     } catch (err) {
       if (err.status === 400 && err.message.indexOf("이메일 인증") >= 0) {   // 인증하고 30분이 지남 등
-        newPw.hidden = true;
+        setPwOn(false);
         emailCheck.expired(err.message);
       } else {
         errorBox.textContent = err.message;
         errorBox.hidden = false;
       }
-      submitBtn.disabled = false;
+      submitBtn.disabled = $("password").disabled;   // 인증이 풀렸으면 꺼진 채로
       submitBtn.textContent = "비밀번호 바꾸기";
     }
   });

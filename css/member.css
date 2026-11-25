@@ -36,23 +36,30 @@
 /* 이메일 인증번호 줄: 이메일 칸 바로 아래. hidden 이 display:flex 에 지지 않게 */
 .code-row { margin-top: 8px; }
 .code-row[hidden] { display: none; }
+/* 비밀번호 찾기: 인증번호 줄을 숨기지 않고 늘 보여 줌 (안 쓸 때는 칸이 꺼져 있음, find-password.js) */
+.steps-open .code-row[hidden] { display: flex !important; }
+.auth-page .input:disabled { opacity: .5; cursor: not-allowed; }
 
-/* 서버가 보낸 오류 문구 · 안내 문구 */
-.form-error {
-  margin: 0 0 14px; padding: 10px 12px; border-radius: var(--radius); font-size: 14px;
-  background: rgba(255, 92, 108, .12); color: #ff9aa5; border: 1px solid rgba(255, 92, 108, .35);
-}
-.form-info {
-  margin: 0 0 14px; padding: 10px 12px; border-radius: var(--radius); font-size: 14px;
-  background: rgba(70, 214, 140, .1); color: var(--good); border: 1px solid rgba(70, 214, 140, .35);
-}
+/* 서버가 보낸 오류 문구 · 안내 문구: 배경 상자 없이 글씨색만 (오류 빨강 · 안내 초록, 칸 아래 문구와 같은 모양) */
+.form-error { margin: 0 0 14px; font-size: 14px; color: var(--danger); }
+.form-info { margin: 0 0 14px; font-size: 14px; color: var(--good); }
 .form-error[hidden], .form-info[hidden] { display: none; }
 
 .btn.block { display: flex; width: 100%; padding-top: 12px; padding-bottom: 12px; font-size: 15px; }
 .auth-foot { margin: 16px 0 0; text-align: center; font-size: 14px; color: var(--muted); }
 /* 로그인 버튼 아래 "비밀번호를 잊으셨나요?" */
-.auth-links { margin: 12px 0 0; text-align: center; font-size: 13px; }
-.auth-links a { color: var(--muted); }
+.auth-links { margin: 20px 0 0; display: flex; justify-content: center; gap: 20px; font-size: 13px; }   /* 아이디 찾기 · 비밀번호 찾기: 가운데 기호 없이 띄움 */
+.auth-links a { color: var(--muted); text-decoration: underline; text-decoration-thickness: 1px; }   /* 얇은 밑줄. 글자와의 간격은 [회원가입] 링크와 같은 기본값 */
+/* 로그인 화면: [로그인] 버튼과는 넉넉히, 회원가입 줄과 찾기 줄은 붙여서 한 묶음으로 */
+#login-btn + .auth-foot { margin-top: 26px; }
+.auth-foot + .auth-links { margin-top: 8px; }
+/* 로그인·가입 화면 테두리 버튼 ([중복 확인] · [인증번호 전송] · [확인]): 어두운 배경에서 적당히 보이게 (사장 화면 [취소]와 같은 중간 회색) */
+.auth-page .btn-line { border-color: #5a5366; }
+/* 칸 옆 버튼 ([중복 확인] · [인증번호 전송] · [재전송] · [확인]): 모두 같은 폭·글씨. "인증번호 전송"이 한 줄에 들어가는 크기 */
+.auth-page .input-row .btn { flex: 0 0 100px; padding: 0 8px; font-size: 13px; }
+/* 회원 유형 선택: 제목과 카드 사이 띄우기 (설명 줄을 뺀 자리) */
+.auth-box h1 + .choose { margin-top: 20px; }
+.auth-page .btn-line:hover:not(:disabled) { border-color: #7a7387; background: var(--surface2); }
 .auth-links a:hover { color: var(--ink); }
 .auth-foot a { color: var(--accent-ink); font-weight: 700; }
 
@@ -68,6 +75,13 @@
 .choose-ttl { font-size: 18px; }
 .choose-desc { font-size: 14px; color: var(--ink2); line-height: 1.55; flex: 1; }
 .choose-go { margin-top: 6px; font-size: 14px; font-weight: 700; color: var(--accent-ink); }
+/* 카드 오른쪽 아래 체크 표시: 평소엔 회색 동그라미, 마우스를 올리거나 고르면 보라색 */
+.choose-check {
+  align-self: flex-end; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid #5a5366; color: var(--muted); font-size: 15px; font-weight: 800; transition: background .15s, border-color .15s, color .15s;
+}
+.choose-check::after { content: "✓"; }
+.choose-card:hover .choose-check, .choose-card:focus-visible .choose-check { background: var(--accent); border-color: var(--accent); color: #fff; }
 
 /* 위쪽 "← 돌아가기" (가입 화면) */
 .back-link { display: inline-block; margin-bottom: 14px; font-size: 13px; color: var(--muted); text-decoration: none; }
