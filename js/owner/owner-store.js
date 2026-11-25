@@ -179,14 +179,17 @@
     box.append(list);
   }
 
-  // 줄을 눌러도 이동하지 않음. 오른쪽 끝 [수정] · [운영 종료] 버튼으로 (사장 화면 개편 11/24)
+  // 고치기는 오른쪽 끝 [수정] · [운영 종료] 버튼으로 (사장 화면 개편 11/24)
+  //   운영 중인 테마는 줄을 누르면 손님이 보는 테마 상세로 (손님 화면에서 어떻게 보이는지 확인용)
   //   폐업 매장: 테마를 고칠 수 없어 버튼 없이 보여 주기만
   function themeRow(t, slots, closed) {
     const row = el("div", "m-row" + (closed ? " off" : ""));
     row.dataset.rank = rank(t.status);   // 종료·재개 때 자리 옮기기 (moveRow)
 
     const main = el("div", "r-main");
-    const title = el("div", "t-title", t.title);
+    const title = el("div", "t-title");
+    const link = el("a", "r-link", t.title);   // 운영 중일 때만 href 가 붙어 줄 전체가 링크가 됨 (setLink)
+    title.append(link);
     main.append(title, el("div", "sub", UI.genresText(t.genres) + " · " + t.playMinutes + "분"));
 
     const st = el("div", "r-st");
@@ -208,6 +211,7 @@
     }
 
     row.append(main, st, rating, slotCell, closed ? el("div", "r-act") : rowButtons(t, st));
+    setLink(row, t, closed);
     return row;
   }
 
@@ -251,6 +255,7 @@
         stCell.textContent = "";
         stCell.append(Manage.badge(t.status));
         paint();
+        setLink(stCell.closest(".m-row"), t, false);
         moveRow(stCell.closest(".m-row"), t.status);
         UI.toast(t.status === "CLOSED" ? "운영을 종료했어요. 손님 화면에서 사라졌어요." : "운영을 다시 시작했어요.");
       } catch (e) {
@@ -259,6 +264,21 @@
       }
     });
     return wrap;
+  }
+
+  // 운영 중인 테마만 줄 전체가 손님용 테마 상세 링크. 종료·재개하면 다시 정함
+  function setLink(row, t, closed) {
+    const link = row.querySelector(".r-link");
+    if (!link) return;
+    const open = !closed && t.status === "OPEN";
+    if (open) {
+      link.href = Routes.url("theme", { id: t.themeId });
+      link.setAttribute("aria-label", t.title + " 손님 화면에서 보기");
+    } else {
+      link.removeAttribute("href");
+      link.removeAttribute("aria-label");
+    }
+    row.classList.toggle("go", open);
   }
 
   // 테마 줄 순서: 운영 중 → 승인 대기 → 반려 → 운영 종료

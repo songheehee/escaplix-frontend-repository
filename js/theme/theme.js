@@ -294,7 +294,7 @@
     sum.append(big, right);
 
     if (!res.reviews.length) {
-      list.append(el("p", "muted", "아직 후기가 없어요. 첫 후기를 남겨 주세요!"));
+      list.append(el("p", "muted", isUser || !me ? "아직 후기가 없어요. 첫 후기를 남겨 주세요!" : "아직 후기가 없어요."));   // 사장·관리자는 후기를 못 써서
       return;
     }
     // 내 후기를 맨 앞에, 나머지는 받은 순서(최신순) 그대로

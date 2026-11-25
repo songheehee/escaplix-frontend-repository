@@ -88,6 +88,14 @@ a.store-row:hover { border-color: var(--ink2); background: var(--surface2); }
   padding: 14px 18px; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; transition: background .15s;
 }
 .m-row:last-child { border-bottom: 0; }
+/* 운영 중인 테마 줄(.go): 줄 아무 데나 누르면 손님용 테마 상세 (제목 링크를 줄 전체로 늘림). 버튼만 그 위에 올라와 따로 눌림 */
+.m-row .r-link { color: inherit; text-decoration: none; }
+.m-row.go { cursor: pointer; }
+.m-row.go:hover { background: var(--surface2); }
+.m-row.go .r-link::after { content: ""; position: absolute; inset: 0; }
+.m-row.go .r-link:focus-visible { outline: none; }
+.m-row.go:has(.r-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+.m-row .r-act { position: relative; z-index: 1; }
 .m-row .r-act { display: flex; justify-content: flex-end; gap: 6px; }   /* 줄 오른쪽 끝에 붙임 */
 .m-row .r-act .btn { min-width: 6.6em; padding-inline: 10px; }   /* "운영 종료"·"운영 재개"가 여유 있게 들어가는 폭. [수정]도 같은 폭 → 줄이 맞음 */
 .m-row .r-ph { visibility: hidden; pointer-events: none; }   /* 승인 대기·반려 줄: 두 번째 버튼 자리만 차지 */
