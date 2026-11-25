@@ -18,7 +18,7 @@
   const admin = me.role === "ADMIN";
   if (admin) document.body.classList.add("adm-btns");   // 관리자: 상세 화면 버튼 크기를 하나로 (manage.css .adm-btns). 사장은 그대로
   if (!storeId) {
-    Manage.stop("매장 번호가 없어요.", admin ? "매장 관리로" : "내 매장으로", Routes.url("owner", { list: 1 }));
+    Manage.stop("매장 번호가 없어요.", admin ? "매장 관리로" : "내 매장으로", Routes.url("owner"));
     return;
   }
   if (admin) loadAdmin(); else load();
@@ -34,7 +34,7 @@
       s = r[0];
       themes = r[1];
     } catch (e) {
-      Manage.stop(e.status === 404 ? "없는 매장이에요." : e.message, "매장 관리로", Routes.url("owner", { list: 1 }));
+      Manage.stop(e.status === 404 ? "없는 매장이에요." : e.message, "매장 관리로", Routes.url("owner"));
       return;
     }
     document.title = s.name + " · 매장 관리 · Escaplix";
@@ -78,7 +78,7 @@
       return;
     }
     if (!store) {
-      Manage.stop("내 매장이 아니거나 없는 매장이에요.", "내 매장으로", Routes.url("owner", { list: 1 }));
+      Manage.stop("내 매장이 아니거나 없는 매장이에요.", "내 매장으로", Routes.url("owner"));
       return;
     }
     document.title = store.name + " · Escaplix";
@@ -126,8 +126,8 @@
       Manage.busy(btn, true);
       try {
         await api.put("/api/owner/stores/" + s.storeId + "/close");
-        UI.toast("폐업 처리했어요.");
-        setTimeout(function () { location.reload(); }, 600);
+        UI.flash("폐업 처리했어요.");   // 새로고침 뒤에 띄움 (기다리지 않음)
+        location.reload();
       } catch (e) {
         Manage.busy(btn, false);
         UI.toast(e.message, "err");

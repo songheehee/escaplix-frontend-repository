@@ -125,7 +125,7 @@
     const t = el("table", "m-table am-table");
     const thead = el("thead");
     const hr = el("tr");
-    ["번호", "아이디", "닉네임", "유형", "사업자등록번호", "관리 매장", "가입일", ""].forEach(function (h) { hr.append(el("th", null, h)); });
+    ["번호", "아이디", "닉네임", "유형", "사업자 등록번호", "관리 매장", "가입일", ""].forEach(function (h) { hr.append(el("th", null, h)); });
     thead.append(hr);
     t.append(thead);
 
@@ -206,7 +206,7 @@
     form.method = "dialog";
     const h = el("h2", null, m.nickname + " 님의 사업자등록증");
     h.id = "am-doc-title";
-    const info = el("p", null, m.loginId + " · 사업자등록번호 " + (m.bizNo || "-") + " · 관리 매장 " + m.managedStoreCount + "곳");
+    const info = el("p", null, m.loginId + " · 사업자 등록번호 " + (m.bizNo || "-") + " · 관리 매장 " + m.managedStoreCount + "곳");
     const preview = el("div", "m-preview");
     const actions = el("div", "m-actions");
     const close = el("button", "btn btn-line", "닫기");

@@ -1,7 +1,7 @@
 // S21 매장 등록·수정 (pages/owner/store-form.html?id=) · C 담당
 //   C-1 처음 값(수정), C-2 사업장 관리번호 중복 확인, C-3 등록, C-4 수정 (multipart, api.upload)
-//   사장: 등록·수정하면 PENDING → 관리자 승인 (결정 S1). 사업장등록증은 등록할 때 꼭 필요
-//   관리자: 바로 APPROVED, 사업장등록증 없어도 됨 (결정 S3). 사장 매장을 고쳐도 상태 그대로 (관리자 개편 11/23)
+//   사장: 등록·수정하면 PENDING → 관리자 승인 (결정 S1). 사업장 증빙 서류는 등록할 때 꼭 필요
+//   관리자: 바로 APPROVED, 사업장 증빙 서류 없어도 됨 (결정 S3). 사장 매장을 고쳐도 상태 그대로 (관리자 개편 11/23)
 //   관리자 개편 11/23
 //     - 매장 → 서류 (승인 상세와 같은 순서), 버튼 줄은 화면 아래에 붙어 따라옴
 //     - 주소: [주소 검색] = 다음 우편번호 서비스 (키 없음) + 상세 주소. 저장은 "도로명 주소, 상세 주소" 한 칸 (address)
@@ -28,7 +28,7 @@
   setup();
 
   async function setup() {
-    $("cancel").href = storeId ? Routes.url("ownerStore", { id: storeId }) : Routes.url("owner", { list: 1 });
+    $("cancel").href = storeId ? Routes.url("ownerStore", { id: storeId }) : Routes.url("owner");
     Manage.crumbs($("crumbs"), [[storeId ? "매장 수정" : "매장 등록"]]);
     Manage.counter($("intro"), $("intro-count"));
     const areasReady = loadAreas();
@@ -59,7 +59,7 @@
     $("title").textContent = storeId ? "매장 수정" : "매장 등록";
     $("re-approve").hidden = admin || !storeId;
     $("submit").textContent = admin ? (storeId ? "저장" : "등록") : "승인 요청";
-    // 사업장등록증: 사장이 새로 등록할 때만 필수. 수정 때 비우면 지금 파일 그대로 (C-4)
+    // 사업장 증빙 서류: 사장이 새로 등록할 때만 필수. 수정 때 비우면 지금 파일 그대로 (C-4)
     const fileRequired = !admin && !storeId;
     $("file-req").hidden = !fileRequired;
     $("file-opt").hidden = fileRequired;
@@ -169,7 +169,7 @@
 
   // 숫자만 쳐도 - 가 붙음. 서버 StoreForm 의 모양 검사와 같은 규칙
   const PHONE_RE = /^(02-\d{3,4}-\d{4}|050\d-\d{4}-\d{4}|0[13-9]\d-\d{3,4}-\d{4}|1[5-9]\d{2}-\d{4})$/;
-  // 사업장 관리번호 11자리 = 사업자등록번호 10자리 + 끝 1자리 (000-00-00000-0)
+  // 사업장 관리번호 11자리 = 사업자 등록번호 10자리 + 끝 1자리 (000-00-00000-0)
   //   예전에 10자리로 넣은 매장(더미 데이터)은 번호를 안 바꾸면 그대로 저장 가능 (bizOk)
   const BIZ_RE = /^\d{3}-\d{2}-\d{5}-\d$/;
 
@@ -284,7 +284,7 @@
     if (!bizOk($("bizPlaceNo").value.trim())) { $("bizPlaceNo").focus(); return "사업장 관리번호 숫자 11자리를 입력해 주세요."; }
     if (!admin && !storeId && !$("bizPlaceFile").files[0]) {
       $("bizPlaceFile").focus();
-      return "사업장등록증 이미지를 올려 주세요.";
+      return "사업장 증빙 서류 이미지를 올려 주세요.";
     }
     return null;
   }
@@ -315,10 +315,9 @@
       const r = storeId
         ? await api.upload("/api/owner/stores/" + storeId, f, "PUT")
         : await api.upload("/api/owner/stores", f);
-      UI.toast(r.status === "APPROVED" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
-      // 등록·수정 모두 그 매장 페이지로. replace 라 뒤로 가기로 폼에 다시 안 들어옴
-      const next = Routes.url("ownerStore", { id: r.storeId || storeId });
-      setTimeout(function () { location.replace(next); }, 900);
+      // 등록·수정 모두 그 매장 페이지로 바로. 알림은 그 페이지에서 (UI.flash). replace 라 뒤로 가기로 폼에 다시 안 들어옴
+      UI.flash(r.status === "APPROVED" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
+      location.replace(Routes.url("ownerStore", { id: r.storeId || storeId }));
     } catch (e2) {
       Manage.busy(btn, false);
       Manage.showError($("error"), e2.message);

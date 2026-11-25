@@ -194,10 +194,9 @@ const ThemeSlots = (function () {
         weekend: data.weekend.slice(),
       });
       apply(r);
-      UI.toast("시간표를 저장했어요.");
-      // 기본 정보 저장처럼 ② 매장 화면으로 (저장했으니 "안 저장" 경고 없이 나감)
-      const storeId = $("storeId").value;
-      setTimeout(function () { location.replace(Routes.url("ownerStore", { id: storeId })); }, 900);
+      // 기본 정보 저장처럼 ② 매장 화면으로 바로 (저장했으니 "안 저장" 경고 없이 나감). 알림은 그 페이지에서 (UI.flash)
+      UI.flash("시간표를 저장했어요.");
+      location.replace(Routes.url("ownerStore", { id: $("storeId").value }));
     } catch (e) {
       Manage.showError($("slot-error"), e.message);
       Manage.busy(btn, false);

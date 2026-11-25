@@ -1,6 +1,6 @@
 // S12 사장 홈 ① 내 매장 (pages/owner/owner.html) · C 담당 · C-1
 //   사장: 내 매장. 순서: 승인됨 → 승인 대기 → 반려, 같은 상태끼리는 최근 등록 순 (Manage.sortStores)
-//     매장이 1개뿐이면 ①을 건너뛰고 바로 ② (경로의 "내 매장"을 눌러 온 ?list=1 이면 목록을 보여 줌)
+//     매장이 1개여도 항상 목록 (11/25: 바로 ② 로 넘기던 것 없앰. [사장 홈]을 눌렀는데 상세가 떠서 헷갈림)
 //   관리자: "매장 관리" = 승인된 매장 전체 + 폐업 매장(맨 뒤, 흐리게 + 폐업 배지) (대기·반려 매장은 승인 요청 화면에서)
 //     위에 "매장 이름으로 찾기" + "+ 매장 등록". 카드 오른쪽에 테마 수와 사장 아이디 (관리자가 등록한 매장은 "관리자")
 //   카드를 누르면 ② 매장 화면
@@ -49,10 +49,6 @@
       stores = await api.get("/api/owner/stores");
     } catch (e) {
       Manage.stop(e.message);
-      return;
-    }
-    if (!admin && stores.length === 1 && !Manage.param("list")) {
-      location.replace(Routes.url("ownerStore", { id: stores[0].storeId }));
       return;
     }
     paint();
