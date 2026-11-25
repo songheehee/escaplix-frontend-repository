@@ -428,7 +428,7 @@ const Manage = (function () {
     const place = el("div", "m-card ad-doc");
     const pv = el("div", "m-preview");
     place.append(el("h3", null, "사업장등록증"), pv,
-      dlRows([["상호", s.name], ["주소", s.address], ["등록번호", s.bizPlaceNo]]));
+      dlRows([["상호", s.name], ["주소", s.address], ["관리번호", s.bizPlaceNo]]));
     wrap.append(place);
     if (s.hasBizPlaceFile) privateImage("/api/admin/stores/" + s.storeId + "/biz-place-file", pv, "사업장등록증");
     else pv.textContent = s.owner ? "올린 사업장등록증이 없어요." : "관리자가 등록한 매장이라 등록증이 없어요.";

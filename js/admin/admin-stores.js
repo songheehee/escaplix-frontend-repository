@@ -49,7 +49,7 @@
     const wrap = el("div", "m-table-wrap");
     const t = el("table", "m-table");
     const hr = el("tr");
-    ["매장", "신청자", "사업장 등록번호", "신청일", ""].forEach(function (h) { hr.append(el("th", null, h)); });
+    ["매장", "신청자", "사업장 관리번호", "신청일", ""].forEach(function (h) { hr.append(el("th", null, h)); });
     const thead = el("thead");
     thead.append(hr);
     t.append(thead);

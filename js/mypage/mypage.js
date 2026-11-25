@@ -515,7 +515,7 @@
   function fact(text, cls) { return el("span", "rd-fact" + (cls ? " " + cls : ""), text); }
 
   async function deleteReview(review, button) {
-    if (!confirm("\"" + review.themeTitle + "\" 후기를 삭제할까요? 삭제하면 되돌릴 수 없어요.")) return;
+    if (!(await UI.ask({ title: "「" + review.themeTitle + "」 후기를 삭제할까요?", body: "삭제하면 되돌릴 수 없어요.", yes: "예, 삭제할게요", danger: true }))) return;
     button.disabled = true;
     try {
       await api.del("/api/reviews/" + review.reviewId);

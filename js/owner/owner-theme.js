@@ -197,7 +197,7 @@
     const err = validate();
     if (err) { Manage.showError($("error"), err); return; }
     if (theme && !admin && theme.status !== "PENDING" &&
-        !confirm("수정하면 다시 승인을 받을 때까지 이 테마가 손님에게 보이지 않아요. 저장할까요?")) return;
+        !(await UI.ask({ title: "승인 요청을 보낼까요?", body: "다시 승인을 받을 때까지 이 테마가 손님에게 보이지 않아요.", yes: "예, 요청할게요" }))) return;
 
     const f = new FormData();
     // 수정(C-8)할 때도 storeId 칸은 보낸다 (서버는 무시하지만 필수 칸). 값은 ② 에서 정해진 매장
@@ -217,11 +217,8 @@
         ? await api.upload("/api/owner/themes/" + theme.themeId, f, "PUT")
         : await api.upload("/api/owner/themes", f);
       UI.toast(r.status === "OPEN" ? "저장했어요. 바로 손님에게 보여요." : "승인 요청을 보냈어요. 관리자 승인을 기다려 주세요.");
-      // 새 테마 → 바로 [시간표] 탭. 수정 → ② 매장 화면
-      const next = theme
-        ? Routes.url("ownerStore", { id: store.storeId })
-        : r.themeId ? Routes.url("ownerTheme", { id: r.themeId, tab: "slots" }) : Routes.url("ownerStore", { id: store.storeId });
-      setTimeout(function () { location.href = next; }, 900);
+      // 새 테마·수정 모두 ② 매장 화면으로 ([취소]와 같은 곳). replace 라 뒤로 가기로 폼에 다시 안 들어옴
+      setTimeout(function () { location.replace($("cancel").href); }, 900);
     } catch (e2) {
       Manage.busy(btn, false);
       Manage.showError($("error"), e2.message);

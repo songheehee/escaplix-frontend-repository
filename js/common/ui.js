@@ -687,6 +687,35 @@ const UI = (function () {
     setTimeout(function () { t.remove(); }, 3000);
   }
 
+  // ---------- 확인창 (브라우저 기본 confirm 대신) ----------
+  // UI.ask({ title, body, yes, no, danger }) → Promise<true|false>. Esc·바깥 누르기·[아니요] = false
+  //   버튼 글은 "아니요 / 예, ~할게요" 모양으로 (파티 화면과 같은 말투)
+  function ask(o) {
+    return new Promise(function (resolve) {
+      const dlg = el("dialog", "ui-ask");
+      dlg.setAttribute("aria-labelledby", "ui-ask-title");
+      const h = el("h2", null, o.title);
+      h.id = "ui-ask-title";
+      dlg.append(h);
+      if (o.body) dlg.append(el("p", "ui-ask-body", o.body));
+      const btns = el("div", "ui-ask-btns");
+      const no = el("button", "btn btn-line", o.no || "아니요");
+      const yes = el("button", "btn " + (o.danger ? "btn-bad" : "btn-accent"), o.yes || "예");
+      no.type = yes.type = "button";
+      btns.append(no, yes);
+      dlg.append(btns);
+      document.body.append(dlg);
+
+      let result = false;
+      no.addEventListener("click", function () { dlg.close(); });
+      yes.addEventListener("click", function () { result = true; dlg.close(); });
+      dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });   // 바깥(어두운 곳) 누르면 닫기
+      dlg.addEventListener("close", function () { dlg.remove(); resolve(result); });
+      dlg.showModal();
+      no.focus();   // 실수로 Enter 를 눌러도 [아니요]
+    });
+  }
+
   // ---------- 찜 (B-4, B-5) ----------
   // 손님만 찜할 수 있다. 비회원이면 로그인으로, 사장·관리자면 버튼을 안 그린다
   function canWish() {
@@ -696,7 +725,7 @@ const UI = (function () {
   async function toggleWish(themeId, wished) {
     const m = Auth.me();
     if (!m) {
-      if (confirm("찜하려면 로그인이 필요해요. 로그인할까요?")) Auth.goLogin();
+      if (await ask({ title: "로그인이 필요해요", body: "찜하려면 로그인해 주세요.", yes: "예, 로그인할게요" })) Auth.goLogin();
       return wished;
     }
     try {
@@ -886,7 +915,7 @@ const UI = (function () {
     el: el, $: $, poster: poster, posterBg: posterBg, genreGradient: genreGradient,
     rating: rating, won: won, people: people, genresText: genresText, genreName: genreName,
     safeUrl: safeUrl, ymd: ymd, today: today, DAYS: DAYS, datePicker: datePicker, partyStatus: partyStatus, selectPicker: selectPicker, enhanceSelect: enhanceSelect, areaPicker: areaPicker, isRecent: isRecent, textWidth: textWidth, difficultyDots: difficultyDots,
-    toast: toast, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
+    toast: toast, ask: ask, canWish: canWish, wishButton: wishButton, themeCard: themeCard, row: row,
     skeletonRow: skeletonRow, emptyBox: emptyBox,
   };
 })();

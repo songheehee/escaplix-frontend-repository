@@ -405,6 +405,19 @@ select:not([multiple]):not([size]):disabled { cursor: not-allowed; }
 .toast.out { opacity: 0; transform: translateY(8px); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } }
 
+/* ---------- 확인창 UI.ask (브라우저 기본 confirm 대신) ---------- */
+.ui-ask {
+  width: min(420px, calc(100vw - 32px)); padding: 22px; border-radius: 12px; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); box-shadow: 0 24px 60px rgba(0,0,0,.6); word-break: keep-all;
+}
+.ui-ask::backdrop { background: rgba(0, 0, 0, .6); }
+.ui-ask h2 { margin: 0 0 20px; font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+.ui-ask h2:has(+ .ui-ask-body) { margin-bottom: 10px; }
+.ui-ask-body { margin: 0 0 20px; font-size: 14px; line-height: 1.55; color: var(--ink2); overflow-wrap: anywhere; }
+.ui-ask-btns { display: flex; justify-content: flex-end; gap: 8px; }
+.ui-ask .btn-bad { background: var(--danger); color: #fff; }
+.ui-ask .btn-bad:hover { filter: brightness(1.1); }
+
 /* ---------- 아래쪽 footer ---------- */
 .footer { margin-top: 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 .footer-inner {
