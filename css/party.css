@@ -133,6 +133,10 @@
 /* 테마 이름 = 테마 상세 링크. 글자색은 그대로, 옅은 밑줄로 누를 수 있다는 것만 보여 주고 올리면 보라색 */
 .ri-link { color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,.28); text-underline-offset: 3px; }
 .ri-link:hover { color: var(--accent-ink); text-decoration-color: currentColor; }
+.ri-link:not([href]) { text-decoration: none; color: inherit; }   /* 운영 종료: 링크 아님 */
+/* 운영 종료 안내: 모집 마감 배지와 같은 빨강 계열 */
+.ri-gone { margin: 12px 0 0; padding: 8px 10px; border-radius: 8px; font-size: 13px; line-height: 1.45; background: rgba(255, 92, 108, .12); color: #ffc2c8; }
+.ri-gone[hidden] { display: none; }
 #ri-deadline { color: var(--gold); }
 /* 제목·소개는 두 줄까지만, 넘치면 … + [더보기]. 펼치면(.open) 전부 */
 .room-info:not(.open) .ri-title, .room-info:not(.open) .ri-intro { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
