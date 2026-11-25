@@ -23,10 +23,16 @@
   </section>
 
   <main class="d-body" id="d-body" hidden>
-    <!-- 테마 소개: 설명이 없는 테마면 숨김. 길면 네 줄 + 더 보기 (theme.js longText) -->
+    <!-- 테마 소개: 왼쪽 포스터(2:3 고정 크기) + 오른쪽 제목·설명
+         설명은 포스터 높이까지만 보이고, 넘칠 때만 더 보기 (theme.js longText)
+         위쪽 큰 화면 배경은 잘린 사진이라, 포스터 전체는 여기서 보여 줌 -->
     <section class="d-sec" id="intro-sec" aria-labelledby="intro-h" hidden>
-      <h2 id="intro-h">테마 소개</h2>
-      <div id="intro"></div>
+      <div class="d-intro">
+        <div class="d-poster" id="d-poster"></div>
+        <div class="d-intro-text" id="intro">
+          <h2 id="intro-h">테마 소개</h2>
+        </div>
+      </div>
     </section>
 
     <section class="d-sec" aria-labelledby="slot-h">
