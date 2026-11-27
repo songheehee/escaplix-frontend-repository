@@ -207,7 +207,7 @@
       save.textContent = "탈퇴하는 중…";
       try {
         await api.post("/api/members/me/withdraw", { password: pw.value });
-        Auth.clear();
+        await Auth.logout();   // 서버가 Refresh Token 을 이미 지웠지만 쿠키도 비움
         location.replace(Routes.url("login", { bye: 1 }));
       } catch (err) {
         if (err.status === 400) { MemberForm.setMsg(pwMsg, pw, err.message, "bad"); pw.value = ""; pw.focus(); }

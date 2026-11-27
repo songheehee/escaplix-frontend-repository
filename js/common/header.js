@@ -256,11 +256,11 @@
       if (Routes.isHere(l[0])) a.setAttribute("aria-current", "page");
       box.append(a);
     });
-    // 로그아웃: API 없음. 토큰만 지우고 메인으로 (명세 1-3)
+    // 로그아웃: 서버의 Refresh Token(쿠키)도 지우고 메인으로 (11/27 Refresh Token 추가)
     const out = el("button", "pm-item pm-logout");
     out.type = "button";
     out.append(el("span", "pm-ico i-logout"), el("span", null, "로그아웃"));
-    out.addEventListener("click", function () { Auth.clear(); location.href = Routes.url("home"); });
+    out.addEventListener("click", function () { Auth.logout().then(function () { location.href = Routes.url("home"); }); });
     box.append(out);
 
     // 열 때 스르륵 나타나고(pm-in), 닫을 때 스르륵 사라진 뒤(pm-out) 숨김
