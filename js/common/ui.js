@@ -54,17 +54,11 @@ const UI = (function () {
     img.src = src;
     return img;
   }
-  // 배경으로 쓸 때 (CSS background). 먼저 장르 색을 깔고, 사진을 불러오면 사진으로 바꿈
+  // 배경으로 쓸 때 (CSS background). 사진 아래에 장르 색을 깔아 두고 사진은 바로 그리기 시작
+  //   (11/27: 다 받은 뒤에 한 번에 바꾸던 것 → 받는 대로 보여서 덜 늦어 보임. 못 불러오면 장르 색이 그대로 보임)
   function posterBg(node, t) {
-    node.style.background = genreGradient(t.genres);
     const src = posterUrl(t.posterUrl);
-    if (!src) return;
-    const probe = new Image();
-    probe.onload = function () {
-      node.style.background = "";
-      node.style.backgroundImage = "url('" + src.replace(/'/g, "%27") + "')";
-    };
-    probe.src = src;
+    node.style.backgroundImage = (src ? "url('" + src.replace(/'/g, "%27") + "'), " : "") + genreGradient(t.genres);
   }
 
   // ---------- 글자 모양 ----------
