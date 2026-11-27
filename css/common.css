@@ -86,10 +86,12 @@ main.page:has(> .my-tabs) { min-height: 100vh; }
 .icon-btn:hover { border-color: #fff; }
 .icon-btn.wish.on { color: #ff6f9c; border-color: #ff6f9c; }
 /* 아이콘 글자를 동그라미 한가운데로 (글자마다 그려지는 자리가 달라서 하나씩 맞춤)
-     ♡·👥 는 아래로 처져서 위로 */
+     ♡ 는 아래로 처져서 위로 */
 .icon-btn { padding: 0; }
 .icon-btn.wish { padding-bottom: 1px; }
-.icon-btn.party { font-size: 14px; padding-bottom: 5px; }
+.icon-btn.party .party-ico { width: 16px; height: 16px; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='6' cy='5' r='2.5'/%3E%3Cpath d='M1.5 14c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5'/%3E%3Cpath d='M10.5 2.7a2.5 2.5 0 0 1 0 4.6M12.5 9.8c1.2.7 2 2.1 2 4.2'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='6' cy='5' r='2.5'/%3E%3Cpath d='M1.5 14c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5'/%3E%3Cpath d='M10.5 2.7a2.5 2.5 0 0 1 0 4.6M12.5 9.8c1.2.7 2 2.1 2 4.2'/%3E%3C/svg%3E") center / contain no-repeat; }
+/* 후기 없음: 별점 초록 대신 회색 */
+span.match.none { color: var(--muted); font-weight: 600; }
 
 .tag { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 12px; background: var(--surface2); color: var(--ink2); margin: 0 4px 4px 0; }
 .badge { display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 3px; letter-spacing: .5px; }

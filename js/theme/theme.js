@@ -48,7 +48,7 @@
     // 별점 · 매장 (한 줄)
     const sub = el("div", "d-meta");
     const r = UI.rating(t.avgRating);
-    sub.append(el("span", "match", r ? "★ " + r + " (" + t.reviewCount + ")" : "아직 후기 없음"));
+    sub.append(el("span", r ? "match" : "match none", r ? "★ " + r + " (" + t.reviewCount + ")" : "아직 후기 없음"));
     const store = el("a", "d-store", t.store.name + " ›");
     store.href = Routes.url("store", { id: t.store.storeId });
     sub.append(store);
@@ -91,7 +91,7 @@
     if (!me || isUser) {
       const party = el("a", "btn btn-dim");
       if (t.recruitingPartyCount > 0) {
-        party.textContent = "👥 모집 중인 파티 " + t.recruitingPartyCount;
+        party.textContent = "모집 중인 파티 " + t.recruitingPartyCount;
         party.href = Routes.url("partyList", { themeId: t.themeId });
       } else {
         party.textContent = "＋ 파티 만들기";
@@ -179,15 +179,15 @@
     // 주소 · 전화 · 영업시간: 줄마다 아이콘 (세 줄 모두 있어야 칸이 맞음)
     function line(icon, label, text) {
       const li = el("li");
-      const ic = el("span", "si-icon", icon);
+      const ic = el("span", "si-icon si-" + icon);   // 선 아이콘 (CSS 마스크, detail.css)
       ic.setAttribute("aria-hidden", "true");
       li.append(ic, el("span", null, text));
       li.setAttribute("aria-label", label + " " + text);
       list.append(li);
     }
-    if (s.address) line("📍", "주소", s.address);
-    if (s.phone) line("☎", "전화", s.phone);
-    if (detail && detail.hours) line("🕒", "영업시간", detail.hours);
+    if (s.address) line("pin", "주소", s.address);
+    if (s.phone) line("phone", "전화", s.phone);
+    if (detail && detail.hours) line("clock", "영업시간", detail.hours);
     body.append(list);
     card.append(body, el("span", "sinfo-arrow", "›"));
     box.append(card);

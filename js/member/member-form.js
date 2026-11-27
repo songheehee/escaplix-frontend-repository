@@ -123,6 +123,7 @@ const MemberForm = (function () {
    */
   function emailVerify(o) {
     const CODE_SEC = 300;
+    const RESEND_SEC = 60;   // 다시 받기 대기 (서버와 같게)
     const RESEND_TEXT = "재전송";
     const SEND_TEXT = o.sendBtn.textContent;
     let verifiedValue = null;   // 인증을 마친 값 (key)
@@ -196,9 +197,16 @@ const MemberForm = (function () {
       stopTimers();
       codeLeft = CODE_SEC;
       codeNote = "";
-      // [재전송]은 제한시간이 끝날 때까지 꺼 둠 (남은 시간은 아래 줄에 보여 줌)
-      o.sendBtn.textContent = RESEND_TEXT;
+      // [재전송]은 서버 규칙대로 60초 뒤에 켬. 그동안 버튼에 남은 초를 보여 줌 (인증번호 5분은 아래 줄)
+      let resendLeft = RESEND_SEC;
       o.sendBtn.disabled = true;
+      o.sendBtn.textContent = RESEND_TEXT + " " + mmss(resendLeft);
+      resendTimer = setInterval(function () {
+        resendLeft--;
+        if (resendLeft > 0) { o.sendBtn.textContent = RESEND_TEXT + " " + mmss(resendLeft); return; }
+        clearInterval(resendTimer); resendTimer = null;
+        resetSendBtn(RESEND_TEXT);
+      }, 1000);
       paintCode();
       codeTimer = setInterval(function () {
         codeLeft--;

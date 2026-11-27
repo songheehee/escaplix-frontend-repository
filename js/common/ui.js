@@ -321,7 +321,7 @@ const UI = (function () {
 
   function areaPicker(value, opts) {
     opts = opts || {};
-    const ALL = "모든 지역";
+    const ALL = "전체 지역";
     const wrap = el("div", "ap");
     const areaIn = el("input");
     areaIn.type = "hidden";
@@ -816,7 +816,8 @@ const UI = (function () {
     const actions = el("div", "tcard-actions");
     if (canWish()) actions.append(wishButton(t.themeId, t.wished, true));
     if (t.recruitingPartyCount > 0) {
-      const p = el("a", "icon-btn party", "👥");
+      const p = el("a", "icon-btn party");
+      p.append(el("span", "party-ico"));   // 사람 둘 아이콘 (CSS 마스크)
       p.href = Routes.url("partyList", { themeId: t.themeId });
       p.title = "모집 중인 파티 " + t.recruitingPartyCount + "개";
       p.setAttribute("aria-label", p.title);
@@ -910,7 +911,7 @@ const UI = (function () {
     const body = el("div", "sc-body");
     const r = rating(s.avgRating);
     const line = el("div", "sc-line");
-    line.append(el("span", "match", r ? "★ " + r : "후기 없음"));
+    line.append(el("span", r ? "match" : "match none", r ? "★ " + r : "후기 없음"));
     // 테마 수: "테마 3" (숫자만 흐리게, "개" 없이)
     const tc = el("span", "sc-tc", "테마 ");
     tc.append(el("span", "sc-tc-n", String(s.themeCount)));

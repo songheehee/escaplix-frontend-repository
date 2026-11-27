@@ -28,6 +28,8 @@
   font-size: 13px; font-weight: 700; color: var(--ink);
 }
 .pl-area .ap-btn:hover { border-color: var(--ink2); }
+#genre-btn { gap: 6px; }
+#genre-btn[aria-expanded="true"] .ap-chev { transform: rotate(180deg); }
 .pl-area .ap-btn[aria-expanded="true"] { border-color: var(--accent); }
 .pl-area .ap-btn.dp-none .dp-text { color: var(--ink); }
 .pl-genre { position: relative; }
