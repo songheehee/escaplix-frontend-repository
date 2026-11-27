@@ -196,7 +196,13 @@
 
     // 카드 (11/24 정리): 위 = 테마(크게)+배지 · 장르 · 날짜 시간 · 매장 / 아래 = 제목 · 인원 · 모집 마감
     //   한마디·방장은 카드를 누르면 뜨는 참여 확인 팝업에서 봄
+    // 위 칸 = 왼쪽 작은 포스터 + 오른쪽 글자 (11/27: 어떤 테마인지 한눈에)
     const top = el("div", "pb-top");
+    const thumb = el("div", "pb-thumb");
+    thumb.append(UI.poster({ posterUrl: p.posterUrl, title: p.themeTitle, genres: p.genres }));
+    thumb.setAttribute("aria-hidden", "true");
+    const info = el("div", "pb-info");
+    top.append(thumb, info);
     const theme = el("div", "pb-theme", p.themeTitle);
     theme.title = p.themeTitle;
     // 배지(참여 중·정원 마감·강퇴됨)는 위 칸 오른쪽 위, 테마 이름 옆 → 카드 높이가 안 늘어남
@@ -214,16 +220,15 @@
     const themeRow = el("div", "pb-theme-row");
     themeRow.append(theme);
     if (badges.childElementCount) themeRow.append(badges);
-    top.append(themeRow);
-    if (p.genres && p.genres.length) {
-      const g = el("div", "pb-genres");
-      p.genres.forEach(function (name) { g.append(el("span", "pb-genre", name)); });
-      top.append(g);
-    }
-    top.append(el("div", "pb-date", md(play) + " " + hm(play)));
+    info.append(themeRow);
+    // 장르 줄은 장르가 없어도 자리를 남김 → 카드끼리 위·아래 칸 높이가 같음
+    const g = el("div", "pb-genres");
+    (p.genres || []).forEach(function (name) { g.append(el("span", "pb-genre", name)); });
+    info.append(g);
+    info.append(el("div", "pb-date", md(play) + " " + hm(play)));
     const store = el("div", "pb-store", p.storeName);
     store.title = p.storeName;
-    top.append(store);
+    info.append(store);
     c.append(top);
 
     const body = el("div", "pb-body");
