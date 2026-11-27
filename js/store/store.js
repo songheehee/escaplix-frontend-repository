@@ -40,7 +40,7 @@
 
     const meta = el("div", "d-meta");
     const r = UI.rating(s.avgRating);
-    meta.append(el("span", "match", r ? "★ " + r : "아직 후기 없음"));   // 매장 별점 = 테마 평균의 평균
+    meta.append(el("span", r ? "match" : "match none", r ? "★ " + r : "아직 후기 없음"));   // 매장 별점 = 테마 평균의 평균
     // 테마 수·영업시간은 바로 아래(테마 N개 · 매장 정보)에 있어서 여기서는 뺌
     const parties = s.themes.reduce(function (n, t) { return n + t.recruitingPartyCount; }, 0);
     if (parties) meta.append(el("span", "party", "모집 중인 파티 " + parties + "개"));

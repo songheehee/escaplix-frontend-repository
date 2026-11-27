@@ -225,10 +225,10 @@
       if (!me || isUser) {
         const party = el("a", "btn btn-dim");
         if (t.recruitingPartyCount > 0) {
-          party.textContent = "👥  모집 중인 파티 " + t.recruitingPartyCount;
+          party.textContent = "모집 중인 파티 " + t.recruitingPartyCount;
           party.href = Routes.url("partyList", { themeId: t.themeId });
         } else {
-          party.textContent = "👥  파티 모집하기";
+          party.textContent = "파티 모집하기";
           party.href = Routes.url("partyForm", { themeId: t.themeId });
         }
         btns.append(party);

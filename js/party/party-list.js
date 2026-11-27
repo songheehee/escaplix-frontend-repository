@@ -91,7 +91,10 @@
 
     function paintLabel() {
       const picked = Array.from(state.genreIds).map(function (id) { return names[id]; }).filter(Boolean);
-      btn.textContent = "장르: " + (picked.length === 0 ? "전체" : picked.length === 1 ? picked[0] : picked[0] + " 외 " + (picked.length - 1)) + " ▾";
+      btn.textContent = picked.length === 0 ? "전체 장르" : picked.length === 1 ? picked[0] : picked[0] + " 외 " + (picked.length - 1);
+      const chev = el("span", "ap-chev");   // 지역·정렬 버튼과 같은 꺾쇠
+      chev.setAttribute("aria-hidden", "true");
+      btn.append(chev);
     }
 
     $("genre-reset").addEventListener("click", function () {
