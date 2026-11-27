@@ -1,6 +1,8 @@
 // 백엔드 요청은 모두 이 파일을 거친다 (API 명세 1-1, 1-3, 1-5)
 //   - 서버 주소는 여기 한 곳에만 적는다
-//   - 토큰은 sessionStorage "token" 에 둔다 (로그인 화면이 저장, 로그아웃은 지우기만)
+//   - Access Token(JWT, 30분)은 sessionStorage "token" 에 둔다 (로그인 화면이 저장)
+//   - Refresh Token(7일)은 서버가 HttpOnly 쿠키로 준다. JS 는 못 읽고, 요청에 credentials 로 실려 갈 뿐
+//     Access Token 이 끝났으면(또는 401) /api/auth/refresh 로 새로 받아 원래 요청을 한 번 더 보낸다 (11/27)
 //   - 실패하면 ApiError(status, message) 를 던진다. message 는 서버가 준 한국어 문장
 // ※ 공용 파일(A 담당)
 //
@@ -30,11 +32,8 @@ const Auth = (function () {
     try { sessionStorage.removeItem(KEY); } catch (e) { /* 무시 */ }
   }
 
-  // 토큰 안의 값 읽기 (서명 검사는 서버가 한다. 화면을 그릴 때만 쓴다)
-  // { memberId, nickname, role } 또는 null
-  function me() {
-    const t = token();
-    if (!t) return null;
+  // 토큰 안의 값 (서명 검사는 서버가 한다). 못 읽으면 null
+  function payload(t) {
     try {
       const part = t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
       const json = decodeURIComponent(
@@ -42,20 +41,55 @@ const Auth = (function () {
           return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
         }).join("")
       );
-      const p = JSON.parse(json);
-      if (p.exp && p.exp * 1000 < Date.now()) { clear(); return null; }
-      return { memberId: Number(p.sub), nickname: p.nickname, role: p.role };
+      return JSON.parse(json);
     } catch (e) {
-      clear();
       return null;
     }
+  }
+
+  // 화면을 그릴 때 쓰는 내 정보 { memberId, nickname, role } 또는 null
+  //   Access Token 이 끝났어도 로그인한 것으로 본다 → 첫 요청 때 Refresh Token 으로 새로 받음 (못 받으면 로그인 화면으로)
+  function me() {
+    const t = token();
+    if (!t) return null;
+    const p = payload(t);
+    if (!p) { clear(); return null; }
+    return { memberId: Number(p.sub), nickname: p.nickname, role: p.role };
+  }
+
+  // 곧 끝나는지 (30초 여유: 가는 길에 끝나지 않게)
+  function expiring() {
+    const p = payload(token() || "");
+    return !!(p && p.exp && p.exp * 1000 < Date.now() + 30 * 1000);
+  }
+
+  // Refresh Token(쿠키)으로 새 Access Token 받기. 동시에 여러 요청이 와도 한 번만 보냄
+  //   true = 새로 받음, false = 못 받음(만료·로그아웃됨 → 토큰 지움)
+  let refreshing = null;
+  function refresh() {
+    if (refreshing) return refreshing;
+    refreshing = fetch(API_BASE + "/api/auth/refresh", { method: "POST", credentials: "include", cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) { clear(); return false; }
+        return res.json().then(function (data) { save(data.token); return true; });
+      })
+      .catch(function () { return false; })   // 서버가 꺼져 있음: 토큰은 그대로 둠
+      .finally(function () { refreshing = null; });
+    return refreshing;
+  }
+
+  // 로그아웃: 서버의 Refresh Token 을 지우고(쿠키도) 화면 토큰도 지움. 서버가 안 받아도 화면은 로그아웃
+  function logout() {
+    return fetch(API_BASE + "/api/auth/logout", { method: "POST", credentials: "include", cache: "no-store" })
+      .catch(function () { /* 무시 */ })
+      .then(function () { clear(); });
   }
 
   function goLogin() {
     location.href = Routes.url("login", { next: Routes.current() });
   }
 
-  return { token: token, save: save, clear: clear, me: me, goLogin: goLogin };
+  return { token: token, save: save, clear: clear, me: me, goLogin: goLogin, expiring: expiring, refresh: refresh, logout: logout };
 })();
 
 class ApiError extends Error {
@@ -66,8 +100,16 @@ class ApiError extends Error {
 }
 
 const api = (function () {
+  // 로그인·재발급·로그아웃은 토큰 자동 갱신 대상이 아님
+  const AUTH_PATHS = ["/api/auth/login", "/api/auth/refresh", "/api/auth/logout"];
+
   // asBlob: 응답을 JSON 대신 파일(Blob)로 받기 (이미지 내려받기)
-  async function request(method, path, body, asBlob) {
+  async function request(method, path, body, asBlob, retried) {
+    const isAuthPath = AUTH_PATHS.indexOf(path) !== -1;
+    // 보내기 전에 Access Token 이 끝났으면 먼저 새로 받음 (공개 API 도: 찜 여부 등이 비회원처럼 오지 않게)
+    if (!isAuthPath && Auth.token() && Auth.expiring()) {
+      await Auth.refresh();
+    }
     const headers = {};
     const t = Auth.token();
     if (t) headers.Authorization = "Bearer " + t;
@@ -84,6 +126,7 @@ const api = (function () {
         // 서버 응답에 Cache-Control 이 없어서, 뒤로가기로 돌아온 화면에서 브라우저가 예전 응답을 캐시에서 꺼내 쓴다
         // (예: 파티에서 나가고 돌아왔는데 내 파티에 그대로 남음) → API 는 항상 서버에 새로 묻는다
         cache: "no-store",
+        credentials: "include",   // Refresh Token 쿠키 (로그인·비밀번호 변경 응답이 새 쿠키를 줌)
         body: body === undefined ? undefined : (isForm ? body : JSON.stringify(body)),
       });
     } catch (e) {
@@ -98,9 +141,13 @@ const api = (function () {
       // 413: 파일이 서버 한도보다 큼 (서버가 JSON 을 못 줄 수도 있어서 따로)
       const fallback = res.status === 413 ? "파일이 너무 커요. 5MB 이하로 올려 주세요." : "요청을 처리하지 못했어요. (" + res.status + ")";
       const msg = (data && data.message) || fallback;
-      // 401: 토큰이 없거나 만료 → 토큰 지우고 로그인 화면으로 (명세 1-5)
-      //   단, 로그인 요청(A-6)의 401 은 "아이디 또는 비밀번호가 틀렸습니다" → 화면에 문구만 보여 준다
-      if (res.status === 401 && path !== "/api/auth/login") {
+      // 401: 토큰이 없거나 만료 (명세 1-5)
+      //   토큰을 보냈었다면 Refresh Token 으로 새로 받아 한 번만 다시 보냄. 그래도 안 되면 로그인 화면으로
+      //   로그인 요청(A-6)의 401 은 "아이디 또는 비밀번호가 틀렸습니다" → 화면에 문구만 보여 준다
+      if (res.status === 401 && !isAuthPath) {
+        if (t && !retried && await Auth.refresh()) {
+          return request(method, path, body, asBlob, true);
+        }
         Auth.clear();
         Auth.goLogin();
       }
