@@ -128,7 +128,16 @@ fieldset.field legend { padding: 0; }
 .withdraw-link:hover, .withdraw-link:focus-visible { color: var(--danger); }
 .withdraw-list { margin: 0 0 16px; padding-left: 18px; font-size: 13px; color: var(--ink2); line-height: 1.6; }
 .withdraw-agree { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink2); cursor: pointer; }
-.withdraw-agree input { margin-top: 3px; accent-color: var(--danger); }
+/* 동의 체크: 기본 체크박스 대신 사이트 모양 (체크하면 빨강) */
+.withdraw-agree input {
+  -webkit-appearance: none; appearance: none; flex: 0 0 auto; width: 18px; height: 18px; margin: 2px 0 0;
+  border: 1.5px solid var(--ink2); border-radius: 4px; background: transparent; cursor: pointer;
+  display: inline-grid; place-content: center; transition: background .15s, border-color .15s;
+}
+.withdraw-agree input::after { content: ""; width: 9px; height: 5px; margin-top: -2px; border: solid #fff; border-width: 0 0 2px 2px; transform: rotate(-45deg); opacity: 0; }
+.withdraw-agree input:checked { background: var(--danger); border-color: var(--danger); }
+.withdraw-agree input:checked::after { opacity: 1; }
+.withdraw-agree input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn-danger { background: var(--danger); color: #fff; border: 1px solid var(--danger); }
 .btn-danger:hover:not(:disabled) { filter: brightness(1.08); }
 .btn-danger:disabled { opacity: .45; cursor: not-allowed; }
