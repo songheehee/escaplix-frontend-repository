@@ -440,7 +440,7 @@
     const kw = el("input", "fb-keyword");
     kw.type = "search";
     kw.name = "keyword";
-    kw.placeholder = "테마나 매장 이름을 입력해 보세요";
+    kw.placeholder = "테마·매장 이름을 입력하세요";
     kw.maxLength = 50;
     kw.value = F.keyword;
     kw.setAttribute("aria-label", "테마·매장 이름 검색");
