@@ -13,6 +13,15 @@
   color: var(--ink); background: var(--surface); border: 1px solid var(--line);
 }
 .pl-search input:focus { outline: none; border-color: var(--accent); }
+/* 매장 목록(stores.css)과 같은 자리·모양으로 맞춤 (11/27): 제목 아래 14px, 검색칸·버튼 모두 높이 40 둥근 알약, 사이 8px */
+.pl-head { margin-bottom: 14px; }
+.pl-head .page-title { margin: 0; }
+.pl-head #create-btn { height: 40px; padding: 0 16px; font-size: 14px; }   /* [파티 만들기]: 아래 검색칸·버튼과 같은 높이로 조금 작게 */
+.pl-filters { gap: 8px; margin-bottom: 24px; }   /* 카드도 매장 목록과 같은 높이에서 시작 */
+.pl-search input { height: 40px; padding: 0 16px; }
+.pl-search input::placeholder { color: var(--muted); }
+.pl-search input:hover { border-color: var(--ink2); }
+.pl-filters .pl-genre > .btn, .pl-filters .pl-area .ap-btn { height: 40px; padding: 0 14px; border-radius: 99px; background: var(--surface); font-size: 14px; }
 /* 지역 칸 (UI.areaPicker): 옆 장르 버튼(.btn-line.small)과 같은 크기·모양 */
 .pl-area .ap-btn {
   height: 34px; min-width: 0; gap: 8px; padding: 0 12px; background: transparent;

@@ -151,3 +151,10 @@
   .fb-reset { margin-left: 0; }
   .rank-no { -webkit-text-stroke-width: 3px; }
 }
+
+/* 테마 페이지(검색 결과 · 테마 탭): 세로 4:5 카드 (찜 목록·매장 상세와 같은 비율. 포스터가 대부분 세로라 덜 잘림) */
+.search-out .grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 48px 32px; }   /* 카드 크기는 그대로, 사이를 넉넉히 (다닥다닥 붙어 보이지 않게) */
+.search-out .tcard-art { aspect-ratio: 4 / 5; }
+.search-out .tcard-art img { object-position: center; }
+.search-out .tcard-title { font-size: 14px; }
+@media (max-width: 480px) { .search-out .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 12px; } }   /* 폰: 두 줄 */

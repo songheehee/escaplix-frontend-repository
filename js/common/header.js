@@ -10,19 +10,21 @@
 
   // 역할별 메뉴 (API 명세 3. 역할군별 보기)
   //   home  : 로고를 누르면 갈 곳
-  //   links : 위쪽 바 메뉴. [화면, 글자, (같이 불을 켤 화면들)]
+  //   links : 위쪽 바 메뉴. [화면, 글자, (같이 불을 켤 화면들), (주소에 붙일 값)]
+  //           [테마] = 메인의 검색 결과 화면(조건 없이 전체, 인기순). 홈과 같은 페이지라 ?… 가 있을 때만 [테마]에 불
   //   my    : 오른쪽 프로필 ▾ 안의 메뉴
   //   search: 테마·매장 검색칸을 보여 줄지
+  const THEMES_LINK = ["home", "테마", ["theme"], { sort: "popular" }];   // 전체 테마 (테마 상세에서도 불)
   const MENU = {
     GUEST: {
       home: "home",
-      links: [["home", "홈"], ["stores", "매장"], ["partyList", "파티"]],   // 파티 목록은 비회원도 볼 수 있음 (참여는 로그인)
+      links: [["home", "홈"], THEMES_LINK, ["stores", "매장"], ["partyList", "파티"]],   // 파티 목록은 비회원도 볼 수 있음 (참여는 로그인)
       my: [],
       search: true,
     },
     USER: {
       home: "home",
-      links: [["home", "홈"], ["stores", "매장"], ["partyList", "파티"]],   // 찜 목록은 프로필 ▾ 안에
+      links: [["home", "홈"], THEMES_LINK, ["stores", "매장"], ["partyList", "파티"]],   // 찜 목록은 프로필 ▾ 안에
       my: [["mypage", "내 기록"], ["wishes", "찜 목록"], ["chats", "내 파티"], ["profile", "내 정보"]],
       search: true,
     },
@@ -68,9 +70,13 @@
   menu.links.forEach(function (l) {
     const li = el("li");
     const a = el("a", null, l[1]);
-    a.href = Routes.url(l[0]);
+    a.href = Routes.url(l[0], l[3]);
     // 같이 켤 화면(l[2])이 있으면 주소 뒤 ?… 와 상관없이 켠다 (승인 → 매장·테마 목록과 상세)
-    const here = l[2] ? [l[0]].concat(l[2]).some(function (n) { return Routes.isHere(n); }) : Routes.isHere(l[0]) && !location.search;
+    // 주소에 붙일 값(l[3])이 있는 [테마]: 메인 + ?… (검색 결과, 매장 탭 빼고) 이거나 테마 상세일 때
+    const here = l[3]
+      ? (Routes.isHere(l[0]) && !!location.search && new URLSearchParams(location.search).get("tab") !== "stores")
+        || (l[2] || []).some(function (n) { return Routes.isHere(n); })
+      : l[2] ? [l[0]].concat(l[2]).some(function (n) { return Routes.isHere(n); }) : Routes.isHere(l[0]) && !location.search;
     if (here) a.setAttribute("aria-current", "page");
     li.append(a);
     list.append(li);
@@ -152,7 +158,7 @@
     kw.type = "search";
     kw.name = "keyword";
     kw.maxLength = 50;
-    kw.placeholder = "테마·매장 이름";
+    kw.placeholder = "테마·매장 이름을 입력하세요";
     fields.append(field("검색어", kw, "sp-kw"));
 
     const area = UI.areaPicker();   // 큰 지역(서울…) 누르면 펼쳐져서 세부 지역을 고름

@@ -3,8 +3,8 @@
 //     큰 지역 묶음은 B-12, 매장은 B-9 로 한 번에 다 받아서 화면에서 거름 (매장 수가 많지 않아서)
 //     지역 옆 숫자 = 그 지역 매장 수. 매장이 없는 세부 지역은 안 보이고, 없는 큰 지역은 흐리게
 //   정렬은 B-9 sort (rate 평점순 기본 / new 최신순). 바꾸면 매장만 다시 받음
-//   고른 지역·정렬은 주소(?region=&area=&sort=)에 남겨서 새로고침·뒤로가기에도 유지
-//   매장 이름으로 찾기는 위쪽 통합 검색이 맡는다 → 메인 검색 결과의 "매장" 탭
+//   고른 지역·정렬·검색어는 주소(?region=&area=&sort=&q=)에 남겨서 새로고침·뒤로가기에도 유지
+//   매장 이름 검색칸(11/27): 받은 목록을 치는 대로 바로 거름 (지역과 같이). 위쪽 통합 검색은 그대로
 (function () {
   const el = UI.el;
   const $ = UI.$;
@@ -19,13 +19,20 @@
     return;
   }
 
-  const state = { region: P.get("region") || "", area: P.get("area") || "", sort: P.get("sort") === "new" ? "new" : "rate" };
+  const state = { region: P.get("region") || "", area: P.get("area") || "", sort: P.get("sort") === "new" ? "new" : "rate", q: (P.get("q") || "").trim() };
   let stores = [];      // B-9 전체
   let regions = [];     // B-12 [{ name, areas: [이름 …] }]
   let preview = "";     // 패널 왼쪽에서 가리키고 있는 큰 지역 (아직 적용 전)
   const grid = $("store-grid");
   const btn = $("region-btn");
   const panel = $("region-panel");
+  const qInput = $("store-q");
+  qInput.value = state.q;
+  qInput.addEventListener("input", function () {
+    state.q = qInput.value.trim();
+    paintStores();
+    saveToUrl();
+  });
   const sortSel = $("store-sort");
   sortSel.value = state.sort;
   UI.enhanceSelect(sortSel);   // 기본 select 대신 사이트 모양 드롭다운 (select 는 숨겨서 그대로 씀)
@@ -145,14 +152,18 @@
   // ---------- 매장 목록 ----------
   function paintStores() {
     const r = regions.find(function (x) { return x.name === state.region; });
+    const q = state.q.toLowerCase().replace(/\s+/g, "");   // 띄어쓰기·대소문자 상관없이 (키이스케이프 = 키이 스케이프)
     const list = stores.filter(function (s) {
+      if (q && s.name.toLowerCase().replace(/\s+/g, "").indexOf(q) === -1) return false;
       if (state.area) return s.area === state.area;
       if (r) return r.areas.indexOf(s.area) !== -1;
       return true;
     });
     grid.textContent = "";
     if (!list.length) {
-      grid.append(UI.emptyBox("이 지역에는 아직 매장이 없어요."));
+      grid.append(UI.emptyBox(state.q
+        ? "「" + state.q + "」에 맞는 매장이 없어요." + (state.region ? " 지역을 「전체」로 바꿔 보세요." : "")
+        : "이 지역에는 아직 매장이 없어요."));
       return;
     }
     list.forEach(function (s) { grid.append(UI.storeCard(s)); });
@@ -164,6 +175,7 @@
     if (state.region) url.searchParams.set("region", state.region);
     if (state.area) url.searchParams.set("area", state.area);
     if (state.sort !== "rate") url.searchParams.set("sort", state.sort);
+    if (state.q) url.searchParams.set("q", state.q);
     history.replaceState(null, "", url);
   }
 

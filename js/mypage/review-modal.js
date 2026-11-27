@@ -109,7 +109,7 @@
     const q = el("input", "rm-q");
     q.type = "search";
     q.maxLength = 50;
-    q.placeholder = "테마나 매장 이름 입력";
+    q.placeholder = "테마·매장 이름을 입력하세요";
     q.setAttribute("aria-label", "테마나 매장 이름으로 찾기");
     const go = el("button", "btn btn-dim small", "찾기");
     go.type = "submit";

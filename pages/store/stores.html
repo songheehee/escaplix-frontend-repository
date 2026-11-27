@@ -14,6 +14,11 @@
       <h1 class="page-title">매장</h1>
       <!-- 지역 고르기: 버튼을 누르면 패널 (왼쪽 큰 지역 · 오른쪽 세부 지역). 폰에서는 아래에서 올라오는 시트 -->
       <div class="stores-tools">
+      <!-- 매장 이름으로 찾기: 치는 대로 바로 거름 (지역·정렬과 같이) -->
+      <label class="store-find">
+        <span class="visually-hidden">매장 이름 검색</span>
+        <input id="store-q" type="search" maxlength="30" placeholder="매장 이름을 입력하세요" autocomplete="off" spellcheck="false">
+      </label>
       <div class="rp-wrap">
         <button class="rp-btn" id="region-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="region-panel"><span id="region-label">전체 지역</span> <span class="rp-caret" aria-hidden="true">▾</span></button>
         <div class="rp" id="region-panel" role="dialog" aria-label="지역 고르기" hidden>
