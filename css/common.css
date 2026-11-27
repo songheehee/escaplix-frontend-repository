@@ -28,6 +28,16 @@
 /* 스크롤바: 사이트 전체를 얇은 어두운 막대로 통일. 안쪽 스크롤 칸은 마우스를 올리면 조금 밝게
    (숨긴 곳 .track 처럼 클래스로 따로 정한 건 그쪽이 이김) */
 * { scrollbar-width: thin; scrollbar-color: #4a4356 transparent; }
+/* 브라우저 기본 모양 지우기
+     자동 완성(저장된 아이디·비밀번호): 크롬이 칸을 하늘색으로 칠하는 것 → 사이트 칸 색 그대로
+     숫자 칸: 오른쪽 위·아래 화살표 숨김 (키보드로 입력) */
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink); caret-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset; box-shadow: 0 0 0 1000px var(--surface) inset;
+  transition: background-color 9999s ease-out;
+}
+input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 :where(:not(html, body)):hover { scrollbar-color: #5f5770 transparent; }
 html { -webkit-text-size-adjust: 100%; }
 body {

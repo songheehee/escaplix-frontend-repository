@@ -67,8 +67,14 @@ dialog.rm[open] { animation: rm-in 0.16s ease-out; }
 }
 /* 고른 칸: 성공은 초록, 실패는 빨강 (후기 카드의 "탈출 성공/실패" 칩과 같은 색) */
 /*   고른 칸 표시는 JS 가 붙이는 .on (review-modal.js paintSeg) */
-.rm-opt-Y input { accent-color: var(--good); }
-.rm-opt-N input { accent-color: var(--danger); }
+/*   동그라미: 기본 라디오 대신 사이트 모양 (고르면 안에 색 점) */
+.rm-opt input {
+  -webkit-appearance: none; appearance: none; flex: 0 0 auto; width: 16px; height: 16px; margin: 0;
+  border: 1.5px solid var(--ink2); border-radius: 50%; background: transparent; cursor: pointer; transition: background .15s, border-color .15s;
+}
+.rm-opt-Y input { --rm-c: var(--good); }
+.rm-opt-N input { --rm-c: var(--danger); }
+.rm-opt input:checked { border-color: var(--rm-c); background: radial-gradient(circle, var(--rm-c) 0 3.5px, transparent 4px); }
 .rm-opt.on { font-weight: 700; }
 .rm-opt-Y.on { border-color: var(--good); background: rgba(70, 214, 140, 0.12); }
 .rm-opt-N.on { border-color: var(--danger); background: rgba(255, 92, 108, 0.12); }
