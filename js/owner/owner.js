@@ -11,6 +11,7 @@
   if (!me) return;
   const admin = me.role === "ADMIN";
   let stores = [];
+  let themesByStore = {};   // 관리자: 매장 번호 → 테마 이름들 (검색창에서 테마 이름으로도 찾기)
   let page = 1;
   const PER_PAGE = 10;   // 관리자 매장 관리: 한 쪽에 10개 (카드에 사진이 있어 길어서)
 
@@ -46,7 +47,8 @@
 
   async function load() {
     try {
-      stores = await api.get("/api/owner/stores");
+      const r = await Promise.all([api.get("/api/owner/stores"), admin ? loadThemeNames() : null]);
+      stores = r[0];
     } catch (e) {
       Manage.stop(e.message);
       return;
@@ -54,15 +56,30 @@
     paint();
   }
 
+  // 관리자 검색용 테마 이름. 상태별 목록(C-17)을 다 받아 매장별로 묶음. 실패하면 매장 이름으로만 찾음
+  async function loadThemeNames() {
+    const lists = await Promise.all(["OPEN", "CLOSED", "PENDING", "REJECTED"].map(function (st) {
+      return api.get("/api/admin/themes", { status: st }).catch(function () { return []; });
+    }));
+    themesByStore = {};
+    lists.forEach(function (list) {
+      list.forEach(function (t) { (themesByStore[t.storeId] = themesByStore[t.storeId] || []).push(t.title); });
+    });
+  }
+  function themeHits(s, q) {
+    if (!q) return [];
+    return (themesByStore[s.storeId] || []).filter(function (title) { return title.indexOf(q) !== -1; });
+  }
+
   function paint() {
     const box = $("stores");
     box.textContent = "";
     const q = admin ? $("find").value.trim() : "";
     const list = (admin ? adminSort(stores) : Manage.sortStores(stores))   // 사장: 승인됨 → 대기 → 반려 → 폐업, 같은 상태끼리 최근 등록 순
-      .filter(function (s) { return !q || s.name.indexOf(q) !== -1; });
+      .filter(function (s) { return !q || s.name.indexOf(q) !== -1 || themeHits(s, q).length; });   // 매장 이름 또는 테마 이름
     if (!list.length) {
       box.append(admin
-        ? UI.emptyBox(q ? "「" + q + "」에 맞는 매장이 없어요." : "승인된 매장이 아직 없어요.", q ? null : "매장 등록", q ? null : Routes.url("storeForm"))
+        ? UI.emptyBox(q ? "「" + q + "」에 맞는 매장·테마가 없어요." : "승인된 매장이 아직 없어요.", q ? null : "매장 등록", q ? null : Routes.url("storeForm"))
         : UI.emptyBox("등록한 매장이 없어요. 매장부터 등록해 주세요.", "매장 등록", Routes.url("storeForm")));
       return;
     }
@@ -73,7 +90,7 @@
     // 관리자: 10개씩 쪽 나누기 (매장 수가 많아져도 한 화면이 길어지지 않게)
     const pages = Math.ceil(list.length / PER_PAGE);
     if (page > pages) page = pages;
-    list.slice((page - 1) * PER_PAGE, page * PER_PAGE).forEach(function (s) { box.append(storeCard(s)); });
+    list.slice((page - 1) * PER_PAGE, page * PER_PAGE).forEach(function (s) { box.append(storeCard(s, themeHits(s, q))); });
     const nav = Manage.pager(list.length, page, PER_PAGE, function (p) {
       page = p;
       paint();
@@ -83,7 +100,7 @@
   }
 
   // 카드 전체가 링크. 승인 대기·반려는 카드에 안내·사유를 바로 보여 줌 (사장)
-  function storeCard(s) {
+  function storeCard(s, hits) {
     const card = el("a", "m-card store-row" + (s.status === "CLOSED" ? " off" : ""));
     card.href = Routes.url("ownerStore", { id: s.storeId });
     card.append(Manage.thumb(s.photoUrl, s.name));
@@ -95,6 +112,8 @@
     if (!admin || s.status === "CLOSED") head.append(Manage.badge(s.status, "store"));
     info.append(head);
     info.append(el("div", "sub", [s.area, s.address].join(" · ")));
+    // 관리자가 테마 이름으로 찾았으면 어떤 테마 때문에 나왔는지
+    if (hits && hits.length) info.append(el("div", "sub hit", "테마 · " + hits.join(", ")));
     if (!admin) {
       info.append(el("div", "sub", s.themeCount ? "테마 " + s.themeCount + "개" : "테마 없음"));
     }
