@@ -18,20 +18,21 @@
   const MENU = {
     GUEST: {
       home: "home",
-      links: [["home", "홈"], THEMES_LINK, ["stores", "매장"], ["partyList", "파티"]],   // 파티 목록은 비회원도 볼 수 있음 (참여는 로그인)
+      links: [["home", "홈"], THEMES_LINK, ["stores", "매장", ["store"]], ["partyList", "파티"]],   // 파티 목록은 비회원도 볼 수 있음 (참여는 로그인)
       my: [],
       search: true,
     },
     USER: {
       home: "home",
-      links: [["home", "홈"], THEMES_LINK, ["stores", "매장"], ["partyList", "파티"]],   // 찜 목록은 프로필 ▾ 안에
+      links: [["home", "홈"], THEMES_LINK, ["stores", "매장", ["store"]], ["partyList", "파티"]],   // 찜 목록은 프로필 ▾ 안에
       my: [["mypage", "내 기록"], ["wishes", "찜 목록"], ["chats", "내 파티"], ["profile", "내 정보"]],
       search: true,
     },
     OWNER: {
       home: "home",       // 로고는 손님과 같은 메인으로. 사장 홈은 메뉴의 "사장 홈"
       // 메뉴는 사장 홈 하나. 매장 등록·테마 등록·시간표는 각 화면 안의 버튼 (사장 화면 개편 11/23)
-      links: [["owner", "사장 홈", ["ownerStore", "ownerTheme", "storeForm"]]],
+      //   테마·매장: 손님 화면에서 내 매장·다른 매장이 어떻게 보이는지 (11/27). 파티는 사장이 참여할 수 없어서 뺌
+      links: [["owner", "사장 홈", ["ownerStore", "ownerTheme", "storeForm"]], THEMES_LINK, ["stores", "매장", ["store"]]],
       my: [["profile", "내 정보"]],
       search: true,       // 사장도 손님 메인에서 테마를 찾아볼 수 있게
     },
