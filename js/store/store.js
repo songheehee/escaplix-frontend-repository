@@ -58,7 +58,10 @@
       btns.append(a);
     }
     if (s.phone) {
-      const call = el("a", "btn btn-dim", "☎ 전화하기");
+      const call = el("a", "btn btn-dim btn-call");
+      const ic = el("span", "si-icon si-phone");   // 테마 상세 "매장 정보"와 같은 전화 선 아이콘
+      ic.setAttribute("aria-hidden", "true");
+      call.append(ic, document.createTextNode("전화하기"));
       call.href = "tel:" + s.phone.replace(/[^0-9]/g, "");
       btns.append(call);
     }

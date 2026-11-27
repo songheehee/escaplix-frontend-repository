@@ -70,13 +70,17 @@
 .party-card.kicked { opacity: .5; cursor: not-allowed; }
 .party-card.kicked:hover { transform: none; border-color: var(--line); box-shadow: none; }
 /* 위 칸: 테마(제일 크게) · 장르 · 날짜 시간 · 매장 */
-.pb-top { padding: 14px; color: #fff; background: var(--surface2); display: flex; flex-direction: column; gap: 2px; }
+.pb-top { padding: 14px; color: #fff; background: var(--surface2); display: flex; gap: 14px; align-items: flex-start; }
+.pb-thumb { flex: 0 0 68px; width: 68px; aspect-ratio: 4 / 5; border-radius: 6px; overflow: hidden; background: var(--surface); }
+.pb-thumb > img, .pb-thumb > .poster-ph { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pb-thumb > .poster-ph { display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; }
+.pb-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .pb-theme { font-size: 19px; font-weight: 900; line-height: 1.25; letter-spacing: -.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pb-theme-row { display: flex; align-items: center; gap: 8px; }
 .pb-theme-row .pb-theme { flex: 1; min-width: 0; }
 .pb-badges { display: flex; gap: 4px; flex-shrink: 0; }
-.pb-genres { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
-.pb-genre { font-size: 11px; padding: 1px 8px; border-radius: 99px; background: rgba(255,255,255,.2); }
+.pb-genres { display: flex; flex-wrap: nowrap; overflow: hidden; gap: 4px; margin: 6px 0; min-height: 18px; }   /* 장르 없어도 같은 높이, 많으면 한 줄에서 잘림 */
+.pb-genre { flex-shrink: 0; white-space: nowrap; font-size: 11px; padding: 1px 8px; border-radius: 99px; background: rgba(255,255,255,.2); }
 .pb-date { font-size: 15px; font-weight: 800; line-height: 1.3; }
 .pb-store { font-size: 12px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pb-body { display: flex; flex-direction: column; gap: 12px; padding: 14px; flex: 1; }
